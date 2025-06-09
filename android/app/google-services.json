@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "359037552305",
+    "project_id": "authentication-6e780",
+    "storage_bucket": "authentication-6e780.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359037552305:android:78a28dd4e163359d9e4490",
+        "android_client_info": {
+          "package_name": "com.treelove.app.treelove"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "359037552305-hjj35u0kn3b64641egb05krmbf5v1dq6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.treelove.app.treelove",
+            "certificate_hash": "a1a6fc503d6255719f0048cc4498c68ae26bd4b7"
+          }
+        },
+        {
+          "client_id": "359037552305-7p0d93rlk2opml12smtevhap4vd0uj50.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrL4DWMCyahZMs0MMbUnuDbeGV6E2qLfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "359037552305-7p0d93rlk2opml12smtevhap4vd0uj50.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
