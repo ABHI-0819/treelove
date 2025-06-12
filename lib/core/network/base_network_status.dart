@@ -11,12 +11,12 @@ class ApiResult<T> {
 enum ApiStatus { success,noContent, failed ,forbidden, unAuthorized,badRequest,resourceNotFound,mediaNotSupport}
 
 class ApiStatusCode {
-  static int SUCCESS = 200;
-  static int NOCONTENT =204;
-  static int FAILED = 400;
-  static int FORBID = 403;
-  static int UnAUTHORIZED = 401;
-  static int BADREQUEST = 400;
-  static int RESOURCENOTFOUND = 404;
-  static int MEDIANOTSUPPORT = 415;
+  static int success = 200;
+  static int noContent =204;
+  static int failed = 400;
+  static int forbidden = 403;
+  static int unAuthorized = 401;
+  static int badRequest = 400;
+  static int resourceNotFound = 404;
+  static int mediaNotSupport = 415;
 }

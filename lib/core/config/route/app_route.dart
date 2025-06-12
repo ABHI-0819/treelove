@@ -27,7 +27,11 @@ class AppRoute{
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
       case '/login-password':
-        return MaterialPageRoute(builder: (_) => PasswordLoginScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_) => PasswordLoginScreen(
+              username: argument!['username'],
+              type :argument['type']
+        ));
       case '/create-account':
         return MaterialPageRoute(builder: (_) => CreateAccountScreen());
       case '/forgot-password':
@@ -56,6 +60,15 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> SelectTreeTypeScreen());
       case '/CartScreen':
         return MaterialPageRoute(builder: (_)=> CartScreen());
+
+        ///TODO : vendor  Mobile API
+      case '/fieldworker-main-screen':
+        return MaterialPageRoute(builder: (_)=> FieldWorkerMainScreen());
+
+      ///TODO : vendor  Mobile API
+      case '/organization-home-screen':
+        return MaterialPageRoute(builder: (_)=> FieldWorkerMainScreen());
+
 
       default:
         return  MaterialPageRoute(builder: (_) => const Screen404(

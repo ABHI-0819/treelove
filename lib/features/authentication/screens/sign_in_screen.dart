@@ -6,27 +6,30 @@ import 'package:treelove/features/authentication/screens/create_account_screen.d
 import 'package:treelove/features/authentication/screens/forgot_password_screen.dart';
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
 
+import '../../../core/config/constants/enum/input_enum.dart';
+import '../../../core/config/constants/enum/notification_enum.dart';
 import '../../../core/config/resource/images.dart';
 import '../../../core/config/themes/app_fonts.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/storage/preference_keys.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/widgets/common_notification.dart';
 
 class SignInScreen extends StatefulWidget {
-  static const route ='/sign-in';
-   SignInScreen({super.key});
+  static const route = '/sign-in';
+
+  SignInScreen({super.key});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-
-
   final authService = AuthService();
+  final TextEditingController username = TextEditingController();
 
-  SecurePreference preference= SecurePreference();
+  SecurePreference preference = SecurePreference();
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +50,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ],
               ),
               const SizedBox(height: 48),
-               Text(
+              Text(
                 'Your greens\ngetting closer',
                 style: AppFonts.headline.copyWith(
                   fontSize: 32,
@@ -71,7 +74,8 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              const TextField(
+               TextField(
+                controller: username,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Email Address or Phone Number',
@@ -97,14 +101,8 @@ class _SignInScreenState extends State<SignInScreen> {
                       borderRadius: BorderRadius.circular(28),
                     ),
                   ),
-                  onPressed: () {
-                    AppRoute.goToNextPage(context: context, screen: PasswordLoginScreen.route, arguments: {});
-                  },
-                  child:  Text(
-                    'Continue',
-                    style: AppFonts.regular
-
-                  ),
+                  onPressed: _next,
+                  child: Text('Continue', style: AppFonts.regular),
                 ),
               ),
               const SizedBox(height: 16),
@@ -147,12 +145,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
               ),
-              
+
                */
               const SizedBox(height: 64),
               Center(
                 child: RichText(
-                  text:  TextSpan(
+                  text: TextSpan(
                     text: "Don’t have an account? ",
                     style: TextStyle(color: Colors.black87),
                     children: [
@@ -164,8 +162,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            AppRoute.goToNextPage(context: context, screen: CreateAccountScreen.route, arguments: {});
-
+                            AppRoute.goToNextPage(
+                                context: context,
+                                screen: CreateAccountScreen.route,
+                                arguments: {});
                           },
                       ),
                     ],
@@ -180,6 +180,31 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
+  void _next() {
+    final input = username.text.trim();
+    if (input.isEmpty) {
+      showNotification(context,
+          message: 'Please enter your email or phone ', type: Not.warning);
+      return;
+    }
+    final inputType = InputValidator.identifyInputType(input);
+    debugLog('Detected input type: ${inputType.name}');
+
+    if (inputType == InputType.email || inputType == InputType.phone) {
+      AppRoute.goToNextPage(
+        context: context, screen: PasswordLoginScreen.route,
+        arguments: {
+          'username': input,
+          'type': inputType,
+        },
+      );
+    }else {
+      showNotification(context,
+          message: 'Please enter your correct email or phone ',
+          type: Not.warning);
+    }
+  }
+
   void handleGoogleSignIn() async {
     final googleUser = await authService.signInWithGoogle();
 
@@ -188,15 +213,18 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    debugLog(googleUser.uid,name: "uid data");
-    preference.set(Keys.token, googleUser.idToken);
+    debugLog(googleUser.uid, name: "uid data");
+    preference.set(Keys.oauthAccessToken, googleUser.accessToken);
+    preference.set(Keys.oauthTokenId, googleUser.idToken);
     preference.set(Keys.name, googleUser.displayName);
-    debugLog(googleUser.idToken.toString(),name: "idToken data");
-    debugLog('Signed in user: ${googleUser.displayName}, email: ${googleUser.email}');
+    debugLog(googleUser.idToken.toString(), name: "idToken data");
+    debugLog(
+        'Signed in user: ${googleUser.displayName}, email: ${googleUser.email}');
     debugLog('Access Token: ${googleUser.accessToken}');
     // Proceed with your app logic here.
   }
 }
+
 ///
 /// Android Debug Key
 /*

@@ -1,20 +1,20 @@
-abstract class ApiState {}
+abstract class ApiState<T, E> {}
 
-class ApiInitial extends ApiState {}
+class ApiInitial<T, E> extends ApiState<T, E> {}
 
-class ApiLoading extends ApiState {}
+class ApiLoading<T, E> extends ApiState<T, E> {}
 
-class ApiSuccess<T> extends ApiState {
+class ApiSuccess<T, E> extends ApiState<T, E> {
   final T data;
   ApiSuccess(this.data);
 }
 
-class ApiFailure extends ApiState {
-  final String message;
-  ApiFailure(this.message);
+class ApiFailure<T, E> extends ApiState<T, E> {
+  final E error;
+  ApiFailure(this.error);
 }
 
-class TokenExpired extends ApiState {
+class TokenExpired<T, E> extends ApiState<T, E> {
   final String message;
   TokenExpired(this.message);
 }

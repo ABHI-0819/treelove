@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/core/utils/logger.dart';
 
@@ -16,6 +17,7 @@ void main() async{
 }
 // void getDeviceInfo() async {
 //   final deviceId = await DeviceIdentifier.getDeviceId();
+//
 //   debugLog(deviceId.toString(),name: "Device Id");
 // }
 
@@ -31,6 +33,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       child: MaterialApp(
         title:'TREE-LOVE',
+        builder: EasyLoading.init(),
         debugShowCheckedModeBanner:false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

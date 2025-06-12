@@ -9,27 +9,17 @@ class BaseNetwork {
     return _baseNetwork;
   }
   //202.189.224.222:9071 Internal Server
-
-
-
-  static const String _BASE_URL_Release = "";
-  static const String _BASE_URL_Debug = "";
-  static const String BASE_URL_IMAGE ="";
-
-
-
-
-  /*
-  static const String _BASE_URL_Release = "http://202.189.224.222:9071/";
-  static const String _BASE_URL_Debug = "http://202.189.224.222:9071/";
-  static const String BASE_URL_IMAGE ="http://202.189.224.222:9071";
-   */
-
-
+  static const String _BASE_URL_Release = "http://43.205.169.130/";
+  static const String _BASE_URL_Debug = "http://43.205.169.130/";
   static const String _BASE_URL = kDebugMode ? _BASE_URL_Debug : _BASE_URL_Release;
+
 
   static const String FailedMessage = 'Connection Failed, Please try Again';
   static const String NetworkError= 'Oh no! Something went wrong';
+
+  static const String loginURL = "${_BASE_URL}api/v1/auth/login/";
+  static const String loginOAuthURL = "${_BASE_URL}api/v1/auth/oidc/login/";
+  static const String refreshTokenURL = "${_BASE_URL}api/v1/auth/token/refresh/";
 
   //http://10.202.100.187:9004/swagger/
 

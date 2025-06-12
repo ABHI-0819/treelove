@@ -21,3 +21,22 @@ class ApiDelete extends ApiEvent {
   final dynamic id;
   ApiDelete(this.id);
 }
+
+/*
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'api_event.freezed.dart';
+
+@freezed
+class ApiEvent<T> with _$ApiEvent<T> {
+  const factory ApiEvent.add(T data) = ApiAdd<T>;
+  const factory ApiEvent.fetch() = ApiFetch<T>;
+  const factory ApiEvent.search(String query) = ApiSearch<T>;
+  const factory ApiEvent.update(T data) = ApiUpdate<T>;
+  const factory ApiEvent.delete(dynamic id) = ApiDelete<T>;
+}
+
+ */
+
+
+
