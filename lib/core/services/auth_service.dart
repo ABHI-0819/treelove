@@ -33,6 +33,7 @@ class GoogleUser {
   final String? photoURL;
   final String? accessToken;
   final String? idToken;
+  final bool  isNewUser;
 
   GoogleUser({
     required this.uid,
@@ -41,6 +42,7 @@ class GoogleUser {
     this.photoURL,
     this.accessToken,
     this.idToken,
+    required this.isNewUser
   });
 }
 
@@ -81,6 +83,7 @@ class AuthService {
 
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
       final User? user = userCredential.user;
+      final bool isNewUser = userCredential.additionalUserInfo!.isNewUser ?? false;
 
       if (user == null) {
         // Sign-in failed, no user returned.
@@ -94,6 +97,7 @@ class AuthService {
         photoURL: user.photoURL,
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
+        isNewUser: isNewUser
       );
     } catch (e, stackTrace) {
       // Log errors for monitoring, or send to your error tracking system
@@ -105,7 +109,16 @@ class AuthService {
 
   /// Signs out the user from both Firebase and Google.
   Future<void> signOut() async {
+    await Future.wait([
+      _auth.signOut(),
+      _googleSignIn.disconnect(), // ✅ full revoke
+    ]);
+  }
+  /*
+  Future<void> signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
   }
+
+   */
 }

@@ -1,54 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:treelove/core/config/themes/app_color.dart';
+import 'package:treelove/core/config/themes/app_fonts.dart';
 
-class VendorMainScreen extends StatefulWidget {
-  static const route ='/vendor-home-screen';
-  const VendorMainScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  // static const route = '/vendor-home-screen';
+
+  const HomeScreen({super.key});
 
   @override
-  State<VendorMainScreen> createState() => _VendorMainScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _VendorMainScreenState extends State<VendorMainScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
-      bottomNavigationBar: const _BottomNavBar(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _HeaderSection(),
-              const SizedBox(height: 16),
-              const _StatsSection(),
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Ongoing projects (2)',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+      // bottomNavigationBar: const _BottomNavBar(),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _HeaderSection(),
+            const _StatsSection(),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Ongoing projects (2)',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 16),
-              const _ProjectCard(),
-              const _ProjectCard(),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            const _ProjectCard(),
+            const _ProjectCard(),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
   }
 }
-
-
-
-
 
 class _HeaderSection extends StatelessWidget {
   const _HeaderSection();
@@ -63,28 +60,30 @@ class _HeaderSection extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Hello Triple H 🙂',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+      padding:  EdgeInsets.all(16.r),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hello Yash 🙂',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Icon(
-            Icons.notifications,
-            color: Colors.white,
-          )
-        ],
+              ],
+            ),
+            Icon(
+              Icons.notifications,
+              color: Colors.white,
+            )
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +98,7 @@ class _StatsSection extends StatelessWidget {
       color: const Color(0xFF196D54),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: const [
           _StatBox(title: 'Ongoing Projects', value: '02'),
           _StatBox(title: 'Upcoming Projects', value: '01'),
@@ -109,36 +108,69 @@ class _StatsSection extends StatelessWidget {
   }
 }
 
+
+
 class _StatBox extends StatelessWidget {
   final String title;
   final String value;
 
-  const _StatBox({required this.title, required this.value});
+  const _StatBox({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        Container(
+          width: 2,
+          height: 65.h,// Thickness of the line
+          color: Color(0xFF00FF00), // Color of the line
         ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
+        Container(
+          // margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding:  EdgeInsets.symmetric(horizontal: 8.w,vertical: 15),
+          decoration: BoxDecoration(
+            // color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: Colors.black.withOpacity(0.05),
+            //     blurRadius: 6,
+            //     offset: const Offset(0, 3),
+            //   ),
+            // ],
+            // border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 5.h,
+            children: [
+              Text(
+                value,
+                style: AppFonts.regular.copyWith(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                )
+              ),
+              Text(
+                title,
+                style:AppFonts.caption.copyWith(
+                  color: AppColor.white
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 }
+
 
 class _ProjectCard extends StatelessWidget {
   const _ProjectCard();
@@ -162,6 +194,7 @@ class _ProjectCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 10.h,
           children: [
             Row(
               children: [
@@ -169,7 +202,7 @@ class _ProjectCard extends StatelessWidget {
                   radius: 18,
                   backgroundColor: Colors.white,
                   backgroundImage: NetworkImage(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Jio_Logo.svg/1024px-Jio_Logo.svg.png',
+                    'https://img.freepik.com/free-vector/bird-colorful-logo-gradient-vector_343694-1365.jpg?semt=ais_hybrid&w=740',
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -185,28 +218,35 @@ class _ProjectCard extends StatelessWidget {
                 )
               ],
             ),
-            const SizedBox(height: 12),
-            const Row(
+            Container(
+              height: 0.4, // Thickness of the line
+              color: Colors.grey, // Color of the line
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.location_on, size: 16, color: Colors.grey),
-                SizedBox(width: 4),
-                Text('Thane, Mumbai', style: TextStyle(fontSize: 13)),
+                const Row(
+                  children: [
+                    Icon(Icons.location_on, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text('Thane, Mumbai', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Row(
+                  children: [
+                    Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text('Due: 31 Oct 2023', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 4),
-            const Row(
+             Wrap(
+              spacing: 20.w,
+              runSpacing: 10.h,
               children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                SizedBox(width: 4),
-                Text('Due: 31 Oct 2023', style: TextStyle(fontSize: 13)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _ProjectTag(text: 'Plantation', color: Color(0xFFD6F5E6)),
                 _ProjectTag(text: 'Geo-tagging', color: Color(0xFFFCE8E8)),
                 _ProjectTag(text: 'Maintenance', color: Color(0xFFE6F3FB)),
                 _ProjectTag(text: 'Monitoring', color: Color(0xFFEAEAFD)),
@@ -235,16 +275,16 @@ class _ProjectTag extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        spacing: 10.w,
         children: [
           Icon(
             _getIcon(text),
-            size: 16,
+            size: 18,
             color: Colors.black54,
           ),
-          const SizedBox(width: 6),
           Text(
             text,
-            style: const TextStyle(fontSize: 12, color: Colors.black87),
+            style: AppFonts.caption,
           ),
         ],
       ),
@@ -266,7 +306,7 @@ class _ProjectTag extends StatelessWidget {
     }
   }
 }
-
+/*
 class _BottomNavBar extends StatelessWidget {
   const _BottomNavBar();
 
@@ -278,10 +318,14 @@ class _BottomNavBar extends StatelessWidget {
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.folder_open), label: 'Projects'),
-        BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Tree inventory'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.folder_open), label: 'Projects'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt), label: 'Tree inventory'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
       ],
     );
   }
 }
+
+ */

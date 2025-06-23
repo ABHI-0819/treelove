@@ -26,5 +26,7 @@ class Images{
   static const String monitorIcon = '${_basePathSvg}monitor_icon.svg';
   static const String babyPlantIcon = '${_basePathSvg}baby_plant_icon.svg';
   static const String pinIcon = '${_basePathSvg}map_pin.svg';
-
+  static const String calendarIcon = '${_basePathSvg}calendar_icon.svg';
+  static const String individualIcon = '${_basePathSvg}individual.svg';
+  static const String organizationIcon = '${_basePathSvg}organization.svg';
 }

@@ -15,6 +15,7 @@ import '../../../core/storage/preference_keys.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/common_notification.dart';
+import 'user_type_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   static const route = '/sign-in';
@@ -212,15 +213,45 @@ class _SignInScreenState extends State<SignInScreen> {
       debugLog('User cancelled or sign-in failed.');
       return;
     }
-
-    debugLog(googleUser.uid, name: "uid data");
     preference.set(Keys.oauthAccessToken, googleUser.accessToken);
     preference.set(Keys.oauthTokenId, googleUser.idToken);
     preference.set(Keys.name, googleUser.displayName);
-    debugLog(googleUser.idToken.toString(), name: "idToken data");
-    debugLog(
-        'Signed in user: ${googleUser.displayName}, email: ${googleUser.email}');
-    debugLog('Access Token: ${googleUser.accessToken}');
+
+    if(googleUser.isNewUser){
+      AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
+    }else {
+      // Existing user: fetch profile
+      /*
+      final userProfile = await apiService.getUserProfile(); // returns {user_type: "individual", ...}
+
+      if (userProfile == null) {
+        debugLog('Failed to fetch user profile');
+        showErrorSnackBar(context, 'Failed to load user profile');
+        return;
+      }
+
+      final userType = userProfile['user_type'];
+
+      if (userType == 'individual') {
+        AppRoute.goToNextPage(
+          context: context,
+          screen: HomeScreen.route,
+          arguments: {'type': 'individual'},
+        );
+      } else if (userType == 'organisation') {
+        AppRoute.goToNextPage(
+          context: context,
+          screen: OrganisationHomeScreen.route,
+          arguments: {'type': 'organisation'},
+        );
+      } else {
+        debugLog('Unknown user type: $userType');
+        showErrorSnackBar(context, 'Unknown user type');
+      }*/
+
+    }
+
+
     // Proceed with your app logic here.
   }
 }

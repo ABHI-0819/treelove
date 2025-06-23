@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import 'project_action_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 

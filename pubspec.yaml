@@ -53,8 +53,8 @@ dependencies:
   animated_custom_dropdown: ^3.1.1
   razorpay_flutter: ^1.4.0
   another_flushbar: ^1.12.30
-  freezed_annotation: ^3.0.0
   flutter_easyloading: ^3.0.5
+  image_picker: ^1.1.2
   flutter_map_location_marker:
 
 
@@ -68,8 +68,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  build_runner: ^2.4.15
-  freezed: ^3.0.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

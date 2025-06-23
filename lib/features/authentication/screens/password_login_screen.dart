@@ -9,7 +9,7 @@ import 'package:treelove/features/authentication/models/login.request.model.dart
 import 'package:treelove/features/authentication/models/login.response.model.dart';
 import 'package:treelove/features/authentication/screens/forgot_password_screen.dart';
 import 'package:treelove/features/customer/b2b/home/screens/organization_home_screen.dart';
-import 'package:treelove/features/vendor/home/screens/home_screen.dart';
+
 
 import '../../../common/bloc/api_event.dart';
 import '../../../common/bloc/api_state.dart';
@@ -21,6 +21,7 @@ import '../../../core/network/api_connection.dart';
 import '../../../core/utils/device_identifier.dart';
 import '../../customer/retail/home/screens/main_screen.dart';
 import '../../fieldworker/home/screens/main_screen.dart';
+import '../../vendor/home/screens/main-screen.dart';
 import '../bloc/auth_bloc.dart';
 
 class PasswordLoginScreen extends StatefulWidget {
