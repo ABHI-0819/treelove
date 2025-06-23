@@ -40,15 +40,16 @@ jobs:
       - name: Build App Bundle (.aab)
         run: flutter build appbundle --release
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
 
-      - name: Verify Build Output
-        run: ls -lah build/app/outputs/bundle/release/
 
-      - name: Upload .aab artifact
+      - name: Check AAB exists
+        run: ls -la build/app/outputs/bundle/release
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
+          name: release-apk
           path: build/app/outputs/bundle/release/app-release.aab
