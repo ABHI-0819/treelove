@@ -35,7 +35,7 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE }}" | base64 --decode > $HOME/keystore.jks 
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > $HOME/treelov.jks 
 
       - name: Build App Bundle (.aab)
         run: flutter build appbundle --release
