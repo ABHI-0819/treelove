@@ -51,7 +51,7 @@ android {
         release {
             keyAlias = System.getenv('KEY_ALIAS')
             keyPassword = System.getenv('KEY_PASSWORD')
-            storeFile = file("${System.getenv('HOME')}/treelov.jks")
+            storeFile = file("${System.getenv('HOME')}/keystore.jks")
             storePassword = System.getenv('STORE_PASSWORD')
         }
     }
