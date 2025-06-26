@@ -49,7 +49,7 @@ class ResponseModel {
 
   factory ResponseModel.fromJson(Map<String, dynamic> json) => ResponseModel(
     status: json["status"] as String?,
-    message: json["message"] as String?,
+    message: json["message"].toString(),
     data: json["data"] as String?, // Parse the 'data' field
   );
 

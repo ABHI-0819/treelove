@@ -25,7 +25,7 @@ class LoginRepository{
       LoginResponseModel obj = result.response;
 
       final securePref = SecurePreference();
-      securePref.setString(Keys.phone,obj.data.user.phone);
+      securePref.setString(Keys.phone,obj.data.user.phone??'');
       securePref.setString(Keys.email, obj.data.user.email);
       securePref.setString(Keys.groupName, obj.data.user.groupName);
       securePref.setString(Keys.profileId, obj.data.user.profile);

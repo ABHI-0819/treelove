@@ -15,6 +15,6 @@ class ApiFailure<T, E> extends ApiState<T, E> {
 }
 
 class TokenExpired<T, E> extends ApiState<T, E> {
-  final String message;
-  TokenExpired(this.message);
+  final E error;
+  TokenExpired(this.error);
 }

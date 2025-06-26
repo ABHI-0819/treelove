@@ -79,7 +79,7 @@ class Tokens {
 class User {
   String id;
   String email;
-  String phone;
+  String ? phone;
   String countryCode;
   String oauthProvider;
   bool isEmailVerified;
@@ -94,7 +94,7 @@ class User {
   User({
     required this.id,
     required this.email,
-    required this.phone,
+     this.phone,
     required this.countryCode,
     required this.oauthProvider,
     required this.isEmailVerified,
@@ -110,7 +110,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => User(
     id: json["id"],
     email: json["email"],
-    phone: json["phone"],
+    phone: json["phone"]??'',
     countryCode: json["country_code"],
     oauthProvider: json["oauth_provider"],
     isEmailVerified: json["is_email_verified"],

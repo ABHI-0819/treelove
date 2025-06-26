@@ -548,10 +548,10 @@ class ApiConnection {
         List<File> files = const [],
       }) async {
     try {
-      final token = await _getAccessToken();
-      if (token != null) {
-        header['Authorization'] = 'Bearer $token';
-      }
+      // final token = await _getAccessToken();
+      // if (token != null) {
+      //   header['Authorization'] = 'Bearer $token';
+      // }
 
       final request = http.MultipartRequest(method, Uri.parse(url));
       request.headers.addAll(header);
@@ -566,12 +566,19 @@ class ApiConnection {
       }
 
       final streamedResponse = await request.send();
+      debugLog(request.headers.toString(),name: "Request header");
+      debugLog(request.fields.toString(),name: "Request fields");
       final response = await http.Response.fromStream(streamedResponse);
-
+      debugLog(response.body.toString(),name: "Result");
       if (response.statusCode == ApiStatusCode.success) {
         return ApiResult<T>(status: ApiStatus.success, response: parser(response.body));
       } else if (response.statusCode == ApiStatusCode.unAuthorized) {
-        final refreshed = await _refreshToken();
+        return ApiResult<ResponseModel>(
+          status: ApiStatus.unAuthorized,
+          response: responseModelFromJson(response.body)!,
+        );
+        // final refreshed = await _refreshToken();
+        /*
         if (refreshed) {
           return await apiConnectionMultipart<T>(
             url,
@@ -587,6 +594,8 @@ class ApiConnection {
             response: responseModelFromJson(response.body)!,
           );
         }
+
+         */
       } else {
         return ApiResult<ResponseModel>(
           status: ApiStatus.badRequest,

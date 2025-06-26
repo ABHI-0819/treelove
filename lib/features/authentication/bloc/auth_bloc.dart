@@ -32,7 +32,7 @@ class AuthBloc extends Bloc<ApiEvent, ApiState<LoginResponseModel,ResponseModel>
         emit(ApiSuccess(result.response));
         break;
       case ApiStatus.unAuthorized:
-        emit( TokenExpired("Session expired. Please login again."));
+        emit( TokenExpired(result.response));
         break;
       default:
         ResponseModel data = result.response;

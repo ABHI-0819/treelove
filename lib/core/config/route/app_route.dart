@@ -6,7 +6,9 @@ import 'package:treelove/features/authentication/screens/otp_verification_screen
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
 import 'package:treelove/features/customer/retail/cart/cart_screen.dart';
 import 'package:treelove/features/customer/retail/home/screens/main_screen.dart';
+import 'package:treelove/features/customer/retail/tree-species/tree_species_details.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
+import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
 import '../../../features/authentication/screens/user_type_screen.dart';
 import '../../../features/customer/retail/home/screens/home_screen.dart';
@@ -22,7 +24,7 @@ class AppRoute{
   Route onGenerateRoute(RouteSettings settings){
     switch(settings.name){
       case '/':
-        return MaterialPageRoute(builder: (_) => UserTypeSelectionScreen());
+        return MaterialPageRoute(builder: (_) => WelcomeScreen());
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
       case 'user-type':
@@ -49,6 +51,8 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> MapScreen());
       case '/tree-species-list':
         return MaterialPageRoute(builder: (_)=> TreeSpeciesList());
+      case '/tree-species-details':
+        return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails());
 
       ///TODO : Field Worker Mobile API
       case '/fieldworker-main-screen':

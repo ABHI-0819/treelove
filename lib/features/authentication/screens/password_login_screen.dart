@@ -160,7 +160,7 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
                 } else if (state is TokenExpired<LoginResponseModel, ResponseModel>) {
                   showNotification(
                     context,
-                    message: state.message,
+                    message: state.error.message.toString(),
                     type: Not.warning,
                   );
                 }

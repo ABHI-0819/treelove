@@ -8,6 +8,7 @@ import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
 import '../../../../core/utils/logger.dart';
 import '../cart/cart_screen.dart';
+import 'tree_species_details.dart';
 
 class TreeSpeciesList extends StatefulWidget {
   static const route ="/tree-species-list";
@@ -212,7 +213,7 @@ class TreeTypeCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         // TODO: Handle tree selection logic
-        AppRoute.goToNextPage(context: context, screen: CartScreen.route, arguments: {});
+        AppRoute.goToNextPage(context: context, screen: TreeSpeciesDetails.route, arguments: {});
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
