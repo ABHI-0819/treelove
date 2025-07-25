@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,10 +8,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
-
+import '../../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../../core/config/constants/map_constants.dart';
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
+import 'package:turf/turf.dart' as turf;
+import '../../../../../core/utils/geofence_helper.dart';
+import '../../../../../core/widgets/common_notification.dart';
 
 class MapScreen extends StatefulWidget {
   static const route ="/plant-by-location";
@@ -25,12 +29,63 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? selectedPoint;
   int treeCount = 1;
 
+  final List<LatLng> polygonPoints = const [
+    LatLng(19.1245, 72.8315),
+    LatLng(19.1240, 72.8340),
+    LatLng(19.1250, 72.8350),
+    LatLng(19.1265, 72.8330),
+    LatLng(19.1255, 72.8310),
+    LatLng(19.1245, 72.8315), // Closed loop
+  ];
+
+
+  void _onMapTap(LatLng point) {
+    // Define your polygon here or load from server
+    final polygonCoords = [
+      [
+        turf.Position(72.8315, 19.1245),
+        turf.Position(72.8340, 19.1240),
+        turf.Position(72.8350, 19.1250),
+        turf.Position(72.8330, 19.1265),
+        turf.Position(72.8310, 19.1255),
+        turf.Position(72.8315, 19.1245), // Closed loop
+      ],
+    ];
+
+    final bool isInside = isPointInsidePolygon(
+      latitude: point.latitude,
+      longitude: point.longitude,
+      polygonCoordinates: polygonCoords,
+    );
+
+    if (isInside) {
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('✅ Point is inside the allowed area.')),
+      // );
+    } else {
+      HapticFeedback.mediumImpact();
+      showNotification(context,
+          message: 'Please drop the pin inside the green area to plant.', type: Not.warning);
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('❌ Point is outside the allowed area.')),
+      // );
+    }
+
+    setState(() {
+      selectedPoint = point;
+      treeCount = 1;
+    });
+  }
+
+  /*
   void _onMapTap(LatLng point) {
     setState(() {
       selectedPoint = point;
       treeCount = 1;
     });
   }
+
+   */
 
   void _updateTreeCount(int count) {
     setState(() {
@@ -46,7 +101,8 @@ class _MapScreenState extends State<MapScreen> {
           FlutterMap(
             mapController: mapController,
             options: MapOptions(
-              initialCenter: MapConstant.initialCenter,
+              initialCenter:   LatLng(19.124, 72.832),
+              // MapConstant.initialCenter,
               initialZoom: MapConstant.initialZoom,
               maxZoom: MapConstant.maximumZoom,
               minZoom: MapConstant.minimumZoom,
@@ -55,7 +111,24 @@ class _MapScreenState extends State<MapScreen> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+                tileProvider: NetworkTileProvider(
+                  headers: {
+                    'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
+                  },
+                ),
+                // subdomains: ['a', 'b', 'c'],
+                // userAgentPackageName: 'com.example.app',
+              ),
+              // 🟩 Show Polygon
+              PolygonLayer(
+                polygons: [
+                  Polygon(
+                    points: polygonPoints,
+                    color: Colors.green.withOpacity(0.2),
+                    borderColor: Colors.green,
+                    borderStrokeWidth: 2,
+                  ),
+                ],
               ),
               if (selectedPoint != null)
                 MarkerLayer(
@@ -94,7 +167,87 @@ class _MapScreenState extends State<MapScreen> {
                 ),
             ],
           ),
-          _SearchBar(mapController: mapController),
+          Positioned(
+            top: 140, // Below your search bar
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Icon(Icons.place_rounded, color: Colors.green.shade800, size: 20),
+                  // const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '🌳Please tap **inside the green zone** to plant a tree.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.green.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          /*
+          Positioned(
+            top: 140, // adjust based on search bar height
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline, color: Colors.green.shade800, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '🌳 Tap inside the green zone to plant a tree',
+                      // '🌳 You can only plant a tree inside the highlighted green zone. Tap inside the zone to drop a pin.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.green.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+           */
+
+          SafeArea(
+              child: _SearchBar(mapController: mapController)),
+          /*
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -132,6 +285,49 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
           ),
+
+           */
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              child: IntrinsicHeight(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _TreeCounter(
+                      initialCount: treeCount,
+                      onChanged: _updateTreeCount,
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        AppRoute.goToNextPage(
+                          context: context,
+                          screen: TreeSpeciesList.route,
+                          arguments: {},
+                        );
+                      },
+                      icon: const Icon(Icons.eco, color: Colors.black87),
+                      label: const Text(
+                        'Plant here',
+                        style: TextStyle(color: Colors.black87, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF0EAD6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        elevation: 5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
         ],
       ),
     );
@@ -185,6 +381,104 @@ class _SearchBar extends StatelessWidget {
     // Return example: LatLng(19.0760, 72.8777);
   }
 }
+/*
+class _TreeCounter extends StatefulWidget {
+  final int initialCount;
+  final void Function(int) onChanged;
+
+  const _TreeCounter({
+    required this.initialCount,
+    required this.onChanged,
+    super.key,
+  });
+
+  @override
+  State<_TreeCounter> createState() => _TreeCounterState();
+}
+
+class _TreeCounterState extends State<_TreeCounter> {
+  late int count;
+
+  @override
+  void initState() {
+    super.initState();
+    count = widget.initialCount;
+  }
+
+  void _increment() {
+    setState(() => count++);
+    widget.onChanged(count);
+  }
+
+  void _decrement() {
+    if (count > 1) {
+      setState(() => count--);
+      widget.onChanged(count);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F4C3B),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Selected:',
+              style: TextStyle(
+                color: AppColor.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 12),
+            IconButton(
+              onPressed: count > 1 ? _decrement : null,
+              icon: Icon(Icons.remove_circle,
+                  color: count > 1 ? Colors.white : Colors.white24),
+              iconSize: 24,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                '$count',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
+              ),
+            ),
+            IconButton(
+              onPressed: _increment,
+              icon: const Icon(Icons.add_circle, color: Colors.white),
+              iconSize: 24,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+ */
+
 
 class _TreeCounter extends StatefulWidget {
   final int initialCount;
@@ -220,8 +514,8 @@ class _TreeCounterState extends State<_TreeCounter> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 55,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      // height: 55,
+      padding:  EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
           color: const Color(0xFF0F4C3B),
           borderRadius: BorderRadius.all(Radius.circular(25))),
@@ -246,6 +540,10 @@ class _TreeCounterState extends State<_TreeCounter> {
     );
   }
 }
+
+
+
+
 
 class _BottomButtons extends StatelessWidget {
   final VoidCallback onContinue;

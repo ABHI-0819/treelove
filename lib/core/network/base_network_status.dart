@@ -8,11 +8,13 @@ class ApiResult<T> {
   ApiStatus? get getStatus => status;
 }
 
-enum ApiStatus { success,noContent, failed ,forbidden, unAuthorized,badRequest,resourceNotFound,mediaNotSupport}
+enum ApiStatus {success,created,noContent,resetContent, failed ,forbidden, unAuthorized,badRequest,resourceNotFound,mediaNotSupport}
 
 class ApiStatusCode {
   static int success = 200;
+  static int created = 201;
   static int noContent =204;
+  static int resetContent=205;
   static int failed = 400;
   static int forbidden = 403;
   static int unAuthorized = 401;

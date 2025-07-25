@@ -39,7 +39,40 @@ class AuthBloc extends Bloc<ApiEvent, ApiState<LoginResponseModel,ResponseModel>
         emit(ApiFailure(data));
     }
   }
+
 }
+
+class LogoutBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> {
+  final LoginRepository repository; // or LogoutRepository
+
+  LogoutBloc(this.repository) : super(ApiInitial()) {
+    on<ApiDelete>(_onLogout); // or ApiAdd, but Delete is more semantic
+  }
+
+  Future<void> _onLogout(
+      ApiDelete event,
+      Emitter<ApiState<ResponseModel, ResponseModel>> emit,
+      ) async {
+    emit(ApiLoading());
+
+    final result = await repository.logout(refreshToken: event.id);
+
+    switch (result.status) {
+      case ApiStatus.success:
+        emit(ApiSuccess(result.response));
+      case ApiStatus.resetContent: // ✅ for 204/205 status
+        emit(ApiSuccess(result.response));
+        break;
+      case ApiStatus.unAuthorized:
+        emit(TokenExpired(result.response));
+        break;
+
+      default:
+        emit(ApiFailure(result.response));
+    }
+  }
+}
+
 
 /*
 

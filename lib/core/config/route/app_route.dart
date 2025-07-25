@@ -9,15 +9,24 @@ import 'package:treelove/features/customer/retail/home/screens/main_screen.dart'
 import 'package:treelove/features/customer/retail/tree-species/tree_species_details.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
 import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
+import 'package:treelove/features/vendor/home/screens/project_detail_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
-import '../../../features/authentication/screens/user_type_screen.dart';
+import '../../../features/customer/b2b/home/screens/main_screen.dart';
 import '../../../features/customer/retail/home/screens/home_screen.dart';
 import '../../../features/customer/retail/home/screens/location_selection_screen.dart';
+import '../../../features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
+import '../../../features/customer/retail/order/order_list_screen.dart';
+import '../../../features/customer/retail/order/order_tracker_screen.dart';
+import '../../../features/customer/retail/profile/screen/account_screen.dart';
 import '../../../features/fieldworker/home/screens/main_screen.dart';
 import '../../../features/fieldworker/home/screens/project_action_screen.dart';
 import '../../../features/fieldworker/home/screens/select_tree_species.dart';
+import '../../../features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
 import '../../../features/fieldworker/home/screens/tree_plantation_screen.dart';
+import '../../../features/vendor/Staff/new_staff_screen.dart';
 import '../../../features/vendor/home/screens/main-screen.dart';
+import '../../../features/vendor/home/screens/map_screen.dart';
+import '../../../features/vendor/task/screens/task_allocation_screen.dart';
 import '../../widgets/screen_404.dart';
 
 class AppRoute{
@@ -25,6 +34,11 @@ class AppRoute{
     switch(settings.name){
       case '/':
         return MaterialPageRoute(builder: (_) => WelcomeScreen());
+        // return MaterialPageRoute(builder: (_) => TreeMaintenanceHistoryScreen(
+        //   treeSpecies: 'Neem',
+        //   location: 'Mumbai Zone 2',
+        //   treeId: 'TL-001',
+        // ));
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
       case 'user-type':
@@ -52,7 +66,10 @@ class AppRoute{
       case '/tree-species-list':
         return MaterialPageRoute(builder: (_)=> TreeSpeciesList());
       case '/tree-species-details':
-        return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails(
+            id :argument!['id']
+        ));
 
       ///TODO : Field Worker Mobile API
       case '/fieldworker-main-screen':
@@ -67,12 +84,25 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> CartScreen());
 
         ///TODO : vendor  Mobile API
-      case '/vendor-main-screen':
+      case '/vendor-home-screen':
         return MaterialPageRoute(builder: (_)=> VendorMainScreen());
+      case '/project-detail-screen':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> ProjectDetailScreen(
+            projectId :argument!['projectId']
+        ));
+      case '/addNewStaff':
+        return MaterialPageRoute(builder: (_)=> AddNewStaffScreen());
+      case '/TaskAllocationScreen':
+        return MaterialPageRoute(builder: (_)=> TaskAllocationScreen(
 
-      ///TODO : Organization  Mobile API
-      case '/organization-home-screen':
-        return MaterialPageRoute(builder: (_)=> FieldWorkerMainScreen());
+        ));
+      case '/VendorMapScreen':
+        return MaterialPageRoute(builder: (_)=>VendorMapScreen());
+
+      ///TODO : Organization Mobile API
+      case '/organization-main-screen':
+        return MaterialPageRoute(builder: (_)=> OrganizationMainScreen());
 
       default:
         return  MaterialPageRoute(builder: (_) => const Screen404(

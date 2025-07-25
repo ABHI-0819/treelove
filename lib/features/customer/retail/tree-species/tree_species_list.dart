@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:badges/badges.dart' as badges;
-import '../../../../core/config/resource/images.dart';
+import 'package:treelove/common/bloc/api_event.dart';
+import 'package:treelove/features/customer/retail/tree-species/bloc/tree_species_bloc.dart';
+import '../../../../common/bloc/api_state.dart';
+import '../../../../common/models/response.mode.dart';
+import '../../../../common/repositories/tree_species_repository.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
+import '../../../../core/network/api_connection.dart';
 import '../../../../core/utils/logger.dart';
-import '../cart/cart_screen.dart';
+import 'models/tree_species_model.dart';
 import 'tree_species_details.dart';
 
 class TreeSpeciesList extends StatefulWidget {
-  static const route ="/tree-species-list";
+  static const route = "/tree-species-list";
+
   const TreeSpeciesList({super.key});
 
   @override
@@ -19,23 +25,44 @@ class TreeSpeciesList extends StatefulWidget {
 }
 
 class _TreeSpeciesListState extends State<TreeSpeciesList> {
+
+  late TreeSpeciesBloc _treeSpeciesBloc;
+
+  @override
+  void initState() {
+    _treeSpeciesBloc = TreeSpeciesBloc(
+      TreeSpeciesRepository(api: ApiConnection()),
+    );
+    _treeSpeciesBloc.add(ApiListFetch());
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:AppColor.background,
       appBar: AppBar(
         automaticallyImplyLeading: false, // We add the back button manually
-        backgroundColor: AppColor.scaffoldBackground,
-        elevation: 1,
+        backgroundColor: AppColor.background,
+        elevation: 0,
         title: Row(
           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           spacing: 30.w,
           children: [
             InkWell(
-              onTap: ()=>AppRoute.pop(context),
+                onTap: () => AppRoute.pop(context),
                 child: Icon(Icons.arrow_back, size: 24)),
-             Text(
-              'Tree Species',
-              style: AppFonts.subtitle.copyWith(color: AppColor.black,fontSize: 22)
+            Text(
+                'Tree Species',
+                style: AppFonts.subtitle.copyWith(
+                    color: AppColor.black, fontSize: 22)
             ),
             Spacer(),
             IconButton(
@@ -52,62 +79,82 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
   }
 
   Widget _mainBody() {
-    return CustomScrollView(
-      slivers: [
-        SliverPersistentHeader(
-          pinned: true,
-          floating: false,
-          delegate: StickySearchBar(
-            hintText: 'Search Station Here',
-            onChanged: (value) {
+    return BlocProvider(
+      create: (context) => _treeSpeciesBloc,
+      child: BlocBuilder<TreeSpeciesBloc, ApiState<TreeSpeciesListResponse, ResponseModel>>(
+        builder: (context, state) {
 
-            },
-          ),
-        ),
+          if(state is ApiLoading){
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is ApiSuccess<TreeSpeciesListResponse, ResponseModel>) {
+            final speciesList = state.data.data ?? [];
 
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                // final item = station[index];
-                return Card(
-                  elevation: 1,
-                  child:  TreeTypeCard(
-                    tree:  TreeType(
-                    name: 'Mango',
-                    species: 'Hapus',
-                    imageUrl:
-                    'https://cdn.pixabay.com/photo/2012/07/09/07/16/mango-51995_1280.jpg',
-                ),)
-                );
-              },
-              childCount: 10,
-            ),
-          ),
-        ),
-      ],
+            return CustomScrollView(
+              slivers: [
+                SliverPersistentHeader(
+                  pinned: true,
+                  floating: false,
+                  delegate: StickySearchBar(
+                    hintText: 'Search Station Here',
+                    onChanged: (value) {
+
+                    },
+                  ),
+                ),
+
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                         final item = speciesList[index];
+                        return Card(
+                            elevation: 1,
+                            child: TreeTypeCard(
+                              onTap: (){
+                                AppRoute.goToNextPage(
+                                    context: context, screen: TreeSpeciesDetails.route, arguments: {
+                                      'id' :item.id
+                                });
+                              },
+                              tree: TreeType(
+                                name: item.treeName,
+                                species: item.scientificName,
+                                imageUrl:item.image??'https://m.media-amazon.com/images/I/51AWjGozihL._UF1000,1000_QL80_.jpg',
+                              ),)
+                        );
+                      },
+                      childCount: speciesList.length,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 }
-
-
 
 
 class StickySearchBar extends SliverPersistentHeaderDelegate {
   final String hintText;
   final Function(String) onChanged;
 
-  StickySearchBar({required this.hintText,required this.onChanged});
+  StickySearchBar({required this.hintText, required this.onChanged});
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset,
+      bool overlapsContent) {
     return Container(
-      color: AppColor.background,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      color:  AppColor.background,
+      // color: AppColor.background,
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       child: Container(
-        height: 45.h,
+        height: 50.h,
         decoration: BoxDecoration(
           color: AppColor.cardBackground,
           borderRadius: BorderRadius.circular(6),
@@ -158,7 +205,6 @@ class _RoleFilterState extends State<RoleFilter> {
 
   @override
   void initState() {
-
     super.initState();
   }
 
@@ -169,21 +215,22 @@ class _RoleFilterState extends State<RoleFilter> {
       child: Row(
         children: roles
             .map(
-              (role) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(role),
-              selected: role == selectedRole,
-              onSelected: (isSelected) {
-                setState(() {
-                  selectedRole = role;
-                });
-                if (widget.onRoleSelected != null) {
-                  widget.onRoleSelected!(role);
-                }
-              },
-            ),
-          ),
+              (role) =>
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(role),
+                  selected: role == selectedRole,
+                  onSelected: (isSelected) {
+                    setState(() {
+                      selectedRole = role;
+                    });
+                    if (widget.onRoleSelected != null) {
+                      widget.onRoleSelected!(role);
+                    }
+                  },
+                ),
+              ),
         ).toList(),
       ),
     );
@@ -205,16 +252,13 @@ class TreeType {
 
 class TreeTypeCard extends StatelessWidget {
   final TreeType tree;
-
-  const TreeTypeCard({super.key, required this.tree});
+  void Function() onTap;
+   TreeTypeCard({super.key, required this.tree, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // TODO: Handle tree selection logic
-        AppRoute.goToNextPage(context: context, screen: TreeSpeciesDetails.route, arguments: {});
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -262,7 +306,7 @@ class TreeTypeCard extends StatelessWidget {
             ),
             Spacer(),
             badges.Badge(
-              badgeContent: Icon(Icons.arrow_forward,color: AppColor.white,),
+              badgeContent: Icon(Icons.arrow_forward, color: AppColor.white,),
               badgeStyle: const badges.BadgeStyle(
                 badgeColor: AppColor.primary,
                 padding: EdgeInsets.all(8),

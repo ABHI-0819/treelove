@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:treelove/features/customer/retail/home/screens/home_screen.dart';
-
 import '../../../../../core/widgets/custom_bottom_nav.dart';
-import '../../../../fieldworker/home/screens/main_screen.dart';
-import '../../cart/cart_screen.dart';
+import '../../profile/screen/account_screen.dart';
 import '../../project/screens/project_main_screen.dart';
-import 'location_selection_screen.dart';
 
 class RetailMainScreen extends StatefulWidget {
-  static const route ='/retail-main';
+  static const route = '/retail-main';
   const RetailMainScreen({super.key});
 
   @override
@@ -16,7 +13,6 @@ class RetailMainScreen extends StatefulWidget {
 }
 
 class _RetailMainScreenState extends State<RetailMainScreen> {
-
   final _pageController = PageController(initialPage: 0);
   int _selectedIndex = 0;
 
@@ -35,17 +31,12 @@ class _RetailMainScreenState extends State<RetailMainScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final bottomBarPages = [
-       HomeScreen(),
-       ProjectMainScreen(),
-
-      // CartScreen(),
-      FieldWorkerMainScreen(),
-      //  DynamicPinMapScreen(),
-       MapScreen(),
+      HomeScreen(),
+      ProjectMainScreen(),
+      MyAccountScreen(),
     ];
     return Scaffold(
       body: buildPageView(bottomBarPages),
@@ -55,5 +46,4 @@ class _RetailMainScreenState extends State<RetailMainScreen> {
       ),
     );
   }
-
 }

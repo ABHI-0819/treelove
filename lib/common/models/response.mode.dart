@@ -31,8 +31,8 @@ class ResponseModel {
 
 import 'dart:convert';
 
-ResponseModel? responseModelFromJson(String str) =>
-    ResponseModel?.fromJson(json.decode(str));
+ResponseModel  responseModelFromJson(String str) =>
+    ResponseModel .fromJson(json.decode(str));
 
 String responseModelToJson(ResponseModel data) => json.encode(data.toJson());
 
@@ -50,12 +50,12 @@ class ResponseModel {
   factory ResponseModel.fromJson(Map<String, dynamic> json) => ResponseModel(
     status: json["status"] as String?,
     message: json["message"].toString(),
-    data: json["data"] as String?, // Parse the 'data' field
+    // data: json["data"] ??{}, // Parse the 'data' field
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "message": message,
-    "data": data, // Include 'data' in the JSON output
+    // "data": data??{}, // Include 'data' in the JSON output
   };
 }

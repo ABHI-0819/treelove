@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 
 import '../../../core/config/themes/app_fonts.dart';
@@ -87,10 +88,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               const SizedBox(height: 8),
                Text("Your new password must be different from previously used password", style: AppFonts.caption.copyWith(color: AppColor.textSecondary)),
               const SizedBox(height: 24),
-              _buildTextField(_firstNameController, 'First name'),
-              _buildTextField(_lastNameController, 'Last name'),
-              _buildTextField(_emailController, 'Email', suffix: _buildVerifyButton()),
-              _buildTextField(_phoneController, 'Phone number', suffix: _buildVerifyButton()),
+              _buildTextField(_firstNameController, 'First name',keyboardType: TextInputType.text),
+              _buildTextField(_lastNameController, 'Last name',keyboardType: TextInputType.text),
+              _buildTextField(_emailController, 'Email', suffix: _buildVerifyButton(),keyboardType: TextInputType.emailAddress,inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r"\s")), // Disallow spaces
+              ],),
+              _buildTextField(_phoneController, 'Phone number', suffix: _buildVerifyButton(),keyboardType: TextInputType.phone,
+                 inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),]
+              ),
               _buildPasswordField(),
               _buildDropdown(),
               _buildTextField(_legalNameController, 'Legal name'),
@@ -161,11 +168,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {Widget? suffix}) {
+  Widget _buildTextField(TextEditingController controller, String label, {Widget? suffix,TextInputType? keyboardType,List<TextInputFormatter>? inputFormatters}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: label,
           suffixIcon: suffix,

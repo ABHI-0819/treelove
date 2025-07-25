@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import '../../core/network/api_connection.dart';
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
 import '../../features/authentication/models/login.response.model.dart';
+import '../models/response.mode.dart';
 
 class LoginRepository{
   final ApiConnection? api;
   LoginRepository({this.api});
 
+  final pref = SecurePreference();
   Future<ApiResult> login({String? email, String? phone,String ? password, String ? deviceId}) async {
     final Map<String, dynamic> fields = {
       "email": email,
@@ -28,12 +32,31 @@ class LoginRepository{
       securePref.setString(Keys.phone,obj.data.user.phone??'');
       securePref.setString(Keys.email, obj.data.user.email);
       securePref.setString(Keys.groupName, obj.data.user.groupName);
-      securePref.setString(Keys.profileId, obj.data.user.profile);
+      securePref.setString(Keys.profileId, obj.data.user.profile!.id);
       securePref.setBool(Keys.isActive, obj.data.user.isActive);
       securePref.setString(Keys.accessToken,obj.data.tokens.access);
       securePref.setString(Keys.refreshToken,obj.data.tokens.refresh);
       securePref.setString(Keys.accessTokenExpires,obj.data.tokens.accessTokenExpires.toString());
       securePref.setString(Keys.refreshTokenExpires,obj.data.tokens.refresh.toString());
+    }
+    return result;
+  }
+
+  Future<ApiResult> logout({required String refreshToken}) async {
+
+    final token = await pref.getString(Keys.accessToken);
+    final Map<String, dynamic> fields = {
+      "refresh": refreshToken,
+    };
+    ApiResult result = await api!.apiConnectionMultipart(
+      BaseNetwork.logoutURL,
+      BaseNetwork.getHeaderWithToken(token),
+      'post',
+          (json) => ResponseModel.fromJson(jsonDecode(json)),
+      fields: fields,
+    );
+    if (result.status == ApiStatus.noContent|| result.status == ApiStatus.resetContent) {
+      await pref.clear();
     }
     return result;
   }

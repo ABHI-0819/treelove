@@ -1,0 +1,10 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- User Head -->
+    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+
+    <!-- User Body -->
+    <path d="M6 20c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Slash (suspend mark) -->
+    <line x1="4" y1="4" x2="20" y2="20" stroke="red" stroke-width="2" stroke-linecap="round"/>
+</svg>

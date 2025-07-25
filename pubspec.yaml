@@ -55,6 +55,12 @@ dependencies:
   another_flushbar: ^1.12.30
   flutter_easyloading: ^3.0.5
   image_picker: ^1.1.2
+  lottie: ^3.3.1
+  url_launcher: ^6.3.1
+  cached_network_image: ^3.4.1
+  turf: ^0.0.10
+  geojson_vi: ^2.2.5
+  flutter_image_compress: ^2.4.0
   flutter_map_location_marker:
 
 

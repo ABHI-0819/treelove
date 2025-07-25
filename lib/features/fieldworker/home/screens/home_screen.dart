@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/config/resource/images.dart';
+import '../../../../core/config/resource/service_ids.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import 'project_action_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  @override
+  void initState() {
+     ServiceIds.load();
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +146,7 @@ class ProjectCard extends StatelessWidget {
               ],
             ),
           ),
-
+          /*
           Divider(
             color: Colors.grey, // You can set the color of the line
             thickness: 1.0,     // You can set the thickness of the line
@@ -151,7 +165,11 @@ class ProjectCard extends StatelessWidget {
               ],
             ),
           ),
+
+
           SizedBox(height: 15.h,),
+
+           */
           Container(
             decoration: BoxDecoration(
               color: const Color(0xFFE7F1FC),

@@ -506,8 +506,9 @@ class ApiConnection {
       }
 
       final response = await http.get(Uri.parse(url), headers: header);
-
+      debugLog(response.request.toString());
       if (response.statusCode == ApiStatusCode.success) {
+        debugLog(response.body.toString(),name: "");
         return ApiResult<T>(status: ApiStatus.success, response: parser(response.body));
       } else if (response.statusCode == ApiStatusCode.unAuthorized) {
         final refreshed = await _refreshToken();
@@ -516,13 +517,13 @@ class ApiConnection {
         } else {
           return ApiResult<ResponseModel>(
             status: ApiStatus.unAuthorized,
-            response: responseModelFromJson(response.body)!,
+            response: responseModelFromJson(response.body),
           );
         }
       } else {
         return ApiResult<ResponseModel>(
           status: ApiStatus.badRequest,
-          response: responseModelFromJson(response.body)!,
+          response: responseModelFromJson(response.body),
         );
       }
     } on SocketException {
@@ -558,9 +559,9 @@ class ApiConnection {
       fields.forEach((key, value) => request.fields[key] = value.toString());
       for (var file in files) {
         final multipartFile = await http.MultipartFile.fromPath(
-          'image',
+          'profile_picture',
           file.path,
-          filename: 'plantation${file.path.split('/').last}.jpg',
+          filename: 'avtar${file.path.split('/').last}.jpg',
         );
         request.files.add(multipartFile);
       }
@@ -570,8 +571,20 @@ class ApiConnection {
       debugLog(request.fields.toString(),name: "Request fields");
       final response = await http.Response.fromStream(streamedResponse);
       debugLog(response.body.toString(),name: "Result");
-      if (response.statusCode == ApiStatusCode.success) {
+      if (response.statusCode == ApiStatusCode.success||response.statusCode == ApiStatusCode.created) {
         return ApiResult<T>(status: ApiStatus.success, response: parser(response.body));
+      } else if (response.statusCode == ApiStatusCode.noContent ||
+          response.statusCode == ApiStatusCode.resetContent) {
+        // ✅ 204 / 205 → No content to parse
+        return ApiResult<ResponseModel>(
+          status: ApiStatus.resetContent,  // Or ApiStatus.resetContent for 205
+          response: ResponseModel(
+            status: "success",
+            message: "No content / reset content response",
+            data: null,
+          ),
+        );
+
       } else if (response.statusCode == ApiStatusCode.unAuthorized) {
         return ApiResult<ResponseModel>(
           status: ApiStatus.unAuthorized,
@@ -622,6 +635,8 @@ class ApiConnection {
     int? page,
     int? pageSize,
     String? filterBy,
+    String? status,
+    String? projectId,
     String? botanical,
     List<String>? flowering,
     String? group,
@@ -633,7 +648,9 @@ class ApiConnection {
     if (searchQuery != null) queryParameters['search'] = searchQuery;
     if (page != null) queryParameters['page'] = page.toString();
     if (pageSize != null) queryParameters['page_size'] = pageSize.toString();
-    if (filterBy != null) queryParameters['filter_by'] = filterBy;
+    if (filterBy != null) queryParameters['category'] = filterBy;
+    if (status != null) queryParameters['status'] = status;
+    if (projectId!=null) queryParameters['project_id'] = projectId;
     final floweringParams = flowering != null && flowering.isNotEmpty
         ? flowering.map((month) => 'flowering=$month').join('&')
         : '';

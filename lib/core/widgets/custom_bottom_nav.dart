@@ -25,14 +25,12 @@ class CustomBottomNav extends StatelessWidget {
       selectedItemColor: const Color(0xFF004D40), // Dark green
       unselectedItemColor: const Color(0xFFC4B28E), // Muted gold
       selectedLabelStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
-      // const TextStyle(fontWeight: FontWeight.w600),
       unselectedLabelStyle:  AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
-        // const TextStyle(fontWeight: FontWeight.w600),
       items: [
         buildNavItem(index: 0, filledIcon: Images.homeFilledIcon, outlinedIcon: Images.homeIcon, label: 'Home'),
         buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Projects'),
         buildNavItem(index: 2, filledIcon: Images.inquiryIcon, outlinedIcon: Images.inquiryIcon, label: 'Inquiry'),
-        buildNavItem(index: 3, filledIcon: Images.mapIcon, outlinedIcon: Images.mapIcon, label: 'See on map'),
+        buildNavItem(index: 3, filledIcon: Images.moreFilledIcon, outlinedIcon: Images.moreIcon, label: 'More'),
       ],
 
     );

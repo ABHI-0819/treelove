@@ -4,6 +4,10 @@ class Images{
   static const String _basePathImage = 'assets/image/';
   static const String _basePathLottie = 'assets/lottie/';
 
+  ///lottie
+  static const String warning='${_basePathLottie}warning.json';
+
+
  ///image
   static const String appLogo='${_basePathImage}app_logo.png';
   static const String welcomeBg = '${_basePathImage}welcome_bg.png';
@@ -11,7 +15,6 @@ class Images{
   static const String homeBgImg = '${_basePathImage}homeBgImg.png';
   static const String sampleImg = '${_basePathImage}sampleImg.png';
   static const String sampleImg1 = '${_basePathImage}person-sample-Img.png';
-
 
   ///Vector Image
   static const String profileIcon = '${_basePathSvg}profile_icon.svg';
@@ -29,4 +32,25 @@ class Images{
   static const String calendarIcon = '${_basePathSvg}calendar_icon.svg';
   static const String individualIcon = '${_basePathSvg}individual.svg';
   static const String organizationIcon = '${_basePathSvg}organization.svg';
+  static const String inviteIcon ='${_basePathSvg}invite_icon.svg';
+  static const String supportIcon = '${_basePathSvg}support_icon.svg';
+  static const String settingIcon = '${_basePathSvg}setting_icon.svg';
+  static const String cartIcon = '${_basePathSvg}cart_icon.svg';
+  static const String suspendedIcon = '${_basePathSvg}suspended_icon.svg';
+  static const String maintenanceIcon = '${_basePathSvg}maintenance_icon.svg';
+
+  static const String moreIcon ='${_basePathSvg}more_icon.svg';
+  static const String moreFilledIcon ='${_basePathSvg}more_filled.svg';
+
+  ///
+  static const String usersFilledIcon ='${_basePathSvg}users_filled.svg';
+  static const String usersIcon ='${_basePathSvg}users_icon.svg';
+
+  static const String dashboardIcon  ='${_basePathSvg}dashboard_icon.svg';
+  static const String dashboardFilledIcon  ='${_basePathSvg}dashboard_filled.svg';
+
+  static const String accountFilledIcon = '${_basePathSvg}account_filled.svg';
+  static const String accountIcon ='${_basePathSvg}account_icon.svg';
+
+
 }

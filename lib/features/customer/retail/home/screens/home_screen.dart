@@ -15,15 +15,13 @@ import 'location_selection_screen.dart';
 SecurePreference preference= SecurePreference();
 class HomeScreen extends StatefulWidget {
   static const route ='/retail-home-screen';
-   HomeScreen({super.key});
+   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -692,9 +690,7 @@ class PlantationCard extends StatelessWidget {
 }
 
 
-
-
-
+/*
 class CustomerSatisfactionWidget extends StatelessWidget {
   const CustomerSatisfactionWidget({super.key});
 
@@ -768,6 +764,148 @@ class CustomerSatisfactionWidget extends StatelessWidget {
   }
 }
 
+ */
+
+class CustomerSatisfactionWidget extends StatefulWidget {
+  const CustomerSatisfactionWidget({super.key});
+
+  @override
+  State<CustomerSatisfactionWidget> createState() => _CustomerSatisfactionWidgetState();
+}
+
+class _CustomerSatisfactionWidgetState extends State<CustomerSatisfactionWidget> {
+  // We'll manage the page view for customer cards
+  final PageController _pageController = PageController(viewportFraction: 0.9);
+  int _currentPage = 0;
+
+  // Dummy data for customer cards.
+  // Each list in this list represents a "page" of customer cards.
+  final List<List<Map<String, String>>> _customerPages = [
+    [
+      {'name': 'Satya Singh', 'age': '32y', 'location': 'Bengaluru', 'image': Images.sampleImg1},
+      {'name': 'Priya Sharma', 'age': '28y', 'location': 'Mumbai', 'image': Images.sampleImg1},
+    ],
+    [
+      {'name': 'Rajesh Kumar', 'age': '45y', 'location': 'Delhi', 'image': Images.sampleImg1},
+      {'name': 'Anita Devi', 'age': '35y', 'location': 'Chennai', 'image': Images.sampleImg1},
+    ],
+    [
+      {'name': 'Vikram Patel', 'age': '50y', 'location': 'Ahmedabad', 'image': Images.sampleImg1},
+      {'name': 'Neha Gupta', 'age': '29y', 'location': 'Pune', 'image': Images.sampleImg1},
+    ],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      int nextPageIndex = _pageController.page?.round() ?? 0;
+      if (nextPageIndex != _currentPage) {
+        setState(() {
+          _currentPage = nextPageIndex;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFFDFBF6),
+      padding:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 20.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Fixed text content
+          Text(
+            "5 lakh+ plantation Completed.",
+            style: AppFonts.body.copyWith(color: const Color(0xFF00473C)),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '10k+ customers satisfied.',
+            style: AppFonts.subtitle.copyWith(color: AppColor.black, fontSize: 27),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Text(
+                'Our tree survival is at 93%.\n25k of our members are\ncarbon neutral.',
+                style: AppFonts.caption,
+              ),
+              const Spacer(),
+              Text(
+                'Read more',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+
+          // --- Dynamic Customer Cards using PageView ---
+          SizedBox(
+            height: 250, // Give PageView a specific height
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _customerPages.length,
+              itemBuilder: (context, pageIndex) {
+                final pageCustomers = _customerPages[pageIndex];
+                return Row(
+                  children: [
+                    Expanded(
+                      child: CustomerCard(
+                        imagePath: 'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww',
+                        name: pageCustomers[0]['name']!,
+                        age: pageCustomers[0]['age']!,
+                        location: pageCustomers[0]['location']!,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CustomerCard(
+                        imagePath: 'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww',
+                        name: pageCustomers[1]['name']!,
+                        age: pageCustomers[1]['age']!,
+                        location: pageCustomers[1]['location']!,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // --- End Dynamic Customer Cards ---
+
+          const SizedBox(height: 30),
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                _customerPages.length, // Generate a dot for each page
+                    (index) => Dot(
+                  color: _currentPage == index
+                      ? const Color(0xFF115D41) // Active dot color
+                      : const Color(0xFFF5F2E9), // Inactive dot color
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/*
 class CustomerCard extends StatelessWidget {
   final String imagePath;
   final String name;
@@ -835,6 +973,59 @@ class CustomerCard extends StatelessWidget {
   }
 }
 
+ */
+
+class CustomerCard extends StatelessWidget {
+  final String imagePath;
+  final String name;
+  final String age;
+  final String location;
+
+  const CustomerCard({
+    super.key,
+    required this.imagePath,
+    required this.name,
+    required this.age,
+    required this.location,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              imagePath,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text('$age, $location', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+}
+
 class StarRating extends StatelessWidget {
   const StarRating({super.key});
 
@@ -859,6 +1050,31 @@ class StarRating extends StatelessWidget {
 
 class Dot extends StatelessWidget {
   final Color color;
+  final double width; // New property for dynamic width
+
+  const Dot({
+    super.key,
+    this.color = const Color(0xFFF5F2E9),
+    this.width = 6.0, // Default width
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300), // Smooth transition for color and width
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      height: 6, // Fixed height
+      width: width, // Use the provided width
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(3),
+      ),
+    );
+  }
+}
+/*
+class Dot extends StatelessWidget {
+  final Color color;
   const Dot({super.key, this.color = const Color(0xFFF5F2E9)});
 
   @override
@@ -874,6 +1090,8 @@ class Dot extends StatelessWidget {
     );
   }
 }
+
+ */
 
 
 // TODO : After That make it new file

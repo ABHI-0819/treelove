@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:treelove/features/vendor/Staff/staff_list_screen.dart';
 
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/themes/app_fonts.dart';
+import '../../profile/screens/profile_screen.dart';
 import 'home_screen.dart';
-import 'project_detail_screen.dart';
+import 'projects_screen.dart';
 
 
 class VendorMainScreen extends StatefulWidget {
@@ -12,10 +14,10 @@ class VendorMainScreen extends StatefulWidget {
   const VendorMainScreen({super.key});
 
   @override
-  State<VendorMainScreen> createState() => _FieldWorkerMainScreenState();
+  State<VendorMainScreen> createState() => _VendorMainScreenState();
 }
 
-class _FieldWorkerMainScreenState extends State<VendorMainScreen> {
+class _VendorMainScreenState extends State<VendorMainScreen> {
   final _pageController = PageController(initialPage: 0);
   int _selectedIndex = 0;
 
@@ -39,8 +41,9 @@ class _FieldWorkerMainScreenState extends State<VendorMainScreen> {
   Widget build(BuildContext context) {
     final bottomBarPages = [
       HomeScreen(),
-      ProjectDetailScreen()
-
+      ProjectsScreen(),
+      StaffListScreen(),
+      ProfileScreen()
     ];
     return Scaffold(
       body: buildPageView(bottomBarPages),
@@ -80,8 +83,8 @@ class CustomFBottomNav extends StatelessWidget {
       items: [
         buildNavItem(index: 0, filledIcon: Images.homeFilledIcon, outlinedIcon: Images.homeIcon, label: 'Home'),
         buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Projects'),
-        buildNavItem(index: 2, filledIcon: Images.inquiryIcon, outlinedIcon: Images.inquiryIcon, label: 'Tree inventory'),
-        buildNavItem(index: 2, filledIcon: Images.inquiryIcon, outlinedIcon: Images.inquiryIcon, label: 'Account'),
+        buildNavItem(index: 2, filledIcon: Images.usersFilledIcon, outlinedIcon: Images.usersIcon, label: 'Staff'),
+        buildNavItem(index: 3, filledIcon: Images.accountFilledIcon, outlinedIcon: Images.accountIcon, label: 'Account'),
       ],
     );
   }

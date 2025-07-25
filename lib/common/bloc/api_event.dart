@@ -5,7 +5,18 @@ class ApiAdd<T> extends ApiEvent {
   ApiAdd(this.data);
 }
 
-class ApiFetch extends ApiEvent {}
+class ApiListFetch extends ApiEvent {
+  final int? page;
+  final int? pageSize;
+  final String? filter;
+  final String? search;
+  ApiListFetch({this.page, this.pageSize, this.filter, this.search});
+}
+
+class ApiFetch extends ApiEvent {
+  final String ? id;
+  ApiFetch({this.id});
+}
 
 class ApiSearch extends ApiEvent {
   final String query;
@@ -20,6 +31,12 @@ class ApiUpdate<T> extends ApiEvent {
 class ApiDelete extends ApiEvent {
   final dynamic id;
   ApiDelete(this.id);
+}
+
+class ApiLogout extends ApiEvent {
+  final String refreshToken;
+
+  ApiLogout(this.refreshToken);
 }
 
 /*

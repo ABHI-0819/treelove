@@ -44,4 +44,7 @@ class AppColor {
   // Status
   static const Color success = Color(0xFF2E7D32); // Verified
   static const Color warning = Color(0xFFF9A825); // Caution
+
+  // background
+  static const Color grey = Color(0xFFFAFAFA);
 }

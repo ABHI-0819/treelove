@@ -9,6 +9,11 @@ class ApiSuccess<T, E> extends ApiState<T, E> {
   ApiSuccess(this.data);
 }
 
+class ApiDeleteSuccess<T, E> extends ApiState<T, E> {
+  final T data;
+  ApiDeleteSuccess(this.data);
+}
+
 class ApiFailure<T, E> extends ApiState<T, E> {
   final E error;
   ApiFailure(this.error);
