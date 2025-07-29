@@ -136,33 +136,29 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       //  Validate password match
-      if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Passwords do not match")),
+      if(firstNameController.text.isEmpty){
+        showNotification(context, message: "First name is required");
+      }else if(lastNameController.text.isEmpty){
+        showNotification(context, message: "Last name is required");
+      }else if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+        showNotification(context, message: "Passwords do not match");
+      }{
+        // Create request model
+        final staffRequest = AddStaffRequestModel(
+          firstName: firstNameController.text.trim(),
+          lastName: lastNameController.text.trim(),
+          email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+          phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
+          countryCode: _selectedCountryCode,
+          oauthProvider: "email", // or phone/google/facebook depending on your logic
+          password: passwordController.text.trim(),
+          profilePicture: _profileImage, // File
         );
-        return;
+
+        // Call BLoC event or repository
+        staffBloc.add(ApiAdd(staffRequest));
+        EasyLoading.dismiss();
       }
-
-      // Validate profile image (optional)
-      if (_profileImage == null) {
-        showNotification(context, message: "Please select a profile photo");
-      }
-
-      // Create request model
-      final staffRequest = AddStaffRequestModel(
-        firstName: firstNameController.text.trim(),
-        lastName: lastNameController.text.trim(),
-        email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-        phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
-        countryCode: _selectedCountryCode,
-        oauthProvider: "email", // or phone/google/facebook depending on your logic
-        password: passwordController.text.trim(),
-        profilePicture: _profileImage, // File
-      );
-
-      // Call BLoC event or repository
-      staffBloc.add(ApiAdd(staffRequest));
-      EasyLoading.dismiss();
     }
   }
 
@@ -353,6 +349,8 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                     labelText: 'Password',
                     hintText: 'Enter password',
                     asterisk: "*",
+                    obscuringCharacter: '*',
+                    isSecret: true,
                     inputType: TextInputType.visiblePassword,
                     maxline: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(50)],
@@ -363,6 +361,7 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                     labelText: 'Confirm Password',
                     hintText: 'Re-enter password',
                     asterisk: "*",
+                    isSecret: true,
                     inputType: TextInputType.visiblePassword,
                     maxline: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(50)],

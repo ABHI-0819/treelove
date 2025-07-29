@@ -6,6 +6,8 @@ import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
 import '../../core/utils/logger.dart';
+import '../../features/fieldworker/activity/models/assigned_service_type_response.dart';
+import '../../features/vendor/task/models/service_detail_response_model.dart';
 
 class ServicesRepository {
   final ApiConnection ? api;
@@ -57,5 +59,38 @@ class ServicesRepository {
       debugLog("Failed to fetch/cache service IDs: $e");
     }
   }
+
+
+  Future<ApiResult> getServiceDetails({required String serviceName,required String projectAreaId}) async {
+      final url = api!.generateUrl(baseUrl: BaseNetwork.serviceDetailUrl,
+          serviceName: serviceName,
+          projectAreaId: projectAreaId);
+      final result = await api!.getApiConnection(
+        url,
+        BaseNetwork.getJsonHeaders(),
+            (res) => ServiceDetailResponse.fromJson(json.decode(res)),
+      );
+      if (result.status == ApiStatus.success) {
+        return result;
+      }
+      return result;
+    }
+
+
+  Future<ApiResult> getAssignedServiceDetails({required String projectId,required String projectAreaId}) async {
+    final url = api!.generateUrl(baseUrl: BaseNetwork.fieldworkerDashboardUrl,
+        projectId: projectId,
+        projectAreaId: projectAreaId);
+    final result = await api!.getApiConnection(
+      url,
+      BaseNetwork.getJsonHeaders(),
+          (res) => AssignedServiceTypeResponse.fromJson(json.decode(res)),
+    );
+    if (result.status == ApiStatus.success) {
+      return result;
+    }
+    return result;
+  }
+
 
 }

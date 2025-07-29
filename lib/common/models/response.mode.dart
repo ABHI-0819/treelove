@@ -50,12 +50,12 @@ class ResponseModel {
   factory ResponseModel.fromJson(Map<String, dynamic> json) => ResponseModel(
     status: json["status"] as String?,
     message: json["message"].toString(),
-    // data: json["data"] ??{}, // Parse the 'data' field
+    data: json["data"] ??'', // Parse the 'data' field
   );
 
   Map<String, dynamic> toJson() => {
     "status": status,
     "message": message,
-    // "data": data??{}, // Include 'data' in the JSON output
+    "data": data??'', // Include 'data' in the JSON output
   };
 }

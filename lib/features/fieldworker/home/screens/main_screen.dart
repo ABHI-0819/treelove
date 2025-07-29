@@ -3,7 +3,8 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/themes/app_fonts.dart';
-import 'home_screen.dart';
+import '../../activity/screens/home_screen.dart';
+import 'dashboard_screen.dart';
 class FieldWorkerMainScreen extends StatefulWidget {
   static const route ="/fieldworker-main-screen";
   const FieldWorkerMainScreen({super.key});
@@ -35,6 +36,7 @@ class _FieldWorkerMainScreenState extends State<FieldWorkerMainScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomBarPages = [
+      DashboardScreen(),
       HomeScreen(),
     ];
     return Scaffold(

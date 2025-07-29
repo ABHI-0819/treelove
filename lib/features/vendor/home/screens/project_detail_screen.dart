@@ -17,6 +17,7 @@ import '../../../../core/config/resource/images.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/common_refresh_indicator.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
 import '../../task/screens/task_allocation_screen.dart';
 import 'map_screen.dart';
@@ -910,7 +911,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       return;
     }
     try {
-      _filteredFieldworkers = _projectData!.getFieldworkersForArea(_selectedAreaId!);
+      _filteredFieldworkers =
+          _projectData!.getFieldworkersForArea(_selectedAreaId!);
     } catch (e) {
       // Handle potential errors in getFieldworkersForArea if needed
       debugPrint("Error filtering fieldworkers: $e");
@@ -922,7 +924,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   ProjectArea? get _selectedArea {
     if (_projectData == null || _selectedAreaId == null) return null;
     try {
-      return _projectData!.projectAreas.firstWhere((a) => a.id == _selectedAreaId);
+      return _projectData!.projectAreas
+          .firstWhere((a) => a.id == _selectedAreaId);
     } catch (e) {
       // Return null or a default object if area not found
       debugPrint("Selected area not found in project data: $_selectedAreaId");
@@ -943,108 +946,153 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     super.dispose();
   }
 
+  Future<void> _refreshData() async {
+    _projectBloc.add(ApiFetch(id: widget.projectId));
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.grey,
-      body: BlocProvider<ProjectBloc>.value( // Use .value since it's already created
-        value: _projectBloc,
-        child: BlocListener<ProjectBloc, ApiState<ProjectDetailResponse, ResponseModel>>(
-          listener: (context, state) {
-            EasyLoading.dismiss();
-            if (state is ApiFailure<ProjectDetailResponse, ResponseModel>) {
-              showNotification(context, message: state.error.message ?? "An error occurred");
-            } else if (state is TokenExpired<ProjectDetailResponse, ResponseModel>) {
-              // Consider using a more robust navigation approach if needed
-              AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
-            }
-          },
-          child: SingleChildScrollView(
-            child: BlocBuilder<ProjectBloc, ApiState<ProjectDetailResponse, ResponseModel>>(
-              builder: (context, state) {
-                if (state is ApiLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is ApiSuccess<ProjectDetailResponse, ResponseModel>) {
-                  final ProjectDetailResponse projectDetail = state.data;
-                  _projectData = projectDetail.data;
-
-                  // Auto-select the first area ID if available and none is selected
-                  if (_projectData != null &&
-                      _projectData!.projectAreas.isNotEmpty &&
-                      _selectedAreaId == null) {
-                    setState(() {
-                      _selectedAreaId = _projectData!.projectAreas.first.id;
-                    });
-                  }
-
-                  // Ensure filtering happens after data and selection are updated
-                  _filterFieldworkers();
-
-                  final ProjectArea? currentArea = _selectedArea; // Get the selected area object
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(
-                        title: projectDetail.data.projectInfo.name,
-                        location: projectDetail.data.projectInfo.description,
-                        endDate: projectDetail.data.projectInfo.endDate,
-                      ),
-                      SizedBox(height: 20.h),
-                      if (_projectData != null) // Check if data exists before building AreaSection
-                        AreaSection(
-                          projectAreas: _projectData!.projectAreas,
-                          selectedAreaId: _selectedAreaId,
-                          onAreaSelected: (areaId) {
-                            setState(() {
-                              _selectedAreaId = areaId;
-                              // Filtering is now done in _filterFieldworkers
-                            });
-                          },
-                        ),
-                      SizedBox(height: 16.h),
-                      if (currentArea != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildInfoCards(context, currentArea),
-                        ),
-                      SizedBox(height: 16.h),
-                      _buildFieldworkersSection(_filteredFieldworkers),
-                      SizedBox(height: 16.h),
-                      if (currentArea != null) // Use currentArea for consistency
-                        AreaCoordinatesSection(area: currentArea),
-                    ],
-                  );
-                } else if (state is ApiFailure<ProjectDetailResponse, ResponseModel>) {
-                  // Show specific error message if available, otherwise generic
-                  final errorMessage = state.error.message ?? "Failed to load project details.";
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          errorMessage,
-                          style: const TextStyle(fontSize: 16, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            _projectBloc.add(ApiFetch(id: widget.projectId)); // Retry
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                } else { // Includes initial state or unexpected states
-                  return const Center(
-                    child: Text(
-                      "Loading project details...",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  );
+      body: CommonRefreshIndicator(
+        onRefresh: _refreshData,
+        isLoading: false,
+        child: BlocProvider<ProjectBloc>.value(
+          // Use .value since it's already created
+          value: _projectBloc,
+          child: BlocListener<ProjectBloc,
+              ApiState<ProjectDetailResponse, ResponseModel>>(
+            listener: (context, state) {
+              EasyLoading.dismiss();
+              if (state is ApiFailure<ProjectDetailResponse, ResponseModel>) {
+                showNotification(context,
+                    message: state.error.message ?? "An error occurred");
+              } else if (state
+                  is TokenExpired<ProjectDetailResponse, ResponseModel>) {
+                AppRoute.pushReplacement(context, SignInScreen.route,
+                    arguments: {});
+              } else if (state
+                  is ApiSuccess<ProjectDetailResponse, ResponseModel>) {
+                final data = state.data.data;
+                if (_selectedAreaId == null && data.projectAreas.isNotEmpty) {
+                  setState(() {
+                    _selectedAreaId = data.projectAreas.first.id;
+                  });
                 }
-              },
+              }
+            },
+            child: SingleChildScrollView(
+              child: BlocBuilder<ProjectBloc,
+                  ApiState<ProjectDetailResponse, ResponseModel>>(
+                builder: (context, state) {
+                  if (state is ApiLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state
+                      is ApiSuccess<ProjectDetailResponse, ResponseModel>) {
+                    final ProjectDetailResponse projectDetail = state.data;
+                    _projectData = projectDetail.data;
+        
+                    // Auto-select the first area ID if available and none is selected
+                    if (_projectData != null &&
+                        _projectData!.projectAreas.isNotEmpty &&
+                        _selectedAreaId == null) {
+                      setState(() {
+                        _selectedAreaId = _projectData!.projectAreas.first.id;
+                      });
+                    }
+        
+                    // Ensure filtering happens after data and selection are updated
+                    _filterFieldworkers();
+        
+                    final ProjectArea? currentArea =
+                        _selectedArea; // Get the selected area object
+        
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(
+                          title: projectDetail.data.projectInfo.name,
+                          location: projectDetail.data.projectInfo.description,
+                          endDate: projectDetail.data.projectInfo.endDate,
+                        ),
+                        SizedBox(height: 5.h),
+                        Center(
+                          child: Text(
+                            "↓ Pull down to refresh",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 5.h,
+                        ),
+                        if (_projectData !=
+                            null) // Check if data exists before building AreaSection
+                          AreaSection(
+                            projectAreas: _projectData!.projectAreas,
+                            selectedAreaId: _selectedAreaId,
+                            onAreaSelected: (areaId) {
+                              setState(() {
+                                _selectedAreaId = areaId;
+                                // Filtering is now done in _filterFieldworkers
+                              });
+                            },
+                          ),
+                        SizedBox(height: 16.h),
+                        if (currentArea != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _buildInfoCards(context, currentArea),
+                          ),
+                        SizedBox(height: 16.h),
+                        _buildFieldworkersSection(_filteredFieldworkers),
+                        SizedBox(height: 16.h),
+                        if (currentArea !=
+                            null) // Use currentArea for consistency
+                          AreaCoordinatesSection(area: currentArea),
+                      ],
+                    );
+                  } else if (state
+                      is ApiFailure<ProjectDetailResponse, ResponseModel>) {
+                    // Show specific error message if available, otherwise generic
+                    final errorMessage =
+                        state.error.message ?? "Failed to load project details.";
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            errorMessage,
+                            style:
+                                const TextStyle(fontSize: 16, color: Colors.grey),
+                            textAlign: TextAlign.center,
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              _projectBloc
+                                  .add(ApiFetch(id: widget.projectId)); // Retry
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    // Includes initial state or unexpected states
+                    return const Center(
+                      child: Text(
+                        "Loading project details...",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -1077,7 +1125,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           children: [
             _buildHeaderRow(title: title),
             SizedBox(height: 20.h),
-            _buildLocationRow(location: location),
+            _buildLocationRow(location: 'Thane,Mumbai'),
             SizedBox(height: 10.h),
             _buildDueDateCard(endDate: endDate),
           ],
@@ -1113,7 +1161,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.white,
               shadows: [
-                Shadow(blurRadius: 4, color: Colors.black54, offset: Offset(1, 1)),
+                Shadow(
+                    blurRadius: 4, color: Colors.black54, offset: Offset(1, 1)),
               ],
             ),
           ),
@@ -1130,7 +1179,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           color: Colors.white,
           size: 18,
           shadows: const [
-            Shadow(blurRadius: 4, color: Colors.black54, offset: const Offset(1, 1))
+            Shadow(
+                blurRadius: 4,
+                color: Colors.black54,
+                offset: const Offset(1, 1))
           ],
         ),
         const SizedBox(width: 6),
@@ -1141,7 +1193,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             fontSize: 14,
             fontWeight: FontWeight.w500,
             shadows: const [
-              Shadow(blurRadius: 4, color: Colors.black54, offset: const Offset(1, 1))
+              Shadow(
+                  blurRadius: 4,
+                  color: Colors.black54,
+                  offset: const Offset(1, 1))
             ],
           ),
         ),
@@ -1184,15 +1239,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         Text(
           selectedArea.name,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
         ),
         const SizedBox(height: 20),
-        // Build Info Cards dynamically based on service summary
+        if (selectedArea.serviceSummary.isEmpty)
+          const Text(
+            "No service summary available for this area.",
+            style: TextStyle(color: Colors.grey),
+          ),
         ...selectedArea.serviceSummary.map((summary) {
           IconData icon = Icons.task_alt_outlined; // Default icon
-          switch (summary.serviceTypeName.toLowerCase()) {
+          switch (summary.serviceType.toLowerCase()) {
             case "plantation":
               icon = Icons.eco;
               break;
@@ -1202,17 +1261,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             case "monitoring":
               icon = Icons.search;
               break;
-          // Add more cases as needed
+            // Add more cases as needed
           }
+          // Show both required and done, robust to nulls
+          final int required = summary.totalRequired;
+          final int done = summary.totalDone;
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: _InfoCard(
               icon: icon,
-              title: summary.serviceTypeName,
-              subtitle: "${summary.totalTrees}", // Assuming totalTrees is an int
+              title: summary.serviceType,
+              subtitle: "$done/$required",
             ),
           );
-        }).toList(), // Convert map to list
+        }).toList(),
       ],
     );
   }
@@ -1242,12 +1304,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 return Column(
                   children: [
                     ListTile(
-                      contentPadding: EdgeInsets.zero, // Adjust padding if needed
+                      contentPadding:
+                          EdgeInsets.zero, // Adjust padding if needed
                       leading: CircleAvatar(
                         backgroundColor: Colors.blueGrey,
                         child: Text(
                           worker.fullName.isNotEmpty
-                              ? worker.fullName.trim().split(' ').first.substring(0, 1).toUpperCase()
+                              ? worker.fullName
+                                  .trim()
+                                  .split(' ')
+                                  .first
+                                  .substring(0, 1)
+                                  .toUpperCase()
                               : "?",
                           style: const TextStyle(color: Colors.white),
                         ),
@@ -1265,11 +1333,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           Center(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Consider passing project or area ID if needed in TaskAllocationScreen
+                // Pass projectAreaId and serviceSummary to TaskAllocationScreen
+                final area = _selectedArea;
                 AppRoute.goToNextPage(
                   context: context,
                   screen: TaskAllocationScreen.route,
-                  arguments: {'projectId': widget.projectId, 'areaId': _selectedAreaId}, // Pass relevant data
+                  arguments: {
+                    'projectAreaId': _selectedAreaId,
+                    'serviceSummary': area?.serviceSummary
+                  },
                 );
               },
               icon: const Icon(Icons.add_task),
@@ -1288,69 +1360,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildFieldworkerHeader(int count) => Text(
-    'Fieldworkers ($count)',
-    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-  );
+        'Fieldworkers ($count)',
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      );
 }
 
 /// A custom widget for displaying an area selection chip.
-class _AreaChip extends StatelessWidget {
-  final String area;
-  final bool isSelected;
-  final VoidCallback onSelected;
-
-  const _AreaChip({
-    required this.area,
-    required this.isSelected,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(
-        area,
-        style: AppFonts.caption.copyWith(
-          color: isSelected ? AppColor.primary : Colors.black87,
-        ),
-      ),
-      selected: isSelected,
-      onSelected: (_) => onSelected(),
-      selectedColor: AppColor.white,
-      backgroundColor: Colors.grey.shade100,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25),
-        side: BorderSide(
-          color: isSelected ? AppColor.primary : Colors.grey.shade300,
-          width: 1.2,
-        ),
-      ),
-      elevation: isSelected ? 1 : 0,
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
-  }
-}
 
 /// A custom widget for displaying service summary information cards.
 class _InfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color iconColor;
-  final Color backgroundColor;
-  final IconData trailingIcon;
 
   const _InfoCard({
+    Key? key,
     required this.icon,
     required this.title,
     required this.subtitle,
-    this.iconColor = Colors.green,
-    this.backgroundColor = Colors.white,
-    this.trailingIcon = Icons.arrow_forward_ios,
-    super.key,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1358,7 +1386,7 @@ class _InfoCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -1376,10 +1404,10 @@ class _InfoCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.15),
+              color: Colors.green.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(icon, color: Colors.green, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1401,7 +1429,7 @@ class _InfoCard extends StatelessWidget {
             ),
           ),
           Icon(
-            trailingIcon,
+            Icons.arrow_forward_ios,
             size: 16,
             color: Colors.grey[500],
           ),
@@ -1450,7 +1478,8 @@ class _AreaSectionState extends State<AreaSection> {
             ),
             selected: isSelected,
             onSelected: (selected) {
-              if (selected) { // Only trigger if selected (prevents deselection)
+              if (selected) {
+                // Only trigger if selected (prevents deselection)
                 widget.onAreaSelected(area.id);
               }
             }, // Pass the area ID
@@ -1474,8 +1503,6 @@ class _AreaSectionState extends State<AreaSection> {
   }
 }
 
-
-
 class AreaCoordinatesSection extends StatelessWidget {
   final ProjectArea area; //  Dynamic area from selected chip
 
@@ -1487,9 +1514,8 @@ class AreaCoordinatesSection extends StatelessWidget {
     final List<LatLng> polygonPoints = _convertGeoJSONToLatLng(area);
 
     // Find center (fallback if not available)
-    final LatLng initialCenter = polygonPoints.isNotEmpty
-        ? polygonPoints.first
-        : LatLng(19.124, 72.834);
+    final LatLng initialCenter =
+        polygonPoints.isNotEmpty ? polygonPoints.first : LatLng(19.124, 72.834);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1532,7 +1558,8 @@ class AreaCoordinatesSection extends StatelessWidget {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         tileProvider: NetworkTileProvider(
                           headers: {'User-Agent': 'TreelovApp/1.0'},
                         ),
@@ -1570,8 +1597,9 @@ class AreaCoordinatesSection extends StatelessWidget {
                         context: context,
                         screen: VendorMapScreen.route,
                         arguments: {
-                          "polygon": polygonPoints,
-                          "areaName": area.name,
+                          'areaId':area.id,
+                          // "polygon": polygonPoints,
+                          // "areaName": area.name,
                         },
                       );
                     },
@@ -1603,10 +1631,3 @@ class AreaCoordinatesSection extends StatelessWidget {
     }
   }
 }
-
-
-
-
-
-
-

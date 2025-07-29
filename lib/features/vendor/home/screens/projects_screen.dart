@@ -81,25 +81,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 color: AppColor.black,
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Add filter action
-              },
-              icon: Icon(Icons.filter_list, size: 18, color: AppColor.white,),
-              label: const Text('Filters'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: const Color(0xFF1A5F3E),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
-                textStyle: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w500),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: InkWell(
+                child: Icon(
+                  Icons.filter_list,
                 ),
-                elevation: 0,
               ),
-            ),
+            )
+
           ],
         ),
       ),
@@ -194,7 +185,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               child: BlocBuilder<ProjectListBloc,
                   ApiState<ProjectListResponse, ResponseModel>>(
                 builder: (context, state) {
-                  if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
+                  if(state is ApiLoading){
+                    return SafeArea(child: Center(child: CircularProgressIndicator()));
+                  } else if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
                     ProjectListResponse projectData = state.data;
 
                     return Expanded(
@@ -211,7 +204,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   } else {
                     return const Center(
                       child: Text(
-                        "No staff found",
+                        "No Project found",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     );

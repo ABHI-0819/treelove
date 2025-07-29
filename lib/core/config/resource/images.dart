@@ -52,5 +52,7 @@ class Images{
   static const String accountFilledIcon = '${_basePathSvg}account_filled.svg';
   static const String accountIcon ='${_basePathSvg}account_icon.svg';
 
+  static const String areaIcon = '${_basePathSvg}area_icon.svg';
+  static const String treeMarker = '${_basePathSvg}tree_marker.svg';
 
 }

@@ -16,6 +16,7 @@ import '../../../core/config/themes/app_color.dart';
 import '../../../core/config/themes/app_fonts.dart';
 import '../../../core/network/api_connection.dart';
 import '../../../core/widgets/common_notification.dart';
+import '../../../core/widgets/common_refresh_indicator.dart';
 import '../../../core/widgets/common_warning_popup.dart';
 import '../../authentication/screens/sign_in_screen.dart';
 import 'models/staff_response_model.dart';
@@ -42,6 +43,10 @@ class _StaffListScreenState extends State<StaffListScreen> {
     staffListBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
+  }
+
+  Future<void>  _refreshData()async{
+    staffListBloc.add(ApiListFetch());
   }
 
   @override
@@ -157,12 +162,28 @@ class _StaffListScreenState extends State<StaffListScreen> {
           child: BlocBuilder<StaffListBloc,
               ApiState<StaffListResponseModel, ResponseModel>>(
             builder: (context, state) {
-              if (state is ApiSuccess<StaffListResponseModel, ResponseModel>) {
+              if(state is ApiLoading){
+                return Center(child: CircularProgressIndicator(),);
+              }
+              else if (state is ApiSuccess<StaffListResponseModel, ResponseModel>) {
                 StaffListResponseModel staffList = state.data;
                 return Column(
+                  spacing: 5.h,
                   children: [
-                    Expanded(
-                      child: ListView.builder(
+                    Text(
+                      "↓ Pull down to refresh",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+              Expanded(
+                child: CommonRefreshIndicator(
+                  onRefresh: _refreshData,
+                  isLoading: false,
+                  child: ListView.builder(
                         itemCount: staffList.data!.length,
                         itemBuilder: (context, index) {
                           return ProfileCard(
@@ -182,7 +203,8 @@ class _StaffListScreenState extends State<StaffListScreen> {
                           );
                         },
                       ),
-                    )
+                ),
+              )
                   ],
                 );
               } else {

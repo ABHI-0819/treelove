@@ -9,7 +9,7 @@ import 'core/config/route/app_route.dart';
 import 'core/storage/secure_storage.dart';
 import 'core/utils/device_identifier.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   SecurePreference();
@@ -34,7 +34,8 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       child: MaterialApp(
         title:'TREE-LOVE',
-        builder: EasyLoading.init(),
+        builder: EasyLoading.init(
+        ),
         debugShowCheckedModeBanner:false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),

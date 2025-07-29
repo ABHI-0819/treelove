@@ -7,10 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/resource/images.dart';
+import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
 
 class MonitorActivityScreen extends StatefulWidget {
+  static const route = "/monitor-activity";
   const MonitorActivityScreen({super.key});
 
   @override
@@ -50,12 +52,14 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.white,
       appBar: AppBar(
-        title: Text('Monitor',style: AppFonts.regular,),
-        backgroundColor: Color(0xFF1A5F3E), // Dark green color
+        backgroundColor:const Color(0xFF004D40),
+        title: const Text('Monitor',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,color: AppColor.white,),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => AppRoute.pop(context),
         ),
       ),
       body: Padding(
@@ -249,6 +253,24 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
 
               // Submit Button
               SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF004D40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // less rounded
+                    ),
+                  ),
+                  onPressed: _onSubmit,
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(fontSize: 16,color: AppColor.white, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              /*
               ElevatedButton(
                 onPressed: () {
                   // Handle submission logic here
@@ -265,12 +287,18 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
                 ),
                 child: Text('Submit',style: AppFonts.caption.copyWith(color: AppColor.white),),
               ),
+
+               */
               SizedBox(height: 20.h,)
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _onSubmit(){
+
   }
 
   // Reusable Button with Emoji

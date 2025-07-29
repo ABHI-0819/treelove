@@ -27,7 +27,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final ProjectListBloc _projectListBloc; // Use late final for bloc initialized in initState
+  late final ProjectListBloc
+      _projectListBloc; // Use late final for bloc initialized in initState
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Initialize the BLoC with its dependencies
     _projectListBloc = ProjectListBloc(ProjectRepository(api: ApiConnection()));
     // Trigger the API call to fetch active projects
-    _projectListBloc.add( ApiListFetch(filter: 'active'));
+    _projectListBloc.add(ApiListFetch(filter: 'active'));
   }
 
   @override
@@ -49,17 +50,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
-      body: BlocProvider<ProjectListBloc>.value( // Use .value since bloc is created in initState
+      body: BlocProvider<ProjectListBloc>.value(
+        // Use .value since bloc is created in initState
         value: _projectListBloc,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _HeaderSection(),
-            const _StatsSection(),
-            const SizedBox(height: 16),
-            // Expanded widget to take remaining vertical space for the project list
-            Expanded(child: _ProjectListSection(projectListBloc: _projectListBloc)),
-          ],
+        child: SafeArea(
+           maintainBottomViewPadding : true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _HeaderSection(),
+              const _StatsSection(),
+              const SizedBox(height: 16),
+              // Expanded widget to take remaining vertical space for the project list
+              Expanded(
+                  child: _ProjectListSection(projectListBloc: _projectListBloc)),
+            ],
+          ),
         ),
       ),
     );
@@ -75,16 +81,19 @@ class _ProjectListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ProjectListBloc,
-        ApiState<ProjectListResponse, ResponseModel>>( // Listen for BLoC state changes
+        ApiState<ProjectListResponse, ResponseModel>>(
+      // Listen for BLoC state changes
       listener: (context, state) {
         EasyLoading.dismiss();
         if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
-          showNotification(context, message: state.error.message ?? "An error occurred");
+          showNotification(context,
+              message: state.error.message ?? "An error occurred");
         } else if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
           AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
         }
       },
-      child: BlocBuilder<ProjectListBloc, // Build UI based on BLoC state
+      child: BlocBuilder<
+          ProjectListBloc, // Build UI based on BLoC state
           ApiState<ProjectListResponse, ResponseModel>>(
         builder: (context, state) {
           if (state is ApiLoading<ProjectListResponse, ResponseModel>) {
@@ -104,8 +113,8 @@ class _ProjectListSection extends StatelessWidget {
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // Fixed title section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
@@ -120,8 +129,8 @@ class _ProjectListSection extends StatelessWidget {
                 SizedBox(height: 8.h),
                 Expanded(
                   child: ListView.builder(
-                    shrinkWrap: true,
                     itemCount: projects.length,
+                    shrinkWrap: true,
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10.0),
@@ -133,7 +142,10 @@ class _ProjectListSection extends StatelessWidget {
               ],
             );
           } else {
-            final errorMessage = state is ApiFailure<ProjectListResponse, ResponseModel> ? state.error.message ?? "Failed to load projects." : "Unable to load projects.";
+            final errorMessage =
+                state is ApiFailure<ProjectListResponse, ResponseModel>
+                    ? state.error.message ?? "Failed to load projects."
+                    : "Unable to load projects.";
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -143,10 +155,11 @@ class _ProjectListSection extends StatelessWidget {
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
-                  if (state is ApiFailure) // Add retry button only on explicit failure
+                  if (state
+                      is ApiFailure) // Add retry button only on explicit failure
                     TextButton(
                       onPressed: () {
-                        projectListBloc.add( ApiListFetch(filter: 'active'));
+                        projectListBloc.add(ApiListFetch(filter: 'active'));
                       },
                       child: const Text('Retry'),
                     ),
@@ -179,7 +192,8 @@ class _HeaderSection extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Flexible( // Use Flexible to prevent overflow
+            const Flexible(
+              // Use Flexible to prevent overflow
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -219,8 +233,10 @@ class _StatsSection extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: const [
-          _StatBox(title: 'Ongoing Projects', value: '02'), // Consider making these dynamic
-          _StatBox(title: 'Upcoming Projects', value: '01'),
+          _StatBox(
+              title: 'Ongoing Projects',
+              value: '01'), // Consider making these dynamic
+          _StatBox(title: 'Upcoming Projects', value: '00'),
         ],
       ),
     );
@@ -240,7 +256,8 @@ class _StatBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min, // Prevent row from expanding unnecessarily
+      mainAxisSize:
+          MainAxisSize.min, // Prevent row from expanding unnecessarily
       children: [
         Container(
           width: 2,
@@ -248,7 +265,8 @@ class _StatBox extends StatelessWidget {
           color: const Color(0xFF00FF00), // Color of the line
         ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 15.h), // Responsive padding
+          padding: EdgeInsets.symmetric(
+              horizontal: 8.w, vertical: 15.h), // Responsive padding
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +275,8 @@ class _StatBox extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: AppFonts.regular.copyWith( // Assuming AppFonts is defined
+                style: AppFonts.regular.copyWith(
+                  // Assuming AppFonts is defined
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -265,7 +284,8 @@ class _StatBox extends StatelessWidget {
               ),
               Text(
                 title,
-                style: AppFonts.caption.copyWith( // Assuming AppFonts is defined
+                style: AppFonts.caption.copyWith(
+                  // Assuming AppFonts is defined
                   color: AppColor.white, // Assuming AppColor is defined
                 ),
                 textAlign: TextAlign.center,
@@ -278,260 +298,34 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-/*
-class HomeScreen extends StatefulWidget {
-  // static const route = '/vendor-home-screen';
-
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-class _HomeScreenState extends State<HomeScreen> {
-  late ProjectListBloc projectListBloc;
-
-  @override
-  void initState() {
-    super.initState();
-    projectListBloc = ProjectListBloc(ProjectRepository(api: ApiConnection()));
-    projectListBloc.add(ApiListFetch(filter: 'active'));
-  }
-
-  @override
-  void dispose() {
-    projectListBloc.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
-      body: BlocProvider(
-        create: (_) => projectListBloc,
-        child: SafeArea(
-          top: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const _HeaderSection(),
-              const _StatsSection(),
-              const SizedBox(height: 16),
-
-              //  Remaining space automatically used by project list
-              Expanded(child: projectCard()),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget projectCard() {
-    return BlocListener<ProjectListBloc,
-        ApiState<ProjectListResponse, ResponseModel>>(
-      listener: (context, state) {
-        EasyLoading.dismiss();
-        if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
-          showNotification(context,
-              message: state.error.message.toString());
-        } else if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
-          AppRoute.pushReplacement(
-              context, SignInScreen.route, arguments: {});
-        }
-      },
-      child: BlocBuilder<ProjectListBloc,
-          ApiState<ProjectListResponse, ResponseModel>>(
-        builder: (context, state) {
-          if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
-            final projectData = state.data;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                //  Title stays fixed
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Ongoing projects (${projectData.data.length})',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                //  The list expands & scrolls
-          Expanded(
-            child: ListView.builder(
-              // padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: projectData.data.length,
-              itemBuilder: (context, index) {
-                return ProjectCard(
-                  projectItem: projectData.data[index],
-                );
-              },
-            ),
-          ),
-              ],
-            );
-          } else if (state is ApiLoading<ProjectListResponse, ResponseModel>) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            return const Center(
-              child: Text(
-                "No projects found",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
-class _HeaderSection extends StatelessWidget {
-  const _HeaderSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0B5E42), Color(0xFF196D54)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      padding:  EdgeInsets.all(16.r),
-      child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hello Yash 🙂',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            Icon(
-              Icons.notifications,
-              color: Colors.white,
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatsSection extends StatelessWidget {
-  const _StatsSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF196D54),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          _StatBox(title: 'Ongoing Projects', value: '02'),
-          _StatBox(title: 'Upcoming Projects', value: '01'),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatBox extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _StatBox({
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 2,
-          height: 65.h,// Thickness of the line
-          color: Color(0xFF00FF00), // Color of the line
-        ),
-        Container(
-          // margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          padding:  EdgeInsets.symmetric(horizontal: 8.w,vertical: 15),
-          decoration: BoxDecoration(
-            // color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Colors.black.withOpacity(0.05),
-            //     blurRadius: 6,
-            //     offset: const Offset(0, 3),
-            //   ),
-            // ],
-            // border: Border.all(color: Colors.white.withOpacity(0.2)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 5.h,
-            children: [
-              Text(
-                value,
-                style: AppFonts.regular.copyWith(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                )
-              ),
-              Text(
-                title,
-                style:AppFonts.caption.copyWith(
-                  color: AppColor.white
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
- */
-
 
 class ProjectCard extends StatelessWidget {
   final ProjectItem projectItem;
-   const ProjectCard({required this.projectItem});
+  const ProjectCard({required this.projectItem});
+
+  /// ✅ Service → Color Mapping
+  static const Map<String, Color> serviceTagColors = {
+    "Geo-tagging": Color(0xFFFCE8E8),
+    "Maintenance": Color(0xFFE6F3FB),
+    "Monitoring": Color(0xFFEAEAFD),
+    "Plantation": Color(0xFFE8F8E8),
+  };
+
+  /// ✅ Get color safely (fallback: light grey)
+  Color _getServiceColor(String service) {
+    return serviceTagColors[service] ?? const Color(0xFFEDEDED);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: InkWell(
-        onTap: (){
-          AppRoute.goToNextPage(context: context, screen: ProjectDetailScreen.route, arguments: {
-            'projectId':projectItem.id
-          });
+        onTap: () {
+          AppRoute.goToNextPage(
+              context: context,
+              screen: ProjectDetailScreen.route,
+              arguments: {'projectId': projectItem.id});
         },
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -552,23 +346,22 @@ class ProjectCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                   CircleAvatar(
+                  CircleAvatar(
                     radius: 18,
                     backgroundColor: Colors.white,
-                    backgroundImage: NetworkImage(
-                        projectItem.image.toString()
-                     ),
+                    backgroundImage: NetworkImage(projectItem.image.toString()),
                   ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children:  [
+                    children: [
                       Text(
                         // 'Thane Plantation Drive 2023',
-                          projectItem.name,
+                        projectItem.name,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      Text(projectItem.category, style: TextStyle(fontSize: 12)),
+                      Text(projectItem.category,
+                          style: TextStyle(fontSize: 12)),
                     ],
                   )
                 ],
@@ -581,7 +374,7 @@ class ProjectCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Row(
+                  Row(
                     children: [
                       Icon(Icons.location_on, size: 16, color: Colors.grey),
                       SizedBox(width: 4),
@@ -589,16 +382,31 @@ class ProjectCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                   Row(
+                  Row(
                     children: [
                       Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                       SizedBox(width: 4),
-                      Text('Due: ${projectItem.endDate}', style: TextStyle(fontSize: 13)),
+                      Text('Due: ${projectItem.endDate}',
+                          style: TextStyle(fontSize: 13)),
                     ],
                   ),
                 ],
               ),
-               Wrap(
+
+              /// ✅ Tags
+              /// ✅ Dynamic Tags with Specific Colors
+              Wrap(
+                spacing: 15,
+                runSpacing: 10,
+                children: projectItem.serviceTypes.map((service) {
+                  return _ProjectTag(
+                    text: service,
+                    color: _getServiceColor(service),
+                  );
+                }).toList(),
+              ),
+              /*
+              Wrap(
                 spacing: 20.w,
                 runSpacing: 10.h,
                 children: [
@@ -607,6 +415,8 @@ class ProjectCard extends StatelessWidget {
                   _ProjectTag(text: 'Monitoring', color: Color(0xFFEAEAFD)),
                 ],
               )
+
+               */
             ],
           ),
         ),
@@ -662,4 +472,3 @@ class _ProjectTag extends StatelessWidget {
     }
   }
 }
-

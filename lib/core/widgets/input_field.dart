@@ -275,7 +275,7 @@ class _SecondaryInputFieldState extends State<SecondaryInputField> {
                   },
                   child: Icon(
                     __isSecret ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
+                    color: AppColor.primary,
                   ),
                 )
                     : widget.suffixIcon,
@@ -298,6 +298,7 @@ class InputTextField extends StatefulWidget {
   final Color ? bgColor;
   final TextInputType inputType;
   final double ? widthSize ;
+  final int? maxline;
 
   InputTextField({
     super.key,
@@ -310,6 +311,7 @@ class InputTextField extends StatefulWidget {
     this.obscureText = false, // Fixed typo and default value syntax
     this.inputType = TextInputType.text,
     this.widthSize,
+    this.maxline
   });
 
   @override
@@ -343,6 +345,7 @@ class _InputTextFieldState extends State<InputTextField> {
             obscureText: __isSecret,
             keyboardType: widget.inputType,
             obscuringCharacter: '*',
+            maxLines: widget.maxline ?? 1,
             style: AppFonts.caption.copyWith(fontWeight: FontWeight.w600, color: AppColor.black),
             decoration: InputDecoration(
               hintText: widget.hintText,

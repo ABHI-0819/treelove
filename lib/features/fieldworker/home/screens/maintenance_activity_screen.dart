@@ -7,6 +7,7 @@ import 'package:treelove/core/config/themes/app_fonts.dart';
 import '../../../../core/config/themes/app_color.dart';
 
 class MaintenanceActivityScreen extends StatefulWidget {
+  static const route ="/maintenance-activity";
   const MaintenanceActivityScreen({super.key});
 
   @override

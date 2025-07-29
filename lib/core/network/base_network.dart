@@ -20,6 +20,7 @@ class BaseNetwork {
 
   static const String FailedMessage = 'Connection Failed, Please try Again';
   static const String NetworkError= 'Oh no! Something went wrong';
+  static const String BASE_Image_URL ="http://43.205.169.130/";
 
   static const String loginURL = "${_BASE_URL}api/v1/auth/login/";
   static const String loginOAuthURL = "${_BASE_URL}api/v1/auth/oidc/login/";
@@ -40,13 +41,18 @@ class BaseNetwork {
 
 
   //TODO: Fieldworker URL :
+  static const String plantationListURL = "${_BASE_URL}api/v1/survey/plantation/";
   static const String plantationCreateURL= "${_BASE_URL}api/v1/survey/plantation/";
   static const String maintenanceAddURL="${_BASE_URL}api/v1/survey/plantation/";
+  static const String projectAreasURl = "${_BASE_URL}api/v1/projects/project-areas/";
+  //http://43.205.169.130/api/v1/projects/fieldworker-dashboard/
+  static const String fieldworkerDashboardUrl = "${_BASE_URL}api/v1/projects/fieldworker-dashboard/";
 
   //TODO: Vendor URL :
   static const String taskAllocationUrl = "${_BASE_URL}api/v1/projects/fieldworker-assignments/";
   static const String staffCreationUrl = "${_BASE_URL}api/v1/auth/vendor/fieldworkers/";
   static const String staffListUrl = "${_BASE_URL}api/v1/auth/vendor/fieldworkers/";
+  static const String serviceDetailUrl = "${_BASE_URL}api/v1/projects/service-detail/";
 
 
   //http://10.202.100.187:9004/swagger/

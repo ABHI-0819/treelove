@@ -19,9 +19,12 @@ import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
 import '../../../features/customer/retail/profile/screen/account_screen.dart';
 import '../../../features/fieldworker/home/screens/main_screen.dart';
-import '../../../features/fieldworker/home/screens/project_action_screen.dart';
+import '../../../features/fieldworker/activity/screens/project_action_screen.dart';
+import '../../../features/fieldworker/home/screens/maintenance_activity_screen.dart';
+import '../../../features/fieldworker/home/screens/monitor_activity_screen.dart';
 import '../../../features/fieldworker/home/screens/select_tree_species.dart';
 import '../../../features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
+import '../../../features/fieldworker/home/screens/tree_monitor_list_screen.dart';
 import '../../../features/fieldworker/home/screens/tree_plantation_screen.dart';
 import '../../../features/vendor/Staff/new_staff_screen.dart';
 import '../../../features/vendor/home/screens/main-screen.dart';
@@ -75,11 +78,33 @@ class AppRoute{
       case '/fieldworker-main-screen':
         return MaterialPageRoute(builder: (_)=> FieldWorkerMainScreen());
       case '/ProjectActionScreen':
-        return MaterialPageRoute(builder: (_)=> ProjectActionScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> ProjectActionScreen(
+          projectId: argument!['projectId'],
+          projectAreaId: argument['projectAreaId'],
+        ));
       case '/PlantTreeScreen':
-        return MaterialPageRoute(builder: (_)=> PlantTreeScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> PlantTreeScreen(
+          serviceType:argument!['serviceType'],
+          serviceId: argument['serviceId'],
+            projectAreaId:argument['projectAreaId']
+        ));
       case '/select-species-plantation':
-        return MaterialPageRoute(builder: (_)=> SelectTreeTypeScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> SelectTreeTypeScreen(
+          serviceType: argument!['serviceType'] ,
+          projectAreaId:argument['projectAreaId'] ,
+        ));
+      case '/tree-maintenance-list':
+        return MaterialPageRoute(builder: (_)=>TreeMaintenanceListScreen());
+      case '/maintenance-activity':
+        return MaterialPageRoute(builder: (_)=>MaintenanceActivityScreen());
+      case '/tree-monitor-list':
+        return MaterialPageRoute(builder: (_)=>TreeMonitorListScreen());
+      case '/monitor-activity':
+        return MaterialPageRoute(builder: (_)=>MonitorActivityScreen());
+
       case '/CartScreen':
         return MaterialPageRoute(builder: (_)=> CartScreen());
 
@@ -94,13 +119,19 @@ class AppRoute{
       case '/addNewStaff':
         return MaterialPageRoute(builder: (_)=> AddNewStaffScreen());
       case '/TaskAllocationScreen':
+        Map ? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> TaskAllocationScreen(
-
+            projectAreaId: argument!['projectAreaId'],
+            serviceSummary: argument['serviceSummary'],
         ));
       case '/VendorMapScreen':
-        return MaterialPageRoute(builder: (_)=>VendorMapScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=>VendorMapScreen(
+            areaId :argument!['areaId']
+        ));
 
-      ///TODO : Organization Mobile API
+
+    ///TODO : Organization Mobile API
       case '/organization-main-screen':
         return MaterialPageRoute(builder: (_)=> OrganizationMainScreen());
 
@@ -134,6 +165,20 @@ class AppRoute{
       context,
       routeName,
           (Route<dynamic> route) => false,
+      arguments: arguments,
+    );
+  }
+
+  static void pushAndRemoveUntilNamed(
+      BuildContext context,
+      String routeToPush,
+      String untilRouteName, {
+        Map<String, dynamic>? arguments,
+      }) {
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      routeToPush,
+      ModalRoute.withName(untilRouteName),
       arguments: arguments,
     );
   }

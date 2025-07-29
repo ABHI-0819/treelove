@@ -546,6 +546,7 @@ class ApiConnection {
       String method,
       T Function(String) parser, {
         Map<String, dynamic> fields = const {},
+        String fileKey ='images',
         List<File> files = const [],
       }) async {
     try {
@@ -557,11 +558,12 @@ class ApiConnection {
       final request = http.MultipartRequest(method, Uri.parse(url));
       request.headers.addAll(header);
       fields.forEach((key, value) => request.fields[key] = value.toString());
+
       for (var file in files) {
         final multipartFile = await http.MultipartFile.fromPath(
-          'profile_picture',
+          fileKey,
           file.path,
-          filename: 'avtar${file.path.split('/').last}.jpg',
+          filename: 'plantation${file.path.split('/').last}',
         );
         request.files.add(multipartFile);
       }
@@ -569,6 +571,7 @@ class ApiConnection {
       final streamedResponse = await request.send();
       debugLog(request.headers.toString(),name: "Request header");
       debugLog(request.fields.toString(),name: "Request fields");
+      debugLog(request.files.toString(),name: "Request files");
       final response = await http.Response.fromStream(streamedResponse);
       debugLog(response.body.toString(),name: "Result");
       if (response.statusCode == ApiStatusCode.success||response.statusCode == ApiStatusCode.created) {
@@ -637,8 +640,11 @@ class ApiConnection {
     String? filterBy,
     String? status,
     String? projectId,
-    String? botanical,
-    List<String>? flowering,
+    String? serviceName,
+    String? projectAreaId,
+    String? areaId,
+    String? vendorId,
+    String ? createdBy,
     String? group,
     String? category,
     String? orderBy,
@@ -651,12 +657,17 @@ class ApiConnection {
     if (filterBy != null) queryParameters['category'] = filterBy;
     if (status != null) queryParameters['status'] = status;
     if (projectId!=null) queryParameters['project_id'] = projectId;
-    final floweringParams = flowering != null && flowering.isNotEmpty
-        ? flowering.map((month) => 'flowering=$month').join('&')
-        : '';
+    if (serviceName != null) queryParameters['service_type'] = serviceName;
+    if (projectAreaId != null) queryParameters['project_area_id'] = projectAreaId;
+    if (areaId != null) queryParameters['area'] = areaId;
+    if (vendorId != null) queryParameters['vendor'] = vendorId;
+    if (createdBy != null) queryParameters['created_by'] = createdBy;
+    if (group != null) queryParameters['group'] = group;
+    if (category != null) queryParameters['category'] = Uri.encodeComponent(category);
+    if (orderBy != null) queryParameters['order_by'] = orderBy;
 
     final baseParams = queryParameters.entries.map((e) => '${e.key}=${e.value}').join('&');
-    final fullParams = [baseParams, floweringParams].where((param) => param.isNotEmpty).join('&');
+    final fullParams = [baseParams].where((param) => param.isNotEmpty).join('&');
 
     final uri = Uri.parse(baseUrl ?? '').replace(query: fullParams);
     return uri.toString();
@@ -667,4 +678,13 @@ class ApiConnection {
 
 
 
-
+/*
+  // for (var file in files) {
+      //   final multipartFile = await http.MultipartFile.fromPath(
+      //     'profile_picture',
+      //     file.path,
+      //     filename: 'avtar${file.path.split('/').last}.jpg',
+      //   );
+      //   request.files.add(multipartFile);
+      // }
+*/

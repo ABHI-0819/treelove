@@ -76,8 +76,6 @@
 
 */
 
-
-
 import 'dart:convert';
 import 'package:geojson_vi/geojson_vi.dart';
 import 'package:treelove/core/utils/logger.dart';
@@ -88,7 +86,6 @@ ProjectDetailResponse projectDetailResponseFromJson(String str) =>
 
 String projectDetailResponseToJson(ProjectDetailResponse data) =>
     json.encode(data.toJson());
-
 
 ///  Root Model
 class ProjectDetailResponse {
@@ -110,10 +107,10 @@ class ProjectDetailResponse {
       );
 
   Map<String, dynamic> toJson() => {
-    "status": status,
-    "message": message,
-    "data": data.toJson(),
-  };
+        "status": status,
+        "message": message,
+        "data": data.toJson(),
+      };
 }
 
 /// Project Info (newly added section)
@@ -137,26 +134,25 @@ class ProjectInfo {
   });
 
   factory ProjectInfo.fromJson(Map<String, dynamic> json) => ProjectInfo(
-    id: json["id"] ?? '',
-    name: json["name"] ?? '',
-    category: json["category"] ?? '',
-    type: json["type"] ?? '',
-    description: json["description"] ?? '',
-    image: json["image"] ?? '',
-    endDate: json["end_date"] ?? '',
-  );
+        id: json["id"] ?? '',
+        name: json["name"] ?? '',
+        category: json["category"] ?? '',
+        type: json["type"] ?? '',
+        description: json["description"] ?? '',
+        image: json["image"] ?? '',
+        endDate: json["end_date"] ?? '',
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "category": category,
-    "type": type,
-    "description": description,
-    "image": image,
-    "end_date": endDate,
-  };
+        "id": id,
+        "name": name,
+        "category": category,
+        "type": type,
+        "description": description,
+        "image": image,
+        "end_date": endDate,
+      };
 }
-
 
 ///  Main Data Model
 class ProjectDetailData {
@@ -196,21 +192,22 @@ class ProjectDetailData {
       );
 
   Map<String, dynamic> toJson() => {
-    "project_info": projectInfo.toJson(),
-    "total_project_areas": totalProjectAreas,
-    "total_service_types": totalServiceTypes,
-    "total_fieldworkers": totalFieldworkers,
-    "service_summary": serviceSummary.map((e) => e.toJson()).toList(),
-    "fieldworkers": fieldworkers.map((e) => e.toJson()).toList(),
-    "project_areas": projectAreas.map((e) => e.toJson()).toList(),
-  };
+        "project_info": projectInfo.toJson(),
+        "total_project_areas": totalProjectAreas,
+        "total_service_types": totalServiceTypes,
+        "total_fieldworkers": totalFieldworkers,
+        "service_summary": serviceSummary.map((e) => e.toJson()).toList(),
+        "fieldworkers": fieldworkers.map((e) => e.toJson()).toList(),
+        "project_areas": projectAreas.map((e) => e.toJson()).toList(),
+      };
 
+  ///  Helper: total required trees in entire project
+  int get totalRequiredTrees =>
+      serviceSummary.fold(0, (sum, item) => sum + item.totalRequired);
 
-
-  ///  Helper: total trees in entire project
-  int get totalTrees =>
-      serviceSummary.fold(0, (sum, item) => sum + item.totalTrees);
-
+  ///  Helper: total done trees in entire project
+  int get totalDoneTrees =>
+      serviceSummary.fold(0, (sum, item) => sum + item.totalDone);
 
   ///  All area names
   List<String> get allProjectAreaNames =>
@@ -223,23 +220,27 @@ class ProjectDetailData {
 
 ///  Each Service Summary
 class ServiceSummary {
-  final String serviceTypeName;
-  final int totalTrees;
+  final String serviceType;
+  final int totalRequired;
+  final int totalDone;
 
   ServiceSummary({
-    required this.serviceTypeName,
-    required this.totalTrees,
+    required this.serviceType,
+    required this.totalRequired,
+    required this.totalDone,
   });
 
   factory ServiceSummary.fromJson(Map<String, dynamic> json) => ServiceSummary(
-    serviceTypeName: json["service_type__name"] ?? '',
-    totalTrees: json["total_trees"] ?? 0,
-  );
+        serviceType: json["service_type"] ?? '',
+        totalRequired: json["total_required"] ?? 0,
+        totalDone: json["total_done"] ?? 0,
+      );
 
   Map<String, dynamic> toJson() => {
-    "service_type__name": serviceTypeName,
-    "total_trees": totalTrees,
-  };
+        "service_type": serviceType,
+        "total_required": totalRequired,
+        "total_done": totalDone,
+      };
 }
 
 ///  Fieldworker (Used both at root and inside areas)
@@ -257,18 +258,18 @@ class Fieldworker {
   });
 
   factory Fieldworker.fromJson(Map<String, dynamic> json) => Fieldworker(
-    id: json["id"] ?? '',
-    username: json["username"] ?? '',
-    fullName: json["full_name"] ?? '',
-    profilePicture: json["profile_picture"] ?? '',
-  );
+        id: json["id"] ?? '',
+        username: json["username"] ?? '',
+        fullName: json["full_name"] ?? '',
+        profilePicture: json["profile_picture"] ?? '',
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "username": username,
-    "full_name": fullName,
-    "profile_picture": profilePicture,
-  };
+        "id": id,
+        "username": username,
+        "full_name": fullName,
+        "profile_picture": profilePicture,
+      };
 }
 
 ///  Project Areas (with GeoJSON location)
@@ -290,31 +291,34 @@ class ProjectArea {
   });
 
   factory ProjectArea.fromJson(Map<String, dynamic> json) => ProjectArea(
-    id: json["id"] ?? '',
-    name: json["name"] ?? '',
-    capacity: json["capacity"] ?? 0,
-    location: json["location"] ?? '',
-    serviceSummary: (json["service_summary"] as List? ?? [])
-        .map((x) => ServiceSummary.fromJson(x))
-        .toList(),
-    fieldworkers: (json["fieldworkers"] as List? ?? [])
-        .map((x) => Fieldworker.fromJson(x))
-        .toList(),
-  );
+        id: json["id"] ?? '',
+        name: json["name"] ?? '',
+        capacity: json["capacity"] ?? 0,
+        location: json["location"] ?? '',
+        serviceSummary: (json["service_summary"] as List? ?? [])
+            .map((x) => ServiceSummary.fromJson(x))
+            .toList(),
+        fieldworkers: (json["fieldworkers"] as List? ?? [])
+            .map((x) => Fieldworker.fromJson(x))
+            .toList(),
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "capacity": capacity,
-    "location": location,
-    "service_summary": serviceSummary.map((e) => e.toJson()).toList(),
-    "fieldworkers": fieldworkers.map((e) => e.toJson()).toList(),
-  };
+        "id": id,
+        "name": name,
+        "capacity": capacity,
+        "location": location,
+        "service_summary": serviceSummary.map((e) => e.toJson()).toList(),
+        "fieldworkers": fieldworkers.map((e) => e.toJson()).toList(),
+      };
 
-  ///  Total trees for this specific area
-  int get totalTreesInThisArea =>
-      serviceSummary.fold(0, (sum, s) => sum + s.totalTrees);
+  ///  Total required trees for this specific area
+  int get totalRequiredTreesInThisArea =>
+      serviceSummary.fold(0, (sum, s) => sum + s.totalRequired);
 
+  ///  Total done trees for this specific area
+  int get totalDoneTreesInThisArea =>
+      serviceSummary.fold(0, (sum, s) => sum + s.totalDone);
 
   ///  Get only fieldworker names for this area
   List<String> get areaFieldworkerNames =>
@@ -356,7 +360,7 @@ extension ProjectDetailHelpers on ProjectDetailData {
   /// ✅ Get fieldworkers for a specific Area ID
   List<Fieldworker> getFieldworkersForArea(String areaId) {
     final area = projectAreas.firstWhere(
-          (a) => a.id == areaId,
+      (a) => a.id == areaId,
       orElse: () => ProjectArea(
         id: '',
         name: '',
