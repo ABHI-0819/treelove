@@ -31,9 +31,9 @@ class PlantationRepository {
   }
 
   ///  Fetch Plantation List
-  Future<ApiResult> fetchPlantedList({ String ? areaId, String ? vendorId, String? createdBy}) async {
+  Future<ApiResult> fetchPlantedList({ String ? areaId, String ? vendorId, String? createdBy, String? maintenanceStatus}) async {
     final token = await pref.getString(Keys.accessToken);
-    final url = api.generateUrl(baseUrl: BaseNetwork.plantationListURL,areaId:areaId,vendorId: vendorId,createdBy: createdBy);
+    final url = api.generateUrl(baseUrl: BaseNetwork.plantationListURL,areaId:areaId,vendorId: vendorId,createdBy: createdBy,maintenanceStatus: maintenanceStatus);
     ApiResult result = await api.getApiConnection<PlantedListResponseModel>(
       url,
       BaseNetwork.getJsonHeadersWithToken(token), // ✅ Pass token

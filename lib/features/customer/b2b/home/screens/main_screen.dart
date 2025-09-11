@@ -6,6 +6,7 @@ import 'package:treelove/features/customer/b2b/projects/screens/projects_screen.
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_fonts.dart';
 import '../../account/screens/account_screen.dart';
+import '../../projects/screens/project_detail_screen.dart';
 
 class OrganizationMainScreen extends StatefulWidget {
   static const route = "/organization-main-screen";
@@ -38,9 +39,9 @@ class _OrganizationMainScreenState extends State<OrganizationMainScreen> {
   @override
   Widget build(BuildContext context) {
     final bottomBarPages = [
-      OrgDashboardScreen(),
+      ClientDashboardScreen(),
       B2BProjectScreen(),
-      AccountScreen()
+      // AccountScreen()
       // index 2
     ];
 

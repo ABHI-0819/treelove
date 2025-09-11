@@ -6,10 +6,13 @@ import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
+import '../../features/customer/b2b/projects/model/b2b_project_detail_response_model.dart';
 
 class ProjectRepository {
-  final ApiConnection  api;
+  final ApiConnection api;
   ProjectRepository({required this.api});
+
+   final pref = SecurePreference();
 
   /// Fetches a list of projects with optional filters.
   Future<ApiResult> fetchProjects({
@@ -18,9 +21,11 @@ class ProjectRepository {
     int? page,
     int? limit,
   }) async {
-    final pref = SecurePreference();
     final token = await pref.getString(Keys.accessToken);
-    final url = api.generateUrl(baseUrl: BaseNetwork.projectListURL,status: filter,searchQuery: search);
+    final url = api.generateUrl(
+        baseUrl: BaseNetwork.projectListURL,
+        status: filter,
+        searchQuery: search);
     ApiResult result = await api.getApiConnection<ProjectListResponse>(
       // BaseNetwork.projectListURL,
       url,
@@ -31,12 +36,10 @@ class ProjectRepository {
     return result;
   }
 
-  Future<ApiResult> fetchProjectDetails({
-    required String projectId
-  }) async {
-    final pref = SecurePreference();
+  Future<ApiResult> fetchProjectDetails({required String projectId}) async {
     final token = await pref.getString(Keys.accessToken);
-    final url = api.generateUrl(baseUrl:BaseNetwork.projectDashboardURL ,projectId: projectId);
+    final url = api.generateUrl(
+        baseUrl: BaseNetwork.projectDashboardURL, projectId: projectId);
     // final url = '${BaseNetwork.projectDashboardURL}$projectId/';
     //projectDashboardURL
     ApiResult result = await api.getApiConnection<ProjectDetailResponse>(
@@ -46,4 +49,19 @@ class ProjectRepository {
     );
     return result;
   }
+
+  // B2B Project Details
+  Future<ApiResult> fetchB2BProjectDetails({required String projectId}) async {
+    final token = await pref.getString(Keys.accessToken);
+    final url = api.generateUrl(
+        baseUrl: BaseNetwork.b2bProjectDashboardURL, projectId: projectId);
+    ApiResult result =
+        await api.getApiConnection<B2BProjectDetailResponseModel>(
+      url,
+      BaseNetwork.getJsonHeadersWithToken(token),
+      b2bProjectDetailResponseModelFromJson,
+    );
+    return result;
+  }
+  
 }

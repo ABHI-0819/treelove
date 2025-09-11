@@ -29,8 +29,13 @@ class StaffBloc extends Bloc<ApiEvent, ApiState<StaffResponseModel, ResponseMode
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));
@@ -62,8 +67,13 @@ class StaffListBloc extends Bloc<ApiEvent, ApiState<StaffListResponseModel, Resp
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));
@@ -95,8 +105,13 @@ class StaffSuspendBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseMo
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));

@@ -6,15 +6,21 @@ import 'package:treelove/features/authentication/screens/otp_verification_screen
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
 import 'package:treelove/features/customer/retail/cart/cart_screen.dart';
 import 'package:treelove/features/customer/retail/home/screens/main_screen.dart';
+import 'package:treelove/features/customer/retail/invite-friend/screens/invite_friend_screen.dart';
+import 'package:treelove/features/customer/retail/my-trees/screens/my_trees_screen.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_details.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
 import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
 import 'package:treelove/features/vendor/home/screens/project_detail_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
 import '../../../features/customer/b2b/home/screens/main_screen.dart';
+import '../../../features/customer/b2b/projects/screens/project_detail_screen.dart';
+import '../../../features/customer/retail/FAQ/faq_screen.dart';
 import '../../../features/customer/retail/home/screens/home_screen.dart';
 import '../../../features/customer/retail/home/screens/location_selection_screen.dart';
 import '../../../features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
+import '../../../features/customer/retail/my-trees/screens/tree_monitoring_history.dart';
+import '../../../features/customer/retail/order/congratulations_screen.dart';
 import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
 import '../../../features/customer/retail/profile/screen/account_screen.dart';
@@ -67,11 +73,51 @@ class AppRoute{
       case '/plant-by-location':
         return MaterialPageRoute(builder: (_)=> MapScreen());
       case '/tree-species-list':
-        return MaterialPageRoute(builder: (_)=> TreeSpeciesList());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> TreeSpeciesList(
+            areaId :argument!['areaId']
+        ));
+      case '/faq-section':
+        return MaterialPageRoute(builder: (_)=> FaqScreen());
+      case '/invite-friend':
+        return MaterialPageRoute(builder: (_)=> InviteAndEarnScreen());
+      case '/my-trees':
+        return MaterialPageRoute(builder: (_)=> MyTreeScreen());
+      case '/congratulations':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> CongratulationsScreen(
+            shareLink: argument!['shareLink'],
+        ));
+      // case '/orders':
+      //   return MaterialPageRoute(builder: (_)=> MyTreeScreen());
+      case '/order-list' :
+        return MaterialPageRoute(builder: (_)=> OrderListScreen());
+      case '/order-tracker':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> OrderTrackerScreen(
+          orderId :argument!['orderId'],
+        ));
+      case '/tree-maintenance-history':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> TreeMaintenanceHistoryScreen(
+            treeSpecies:argument!['treeSpecies'],
+            treeId: argument['treeId'],
+            location: argument['location'],
+          //orderId :argument!['orderId'],
+        ));
+      case '/tree-monitoring-history':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> TreeMonitoringHistoryScreen(
+          treeSpecies:argument!['treeSpecies'],
+          treeId: argument['treeId'],
+          location: argument['location'],
+          //orderId :argument!['orderId'],
+        ));
       case '/tree-species-details':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails(
-            id :argument!['id']
+            id :argument!['id'],
+          areaId: argument['areaId'],
         ));
 
       ///TODO : Field Worker Mobile API
@@ -97,9 +143,14 @@ class AppRoute{
           projectAreaId:argument['projectAreaId'] ,
         ));
       case '/tree-maintenance-list':
-        return MaterialPageRoute(builder: (_)=>TreeMaintenanceListScreen());
+        Map ? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=>TreeMaintenanceListScreen(
+          serviceId: argument!['serviceId'] ,
+        ));
       case '/maintenance-activity':
-        return MaterialPageRoute(builder: (_)=>MaintenanceActivityScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=>MaintenanceActivityScreen(
+        ));
       case '/tree-monitor-list':
         return MaterialPageRoute(builder: (_)=>TreeMonitorListScreen());
       case '/monitor-activity':
@@ -135,6 +186,11 @@ class AppRoute{
       case '/organization-main-screen':
         return MaterialPageRoute(builder: (_)=> OrganizationMainScreen());
 
+      case '/b2b-project-detail':
+        Map ? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> ProjectB2BDetailsScreen(
+            projectId :argument!['projectId']
+        ));
       default:
         return  MaterialPageRoute(builder: (_) => const Screen404(
           title: "404",

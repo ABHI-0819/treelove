@@ -49,15 +49,60 @@ class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar: AppBar(
-        title: const Text('Plant a tree'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80), // same height
+        child: AppBar(
+          automaticallyImplyLeading: false, // we'll use our custom button
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF00695C),
+                  Color(0xFF004D40),
+                ],
+              ),
+            ),
+          ),
+          leading: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          titleSpacing: 0, // aligns title properly
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Plant a Tree',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                'Making the world greener', // generic and reusable
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
-        backgroundColor: const Color(0xFF0C4F47), // Dark green
-        foregroundColor: Colors.white,
-        elevation: 0,
       ),
       body: BlocProvider(
   create: (context) => serviceDetailBloc,
@@ -269,3 +314,74 @@ class TreeTypeCard extends StatelessWidget {
 }
 
 
+/*
+import 'package:flutter/material.dart';
+
+class TreeCarePage extends StatelessWidget {
+  const TreeCarePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80), // same height
+        child: AppBar(
+          automaticallyImplyLeading: false, // we'll use our custom button
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0F4C3A),
+                  Color(0xFF1A5F3E),
+                ],
+              ),
+            ),
+          ),
+          leading: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          titleSpacing: 0, // aligns title properly
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Tree Care',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '5 trees need attention',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: const Center(
+        child: Text('Content here'),
+      ),
+    );
+  }
+}
+
+ */

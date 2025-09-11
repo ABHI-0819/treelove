@@ -252,7 +252,7 @@ class PlantationLocation {
 }
 
  */
-
+/*
 PlantationResponseModel plantationResponseModelFromJson(String str) => PlantationResponseModel.fromJson(json.decode(str));
 
 String plantationResponseModelToJson(PlantationResponseModel data) => json.encode(data.toJson());
@@ -416,5 +416,218 @@ class Location {
     "coordinates": List<dynamic>.from(coordinates.map((x) => x)),
   };
 }
+
+ */
+
+
+PlantationResponseModel plantationResponseModelFromJson(String str) =>
+    PlantationResponseModel.fromJson(json.decode(str));
+
+String plantationResponseModelToJson(PlantationResponseModel data) =>
+    json.encode(data.toJson());
+
+class PlantationResponseModel {
+  String status;
+  String message;
+  Data data;
+
+  PlantationResponseModel({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory PlantationResponseModel.fromJson(Map<String, dynamic> json) =>
+      PlantationResponseModel(
+        status: json["status"],
+        message: json["message"],
+        data: Data.fromJson(json["data"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "message": message,
+    "data": data.toJson(),
+  };
+}
+
+class Data {
+  String id;
+  String thumbnail;
+  TreeSpecies treeSpecies;
+  dynamic nextMaintenanceDate;
+  String maintenanceServiceId;
+  String monitoringServiceId;
+  Location location;
+  String remarks;
+  DateTime createdAt;
+  DateTime updatedAt;
+  String treeHeight;
+  String treeHeightUnit;
+  String treeGirth;
+  String treeGirthUnit;
+  dynamic canopySize;
+  String? canopySizeUnit;
+  dynamic treeAge;
+  String treeHealth;
+  String treeGrowth;
+  DateTime plantationDate;
+  String plantationType;
+  bool isVerified;
+  dynamic verifiedAt;
+  String services;
+  String vendor;
+  String createdBy;
+  String updatedBy;
+  dynamic verifiedBy;
+  List<dynamic> treeDiseases;
+
+  Data({
+    required this.id,
+    required this.thumbnail,
+    required this.treeSpecies,
+    this.nextMaintenanceDate,
+    required this.maintenanceServiceId,
+    required this.monitoringServiceId,
+    required this.location,
+    required this.remarks,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.treeHeight,
+    required this.treeHeightUnit,
+    required this.treeGirth,
+    required this.treeGirthUnit,
+    this.canopySize,
+    this.canopySizeUnit,
+    this.treeAge,
+    required this.treeHealth,
+    required this.treeGrowth,
+    required this.plantationDate,
+    required this.plantationType,
+    required this.isVerified,
+    this.verifiedAt,
+    required this.services,
+    required this.vendor,
+    required this.createdBy,
+    required this.updatedBy,
+    this.verifiedBy,
+    required this.treeDiseases,
+  });
+
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+    id: json["id"],
+    thumbnail: json["thumbnail"],
+    treeSpecies: TreeSpecies.fromJson(json["tree_species"]),
+    nextMaintenanceDate: json["next_maintenance_date"],
+    maintenanceServiceId: json["maintenance_service_id"],
+    monitoringServiceId: json["monitoring_service_id"],
+    location: Location.fromJson(json["location"]),
+    remarks: json["remarks"],
+    createdAt: DateTime.parse(json["created_at"]),
+    updatedAt: DateTime.parse(json["updated_at"]),
+    treeHeight: json["tree_height"],
+    treeHeightUnit: json["tree_height_unit"],
+    treeGirth: json["tree_girth"],
+    treeGirthUnit: json["tree_girth_unit"],
+    canopySize: json["canopy_size"],
+    canopySizeUnit: json["canopy_size_unit"],
+    treeAge: json["tree_age"],
+    treeHealth: json["tree_health"],
+    treeGrowth: json["tree_growth"],
+    plantationDate: DateTime.parse(json["plantation_date"]),
+    plantationType: json["plantation_type"],
+    isVerified: json["is_verified"],
+    verifiedAt: json["verified_at"],
+    services: json["services"],
+    vendor: json["vendor"],
+    createdBy: json["created_by"],
+    updatedBy: json["updated_by"],
+    verifiedBy: json["verified_by"],
+    treeDiseases: List<dynamic>.from(json["tree_diseases"].map((x) => x)),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "thumbnail": thumbnail,
+    "tree_species": treeSpecies.toJson(),
+    "next_maintenance_date": nextMaintenanceDate,
+    "maintenance_service_id": maintenanceServiceId,
+    "monitoring_service_id": monitoringServiceId,
+    "location": location.toJson(),
+    "remarks": remarks,
+    "created_at": createdAt.toIso8601String(),
+    "updated_at": updatedAt.toIso8601String(),
+    "tree_height": treeHeight,
+    "tree_height_unit": treeHeightUnit,
+    "tree_girth": treeGirth,
+    "tree_girth_unit": treeGirthUnit,
+    "canopy_size": canopySize,
+    "canopy_size_unit": canopySizeUnit,
+    "tree_age": treeAge,
+    "tree_health": treeHealth,
+    "tree_growth": treeGrowth,
+    "plantation_date":
+    "${plantationDate.year.toString().padLeft(4, '0')}-${plantationDate.month.toString().padLeft(2, '0')}-${plantationDate.day.toString().padLeft(2, '0')}",
+    "plantation_type": plantationType,
+    "is_verified": isVerified,
+    "verified_at": verifiedAt,
+    "services": services,
+    "vendor": vendor,
+    "created_by": createdBy,
+    "updated_by": updatedBy,
+    "verified_by": verifiedBy,
+    "tree_diseases": List<dynamic>.from(treeDiseases.map((x) => x)),
+  };
+}
+
+class TreeSpecies {
+  String id;
+  String localName;
+  dynamic image;
+  String scientificName;
+
+  TreeSpecies({
+    required this.id,
+    required this.localName,
+    this.image,
+    required this.scientificName,
+  });
+
+  factory TreeSpecies.fromJson(Map<String, dynamic> json) => TreeSpecies(
+    id: json["id"],
+    localName: json["local_name"],
+    image: json["image"],
+    scientificName: json["scientific_name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "local_name": localName,
+    "image": image,
+    "scientific_name": scientificName,
+  };
+}
+
+class Location {
+  String type;
+  List<double> coordinates;
+
+  Location({
+    required this.type,
+    required this.coordinates,
+  });
+
+  factory Location.fromJson(Map<String, dynamic> json) => Location(
+    type: json["type"],
+    coordinates:
+    List<double>.from(json["coordinates"].map((x) => x?.toDouble())),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "type": type,
+    "coordinates": List<dynamic>.from(coordinates.map((x) => x)),
+  };
+}
+
 
 

@@ -27,15 +27,21 @@ class MapBloc  extends Bloc<ApiEvent, ApiState<PlantedListResponseModel, Respons
       final result = await repository.fetchPlantedList(
           areaId:event.areaId,
           vendorId: event.vendorId,
-          createdBy: event.createdBy
+          createdBy: event.createdBy,
+        maintenanceStatus: event.maintenanceStatus
       );
 
       switch (result.status) {
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));

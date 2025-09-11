@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/config/themes/app_color.dart';
+/*
 class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF070707);
@@ -20,13 +22,15 @@ class AppColors {
   static const Color cardBackground = Color(0xFFFFFFFF);
 }
 
+ */
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground.withOpacity(0.6),
+      backgroundColor: AppColor.scaffoldBackground.withOpacity(0.6),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(120.h),
         child: Container(
@@ -97,7 +101,7 @@ class DashboardScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: AppColor.primary,
           ),
         ),
         const SizedBox(height: 16),
@@ -108,7 +112,7 @@ class DashboardScreen extends StatelessWidget {
                 title: 'Total Assignments',
                 value: '6',
                 icon: Icons.assignment_outlined,
-                color: AppColors.primary,
+                color: AppColor.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -117,7 +121,7 @@ class DashboardScreen extends StatelessWidget {
                 title: 'Trees Assigned',
                 value: '3,000',
                 icon: Icons.park_outlined,
-                color: AppColors.secondary,
+                color: AppColor.secondary,
               ),
             ),
           ],
@@ -128,7 +132,7 @@ class DashboardScreen extends StatelessWidget {
           value: '18',
           subtitle: 'Total Progress: 0.6%',
           icon: Icons.check_circle_outline,
-          color: AppColors.secondaryDark,
+          color: AppColor.secondaryDark,
           isWide: true,
         ),
       ],
@@ -146,11 +150,11 @@ class DashboardScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.08),
+            color: AppColor.primary.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -178,7 +182,7 @@ class DashboardScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: isWide ? 28 : 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.black,
+              color: AppColor.black,
             ),
           ),
           const SizedBox(height: 4),
@@ -186,7 +190,7 @@ class DashboardScreen extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.black.withOpacity(0.6),
+              color: AppColor.black.withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -215,18 +219,18 @@ class DashboardScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: AppColor.primary,
           ),
         ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: AppColor.cardBackground,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColor.primary.withOpacity(0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -234,11 +238,11 @@ class DashboardScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildWeeklyProgressItem('Plantation', 18, Icons.eco, AppColors.secondary),
+              _buildWeeklyProgressItem('Plantation', 18, Icons.eco, AppColor.secondary),
               const SizedBox(height: 16),
-              _buildWeeklyProgressItem('Maintenance', 0, Icons.build, AppColors.primaryLight),
+              _buildWeeklyProgressItem('Maintenance', 0, Icons.build, AppColor.primaryLight),
               const SizedBox(height: 16),
-              _buildWeeklyProgressItem('Monitoring', 0, Icons.visibility, AppColors.secondaryDark),
+              _buildWeeklyProgressItem('Monitoring', 0, Icons.visibility, AppColor.secondaryDark),
             ],
           ),
         ),
@@ -267,14 +271,14 @@ class DashboardScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.black,
+                  color: AppColor.black,
                 ),
               ),
               Text(
                 '$count trees completed',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.black.withOpacity(0.6),
+                  color: AppColor.black.withOpacity(0.6),
                 ),
               ),
             ],
@@ -393,25 +397,25 @@ class DashboardScreen extends StatelessWidget {
     switch (serviceType) {
       case 'Plantation':
         icon = Icons.eco;
-        serviceColor = AppColors.secondary;
+        serviceColor = AppColor.secondary;
         break;
       case 'Maintenance':
         icon = Icons.build;
-        serviceColor = AppColors.primaryLight;
+        serviceColor = AppColor.primaryLight;
         break;
       case 'Monitoring':
         icon = Icons.visibility;
-        serviceColor = AppColors.secondaryDark;
+        serviceColor = AppColor.secondaryDark;
         break;
       default:
         icon = Icons.work;
-        serviceColor = AppColors.primary;
+        serviceColor = AppColor.primary;
     }
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(16),
         // border: Border.(
         //   color: serviceColor,
@@ -419,7 +423,7 @@ class DashboardScreen extends StatelessWidget {
         // ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.08),
+            color: AppColor.primary.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -448,14 +452,14 @@ class DashboardScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.black,
+                        color: AppColor.black,
                       ),
                     ),
                     Text(
                       area,
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.black.withOpacity(0.6),
+                        color: AppColor.black.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -465,10 +469,10 @@ class DashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: progressPercent > 100
-                      ? AppColors.secondary.withOpacity(0.1)
+                      ? AppColor.secondary.withOpacity(0.1)
                       : progressPercent > 0
-                      ? AppColors.primaryLight.withOpacity(0.1)
-                      : AppColors.black.withOpacity(0.05),
+                      ? AppColor.primaryLight.withOpacity(0.1)
+                      : AppColor.black.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -477,10 +481,10 @@ class DashboardScreen extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: progressPercent > 100
-                        ? AppColors.secondary
+                        ? AppColor.secondary
                         : progressPercent > 0
-                        ? AppColors.primaryLight
-                        : AppColors.black.withOpacity(0.6),
+                        ? AppColor.primaryLight
+                        : AppColor.black.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -503,9 +507,9 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 16),
           LinearProgressIndicator(
             value: progressPercent / 100,
-            backgroundColor: AppColors.black.withOpacity(0.1),
+            backgroundColor: AppColor.black.withOpacity(0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
-              progressPercent > 100 ? AppColors.secondary : serviceColor,
+              progressPercent > 100 ? AppColor.secondary : serviceColor,
             ),
             minHeight: 6,
           ),
@@ -523,7 +527,7 @@ class DashboardScreen extends StatelessWidget {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.black,
+            color: AppColor.black,
           ),
         ),
         const SizedBox(height: 4),
@@ -531,7 +535,7 @@ class DashboardScreen extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.black.withOpacity(0.6),
+            color: AppColor.black.withOpacity(0.6),
           ),
         ),
       ],

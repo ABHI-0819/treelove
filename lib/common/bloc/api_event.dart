@@ -14,16 +14,19 @@ class ApiListFetch extends ApiEvent {
   final String? projectAreaId;
   //String? areaId,   String? vendorId,   String? createdBy,
   final String? areaId;
+  final String? diseasesId;
   final  String? vendorId;
+  final String ? maintenanceStatus;
   final String? createdBy;
-  ApiListFetch({this.page, this.pageSize, this.filter, this.search, this.serviceName, this.projectAreaId,this.areaId,this.vendorId,this.createdBy});
+  ApiListFetch({this.page, this.pageSize, this.filter, this.search, this.serviceName, this.projectAreaId,this.areaId,this.diseasesId,this.vendorId,this.maintenanceStatus,this.createdBy});
 }
 
 class ApiFetch extends ApiEvent {
   final String ? id;
   final String ? projectId;
   final String ? projectAreaId;
-  ApiFetch({this.id,this.projectId,this.projectAreaId});
+  final String ? orderId;
+  ApiFetch({this.id,this.projectId,this.projectAreaId,this.orderId});
 }
 
 class ApiSearch extends ApiEvent {

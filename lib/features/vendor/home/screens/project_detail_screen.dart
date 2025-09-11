@@ -1502,7 +1502,7 @@ class _AreaSectionState extends State<AreaSection> {
     );
   }
 }
-
+/*
 class AreaCoordinatesSection extends StatelessWidget {
   final ProjectArea area; //  Dynamic area from selected chip
 
@@ -1570,7 +1570,7 @@ class AreaCoordinatesSection extends StatelessWidget {
                         PolygonLayer(
                           polygons: [
                             Polygon(
-                              points: polygonPoints,
+                              points: area.polygon,
                               color: Colors.green.withOpacity(0.3),
                               borderColor: Colors.red,
                               borderStrokeWidth: 2,
@@ -1631,3 +1631,120 @@ class AreaCoordinatesSection extends StatelessWidget {
     }
   }
 }
+
+ */
+
+class AreaCoordinatesSection extends StatelessWidget {
+  final ProjectArea area; // Dynamic area from selected chip
+
+  const AreaCoordinatesSection({super.key, required this.area});
+
+  @override
+  Widget build(BuildContext context) {
+    // Use polygonLatLngs directly from ProjectArea
+    final List<LatLng> polygonPoints = area.polygonLatLngs;
+
+    // Use effectiveCenter (centroid if available, otherwise polygon center, otherwise fallback)
+    // final LatLng initialCenter = area.effectiveCenter.latitude != 0 ||
+    //     area.effectiveCenter.longitude != 0
+    //     ? area.effectiveCenter
+    //     : const LatLng(19.124, 72.834);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x11000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title with area name
+          Text(
+            "Area Coordinates (${area.name})",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1C1C1C),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Map Thumbnail with Fullscreen Icon
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  height: 180,
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter:LatLng(polygonPoints.last.latitude, polygonPoints.first.longitude),
+                      initialZoom: 12,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        tileProvider: NetworkTileProvider(
+                          headers: {'User-Agent': 'TreelovApp/1.0'},
+                        ),
+                      ),
+
+                      // Show polygon only if valid
+                      if (polygonPoints.isNotEmpty)
+                        PolygonLayer(
+                          polygons: [
+                            Polygon(
+                              points: polygonPoints,
+                              color: Colors.green.withOpacity(0.3),
+                              borderColor: Colors.red,
+                              borderStrokeWidth: 2,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.fullscreen,
+                        color: Colors.white, size: 20),
+                    onPressed: () {
+                      AppRoute.goToNextPage(
+                        context: context,
+                        screen: VendorMapScreen.route,
+                        arguments: {
+                          'areaId': area.id,
+                          // you can also pass polygonPoints here if needed
+                          // "polygon": polygonPoints,
+                          // "areaName": area.name,
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

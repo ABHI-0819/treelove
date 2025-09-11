@@ -10,7 +10,6 @@ import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/core/network/api_connection.dart';
 import 'package:treelove/core/utils/logger.dart';
 import 'package:treelove/features/vendor/home/bloc/project_bloc.dart';
-
 import '../../../../common/models/response.mode.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/widgets/common_notification.dart';
@@ -81,7 +80,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 color: AppColor.black,
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: InkWell(
@@ -90,7 +88,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 ),
               ),
             )
-
           ],
         ),
       ),

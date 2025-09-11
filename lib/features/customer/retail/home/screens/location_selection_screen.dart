@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,13 +10,21 @@ import 'package:latlong2/latlong.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
+import '../../../../../common/bloc/api_event.dart';
+import '../../../../../common/bloc/api_state.dart';
+import '../../../../../common/models/response.mode.dart';
+import '../../../../../common/repositories/project_area_repository.dart';
 import '../../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../../core/config/constants/map_constants.dart';
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
 import 'package:turf/turf.dart' as turf;
+import '../../../../../core/network/api_connection.dart';
 import '../../../../../core/utils/geofence_helper.dart';
 import '../../../../../core/widgets/common_notification.dart';
+import '../../../../authentication/screens/sign_in_screen.dart';
+import '../../../../fieldworker/activity/bloc/project_area_bloc.dart';
+import '../../../../fieldworker/activity/models/project_area_list_response.dart';
 
 class MapScreen extends StatefulWidget {
   static const route ="/plant-by-location";
@@ -29,6 +39,10 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? selectedPoint;
   int treeCount = 1;
 
+
+
+  bool isNavigate = false;
+
   final List<LatLng> polygonPoints = const [
     LatLng(19.1245, 72.8315),
     LatLng(19.1240, 72.8340),
@@ -38,37 +52,41 @@ class _MapScreenState extends State<MapScreen> {
     LatLng(19.1245, 72.8315), // Closed loop
   ];
 
+  String? insideAreaId;
+  void _onMapTap(LatLng point, List<ProjectAreaItem> areas) {
+    bool insideAnyArea = false;
 
-  void _onMapTap(LatLng point) {
-    // Define your polygon here or load from server
-    final polygonCoords = [
-      [
-        turf.Position(72.8315, 19.1245),
-        turf.Position(72.8340, 19.1240),
-        turf.Position(72.8350, 19.1250),
-        turf.Position(72.8330, 19.1265),
-        turf.Position(72.8310, 19.1255),
-        turf.Position(72.8315, 19.1245), // Closed loop
-      ],
-    ];
+    for (final area in areas) {
+      if (area.polygonLatLngs.isEmpty) continue; // skip if no polygon
 
-    final bool isInside = isPointInsidePolygon(
-      latitude: point.latitude,
-      longitude: point.longitude,
-      polygonCoordinates: polygonCoords,
-    );
+      final polygonCoords = [
+        area.polygonLatLngs
+            .map((latLng) => turf.Position(latLng.longitude, latLng.latitude))
+            .toList()
+      ];
 
-    if (isInside) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('✅ Point is inside the allowed area.')),
-      // );
+      final bool isInside = isPointInsidePolygon(
+        latitude: point.latitude,
+        longitude: point.longitude,
+        polygonCoordinates: polygonCoords,
+      );
+
+      if (isInside) {
+         insideAreaId= area.id;
+        insideAnyArea = true;
+        break;
+      }
+    }
+
+    if (insideAnyArea) {
+      isNavigate = true;
     } else {
       HapticFeedback.mediumImpact();
-      showNotification(context,
-          message: 'Please drop the pin inside the green area to plant.', type: Not.warning);
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('❌ Point is outside the allowed area.')),
-      // );
+      showNotification(
+        context,
+        message: 'Please drop the pin inside the green area to plant.',
+        type: Not.warning,
+      );
     }
 
     setState(() {
@@ -76,6 +94,8 @@ class _MapScreenState extends State<MapScreen> {
       treeCount = 1;
     });
   }
+
+
 
   /*
   void _onMapTap(LatLng point) {
@@ -93,243 +113,213 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  late ProjectAreaBloc projectAreaBloc;
+
+  @override
+  void initState() {
+    projectAreaBloc = ProjectAreaBloc(ProjectAreaRepository(api: ApiConnection()));
+    projectAreaBloc.add(ApiListFetch());
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          FlutterMap(
-            mapController: mapController,
-            options: MapOptions(
-              initialCenter:   LatLng(19.124, 72.832),
-              // MapConstant.initialCenter,
-              initialZoom: MapConstant.initialZoom,
-              maxZoom: MapConstant.maximumZoom,
-              minZoom: MapConstant.minimumZoom,
-              onTap: (_, latLng) => _onMapTap(latLng),
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                tileProvider: NetworkTileProvider(
-                  headers: {
-                    'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
-                  },
-                ),
-                // subdomains: ['a', 'b', 'c'],
-                // userAgentPackageName: 'com.example.app',
-              ),
-              // 🟩 Show Polygon
-              PolygonLayer(
-                polygons: [
-                  Polygon(
-                    points: polygonPoints,
-                    color: Colors.green.withOpacity(0.2),
-                    borderColor: Colors.green,
-                    borderStrokeWidth: 2,
-                  ),
-                ],
-              ),
-              if (selectedPoint != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                        point: selectedPoint!,
-                        width: 50,
-                        height: 50,
-                        child: Stack(
-                          alignment: Alignment.center,
+      body: BlocProvider(create:(context)=> projectAreaBloc,
+        child:  BlocListener<ProjectAreaBloc,
+            ApiState<ProjectAreasResponse, ResponseModel>>(
+          listener: (context, state) {
+            EasyLoading.dismiss();
+            if (state
+            is ApiFailure<ProjectAreasResponse, ResponseModel>) {
+              showNotification(context,
+                  message: state.error.message.toString());
+            } else if (state
+            is TokenExpired<ProjectAreasResponse, ResponseModel>) {
+              AppRoute.pushReplacement(context, SignInScreen.route,
+                  arguments: {});
+            }
+          },
+          child: BlocBuilder<ProjectAreaBloc,
+              ApiState<ProjectAreasResponse, ResponseModel>>(
+            builder: (context, state) {
+              if(state is ApiLoading){
+                return Center(child: CircularProgressIndicator());
+              } else  if (state is ApiSuccess<ProjectAreasResponse, ResponseModel>) {
+                ProjectAreasResponse areaList = state.data;
+                return Stack(
+                  children: [
+                    FlutterMap(
+                      mapController: mapController,
+                      options: MapOptions(
+                        initialCenter:   areaList.data[0].centroid,
+                        // MapConstant.initialCenter,
+                        initialZoom: MapConstant.initialZoom,
+                        maxZoom: MapConstant.maximumZoom,
+                        minZoom: MapConstant.minimumZoom,
+                        onTap: (_, latLng) => _onMapTap(latLng,areaList.data),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          tileProvider: NetworkTileProvider(
+                            headers: {
+                              'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
+                            },
+                          ),
+                          // subdomains: ['a', 'b', 'c'],
+                          // userAgentPackageName: 'com.example.app',
+                        ),
+                        // 🟩 Show Polygon
+                        PolygonLayer(
+                          polygons: [
+                            ...List.generate(areaList.data.length, (index)=> Polygon(
+
+                              points: areaList.data[index].polygonLatLngs,
+                              color: Colors.green.withOpacity(0.2),
+                              borderColor: Colors.green,
+                              borderStrokeWidth: 2,
+                            ),)
+
+                          ],
+                        ),
+                        if (selectedPoint != null)
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                  point: selectedPoint!,
+                                  width: 50,
+                                  height: 50,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Icon(Icons.location_on,
+                                          color: Colors.green[900], size: 40),
+                                      Positioned(
+                                        top: 10,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            "$treeCount",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                            ],
+                          ),
+                      ],
+                    ),
+                    Positioned(
+                      top: 140, // Below your search bar
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.shade300),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
                           children: [
-                            Icon(Icons.location_on,
-                                color: Colors.green[900], size: 40),
-                            Positioned(
-                              top: 10,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  "$treeCount",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: Colors.black,
-                                  ),
+                            // Icon(Icons.place_rounded, color: Colors.green.shade800, size: 20),
+                            // const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '🌳Please tap **inside the green zone** to plant a tree.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.green.shade900,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ],
-                        )),
-                  ],
-                ),
-            ],
-          ),
-          Positioned(
-            top: 140, // Below your search bar
-            left: 20,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade300),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Icon(Icons.place_rounded, color: Colors.green.shade800, size: 20),
-                  // const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '🌳Please tap **inside the green zone** to plant a tree.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.green.shade900,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          /*
-          Positioned(
-            top: 140, // adjust based on search bar height
-            left: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline, color: Colors.green.shade800, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '🌳 Tap inside the green zone to plant a tree',
-                      // '🌳 You can only plant a tree inside the highlighted green zone. Tap inside the zone to drop a pin.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.green.shade900,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-           */
-
-          SafeArea(
-              child: _SearchBar(mapController: mapController)),
-          /*
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              // Adjust to lift above bottom nav bar
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 15,
-                children: [
-                  // "Selected - 10 +" Button
-                  _TreeCounter(
-                    initialCount: treeCount,
-                    onChanged: _updateTreeCount,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                     AppRoute.goToNextPage(context: context, screen: TreeSpeciesList.route, arguments: {});
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF0EAD6), // Light beige
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(25), // Rounded corners
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 25, vertical: 15),
-                      elevation: 5, // Shadow
-                    ),
-                    child: const Text(
-                      'Plant here',
-                      style: TextStyle(color: Colors.black87, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-           */
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SafeArea(
-              child: IntrinsicHeight(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _TreeCounter(
-                      initialCount: treeCount,
-                      onChanged: _updateTreeCount,
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        AppRoute.goToNextPage(
-                          context: context,
-                          screen: TreeSpeciesList.route,
-                          arguments: {},
-                        );
-                      },
-                      icon: const Icon(Icons.eco, color: Colors.black87),
-                      label: const Text(
-                        'Plant here',
-                        style: TextStyle(color: Colors.black87, fontSize: 16),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF0EAD6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
                         ),
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                        elevation: 5,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+                    SafeArea(
+                        child: _SearchBar(mapController: mapController)),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: SafeArea(
+                        child: IntrinsicHeight(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _TreeCounter(
+                                initialCount: treeCount,
+                                onChanged: _updateTreeCount,
+                              ),
+                              const SizedBox(width: 20),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  if(insideAreaId!=null){
+                                    AppRoute.goToNextPage(
+                                      context: context,
+                                      screen: TreeSpeciesList.route,
+                                      arguments: {
+                                        'areaId':insideAreaId
+                                      },
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.eco, color: Colors.black87),
+                                label: const Text(
+                                  'Plant here',
+                                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFF0EAD6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  padding:
+                                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  elevation: 5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
 
-        ],
-      ),
+                  ],
+                );
+              } else {
+                return const Center(
+                  child: Text(
+                    "No staff found",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+
+      )
+
     );
   }
 }

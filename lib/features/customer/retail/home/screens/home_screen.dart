@@ -4,12 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 
 import '../../../../../core/config/resource/images.dart';
+import '../../../../../core/config/resource/service_ids.dart';
 import '../../../../../core/config/themes/app_button_style.dart';
 import '../../../../../core/config/themes/app_color.dart';
 import '../../../../../core/config/themes/app_fonts.dart';
 import '../../../../../core/storage/preference_keys.dart';
 import '../../../../../core/storage/secure_storage.dart';
 import '../../../../fieldworker/home/screens/main_screen.dart';
+import '../../cart/cart_screen.dart';
 import 'location_selection_screen.dart';
 
 SecurePreference preference= SecurePreference();
@@ -22,6 +24,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  @override
+  void initState() {
+    ServiceIds.load();
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 print("Know more tapped");
               },
             ),
-            TrendingTopicsWidget(),
+            TrendingTopicsWidget(
+              topics: [],
+            ),
             CustomerSatisfactionWidget(),
           ],
         ),
@@ -139,9 +150,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 }
 
-
-
-
 class CustomSearchBar extends StatelessWidget {
   const CustomSearchBar({super.key});
 
@@ -179,7 +187,7 @@ class CustomSearchBar extends StatelessWidget {
           // Notification Bell Icon
           InkWell(
             onTap: (){
-              AppRoute.goToNextPage(context: context, screen: FieldWorkerMainScreen.route, arguments: {});
+              AppRoute.goToNextPage(context: context, screen: CartScreen.route, arguments: {});
             },
             child: CircleAvatar(
               backgroundColor: AppColor.white,// Color(0xFFF7F2E8),
@@ -193,9 +201,9 @@ class CustomSearchBar extends StatelessWidget {
   }
 }
 
-
-
 class BirthdayPlantationWidget extends StatelessWidget {
+  const BirthdayPlantationWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -333,7 +341,6 @@ class ProjectCard extends StatelessWidget {
   }
 }
 
-
 class HomeTopSection extends StatelessWidget {
   const HomeTopSection({super.key});
 
@@ -421,7 +428,7 @@ class HomeTopSection extends StatelessWidget {
     );
   }
   Future<String> _getUserName() async {
-    return await preference.getString(Keys.name, defaultValue: 'Naresh');
+    return await preference.getString(Keys.name, defaultValue: 'Arman');
   }
 
   Widget _buildGreeting() {
@@ -447,7 +454,7 @@ class HomeTopSection extends StatelessWidget {
             ),
           );
         } else {
-          final name = snapshot.data ?? "Naresh";
+          final name = snapshot.data ?? "";
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
@@ -1095,7 +1102,412 @@ class Dot extends StatelessWidget {
 
 
 // TODO : After That make it new file
+// Data Model
+class TrendingTopic {
+  final String id;
+  final String imagePath;
+  final String headline;
+  final String subHeadline;
+  final String durationText;
+  final String category;
+  final DateTime publishedDate;
+  final String? readMoreUrl;
 
+  const TrendingTopic({
+    required this.id,
+    required this.imagePath,
+    required this.headline,
+    required this.subHeadline,
+    required this.durationText,
+    required this.category,
+    required this.publishedDate,
+    this.readMoreUrl,
+  });
+}
+
+// Main Widget with PageController
+class TrendingTopicsWidget extends StatefulWidget {
+  final List<TrendingTopic> topics;
+  final String? sectionTitle;
+  final VoidCallback? onSeeAll;
+  final Function(TrendingTopic)? onTopicTap;
+
+  const TrendingTopicsWidget({
+    super.key,
+    required this.topics,
+    this.sectionTitle,
+    this.onSeeAll,
+    this.onTopicTap,
+  });
+
+  @override
+  State<TrendingTopicsWidget> createState() => _TrendingTopicsWidgetState();
+}
+
+class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
+  late PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.85);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.topics.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return Container(
+      color: const Color(0xFFF8F4E3),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 20),
+          _buildTopicsCarousel(),
+          const SizedBox(height: 16),
+          _buildPageIndicators(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            widget.sectionTitle ?? "Read up on trending\n'Plantation' topics",
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3D3D3D),
+              height: 1.3,
+            ),
+          ),
+        ),
+        if (widget.onSeeAll != null)
+          TextButton(
+            onPressed: widget.onSeeAll,
+            child: const Text(
+              'See All',
+              style: TextStyle(
+                color: Color(0xFF115D41),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTopicsCarousel() {
+    return SizedBox(
+      height: 320,
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        itemCount: widget.topics.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TrendingTopicCard(
+              topic: widget.topics[index],
+              onTap: () => widget.onTopicTap?.call(widget.topics[index]),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPageIndicators() {
+    if (widget.topics.length <= 1) return const SizedBox.shrink();
+
+    return Center(
+      child: PageIndicators(
+        currentIndex: _currentIndex,
+        total: widget.topics.length,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      color: const Color(0xFFF8F4E3),
+      padding: const EdgeInsets.all(32),
+      child: const Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.article_outlined,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No trending topics available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Improved Topic Card
+class TrendingTopicCard extends StatelessWidget {
+  final TrendingTopic topic;
+  final VoidCallback? onTap;
+
+  const TrendingTopicCard({
+    super.key,
+    required this.topic,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            _buildBackgroundImage(),
+            _buildGradientOverlay(),
+            _buildCategoryBadge(),
+            _buildContent(),
+            _buildDurationBadge(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackgroundImage() {
+    return Positioned.fill(
+      child: Image.asset(
+        topic.imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[300],
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                  SizedBox(height: 8),
+                  Text('Image not found', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildGradientOverlay() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(0.3),
+              Colors.black.withOpacity(0.7),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryBadge() {
+    return Positioned(
+      top: 12,
+      left: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF115D41),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          topic.category.toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            topic.headline,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            topic.subHeadline,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.9),
+              height: 1.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF115D41),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                elevation: 0,
+              ),
+              onPressed: onTap,
+              child: const Text(
+                'Read Now',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDurationBadge() {
+    return Positioned(
+      top: 12,
+      right: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.access_time,
+              size: 12,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              topic.durationText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Improved Page Indicators
+class PageIndicators extends StatelessWidget {
+  final int currentIndex;
+  final int total;
+
+  const PageIndicators({
+    super.key,
+    required this.currentIndex,
+    required this.total,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(total, (index) {
+        bool isActive = index == currentIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          height: 6,
+          width: isActive ? 24 : 12,
+          decoration: BoxDecoration(
+            color: isActive
+                ? const Color(0xFF115D41)
+                : const Color(0xFF115D41).withOpacity(0.3),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+/*
 class TrendingTopicsWidget extends StatelessWidget {
   const TrendingTopicsWidget({super.key});
 
@@ -1239,8 +1651,11 @@ class PageIndicators extends StatelessWidget {
   }
 }
 
+ */
+
 //TODO : Make it Superate file for this
 
+/*
 class GovtProjectsCard extends StatelessWidget {
   final String imagePath;
   final int totalProjects;
@@ -1399,6 +1814,185 @@ class GovtProjectsCard extends StatelessWidget {
     );
   }
 }
+
+ */
+class GovtProjectsCard extends StatelessWidget {
+  final String imagePath;
+  final int totalProjects;
+  final VoidCallback onTap;
+  final VoidCallback? onSeeAllTap; // Add optional callback for "See All"
+
+  const GovtProjectsCard({
+    super.key,
+    required this.imagePath,
+    required this.totalProjects,
+    required this.onTap,
+    this.onSeeAllTap, // Optional parameter
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFFDFBF6),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Header Row - Made "See All" clickable
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Govt projects',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF222222),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              GestureDetector(
+                onTap: onSeeAllTap,
+                child: const Text(
+                  'See All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF222222),
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Image Card
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Stack(
+              children: [
+                Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 350,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 350,
+                      color: Colors.grey[300],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20
+                    ),
+                    color: const Color(0xFFF8F4E3),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: '$totalProjects ',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF115D41),
+                            ),
+                            children: const [
+                              TextSpan(
+                                text: 'total\nprojects',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF115D41),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Fixed button with proper styling
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF115D41),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: onTap,
+                          child: const Text(
+                            'Know more',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Indicator bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 30,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF115D41),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 20,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F2E9),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 20,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F2E9),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 // TODO : Widget for expore
 

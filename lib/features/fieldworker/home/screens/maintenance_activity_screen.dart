@@ -2,10 +2,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:treelove/common/repositories/maintenance_repository.dart';
+import 'package:treelove/common/repositories/tree_diseases_repository.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
-
+import 'package:treelove/features/fieldworker/activity/bloc/maintenance_bloc.dart';
+import 'package:treelove/features/fieldworker/activity/bloc/tree_diseases_bloc.dart';
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import '../../../../common/bloc/api_event.dart';
+import '../../../../common/bloc/api_state.dart';
+import '../../../../common/models/response.mode.dart';
+import '../../../../core/config/constants/enum/notification_enum.dart';
+import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 
+/*
 class MaintenanceActivityScreen extends StatefulWidget {
   static const route ="/maintenance-activity";
   const MaintenanceActivityScreen({super.key});
@@ -36,12 +46,58 @@ class _MaintenanceActivityScreenState extends State<MaintenanceActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Maintenance',style: AppFonts.regular,),
-        backgroundColor: Color(0xFF1A5F3E), // Dark green color
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back,color: AppColor.white,),
-          onPressed: () => Navigator.pop(context),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80), // same height
+        child: AppBar(
+          automaticallyImplyLeading: false, // we'll use our custom button
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF00695C),
+                  Color(0xFF004D40),
+                ],
+              ),
+            ),
+          ),
+          leading: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          titleSpacing: 0, // aligns title properly
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Tree Care',
+                style: AppFonts.body.copyWith(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                'Making nature healthier',
+                style: AppFonts.regular.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -330,4 +386,600 @@ class _MaintenanceActivityScreenState extends State<MaintenanceActivityScreen> {
     );
   }
 }
+
+ */
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
+
+import '../../../../core/network/api_connection.dart';
+import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/common_tree_diseases.dart';
+import '../../../../core/widgets/multi_select_searchable_dropdown.dart';
+import '../../../authentication/screens/sign_in_screen.dart';
+import '../../activity/models/maintenance_created_response_model.dart';
+import '../../activity/models/maintenance_request_model.dart';
+import '../../activity/models/tree_diseases_list_response_model.dart';
+
+
+
+class MaintenanceActivityScreen extends StatefulWidget {
+  static const route = "/maintenance-activity";
+  // final String plantationId;
+  // final String serviceId;
+  const MaintenanceActivityScreen({super.key});
+
+  @override
+  _MaintenanceActivityScreenState createState() => _MaintenanceActivityScreenState();
+}
+
+class _MaintenanceActivityScreenState extends State<MaintenanceActivityScreen> {
+  String? selectedHealth;
+  String? selectedGrowthStage;
+  List<String> selectedMaintenanceActivities = [];
+
+  List<XFile> photos = [];
+  final ImagePicker _imagePicker = ImagePicker();
+  TextEditingController remarkController = TextEditingController();
+  DateTime? nextMaintenanceDate;
+   List<String> treeDiseases=[];
+
+
+  late MaintenanceBloc maintenanceBloc;
+
+  @override
+  void initState() {
+    maintenanceBloc = MaintenanceBloc(
+      MaintenanceRepository(api: ApiConnection()),
+    );
+
+    // TODO: implement initState
+    super.initState();
+  }
+
+
+  @override
+  void dispose() {
+    remarkController.dispose();
+    maintenanceBloc.close();
+    // treeDiseasesBloc.close();
+    super.dispose();
+  }
+
+  Future<File> _addWatermark(File originalFile) async {
+    // Get location
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    String locationText = "${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}";
+
+    // Get timestamp
+    String timeText = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+
+    // Create watermark background
+
+    // Load image
+    final imageBytes = await originalFile.readAsBytes();
+    img.Image originalImage = img.decodeImage(imageBytes)!;
+    final image = img.Image.from(originalImage);
+
+    // Calculate watermark dimensions and position
+    final imageWidth = image.width;
+    final imageHeight = image.height;
+    final fontSize = (imageWidth * 0.025).round().clamp(16, 24);
+    final padding = (imageWidth * 0.02).round();
+    final lineHeight = (fontSize * 1.4).round();
+    final watermarkHeight = (lineHeight * 4 + padding * 2);
+    final watermarkY = imageHeight - watermarkHeight;
+
+    final textColor = img.ColorRgba8(255, 255, 255, 255);
+    // First line: location
+    img.drawString(
+      originalImage,
+      "📍 Location: $locationText",
+      font: img.arial14,
+      x: padding,
+      y: watermarkY + padding,
+      color: textColor,
+    );
+
+// Second line: time
+    img.drawString(
+      originalImage,
+      timeText,
+      font: img.arial14,
+      x: padding,
+      y: watermarkY + padding + 20, // shift down for second line
+      color: textColor,
+    );
+
+    // Save to temp file
+    final tempDir = await getTemporaryDirectory();
+    final watermarkedFile = File("${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}_wm.jpg");
+    await watermarkedFile.writeAsBytes(img.encodeJpg(originalImage));
+
+    return watermarkedFile;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _imagePicker.pickImage(source: source);
+    if (pickedFile != null) {
+      File watermarked = await _addWatermark(File(pickedFile.path));
+      setState(() {
+        photos.add(XFile(watermarked.path));
+      });
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => maintenanceBloc, // inject repository
+      child: Scaffold(
+        backgroundColor: AppColor.white,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(80), // same height
+            child: AppBar(
+              automaticallyImplyLeading: false, // we'll use our custom button
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF00695C),
+                      Color(0xFF004D40),
+                    ],
+                  ),
+                ),
+              ),
+              leading: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new,
+                      color: Colors.white, size: 18),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              titleSpacing: 0, // aligns title properly
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tree Care',
+                    style: AppFonts.body.copyWith(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Making nature healthier',
+                    style: AppFonts.regular.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 20.h,
+              children: [
+                /// 1. Maintenance Activity
+                _buildMaintenanceActivities(),
+                /// 2. Tree Growth Stage
+                _buildGrowthStage(),
+                /// 3. Tree Health
+                _buildTreeHealth(),
+                /// 4. Tree Diseases
+                CommonTreeDiseasesWidget(
+                  onChanged: (selectedDiseases) {
+                    treeDiseases=selectedDiseases.map((d) => d.id).toList();
+                    debugPrint("Selected IDs: ${selectedDiseases.map((d) => d.id).toList()}");
+                  },
+                ),
+                /// 5. Tree Photos
+                _buildPhotoPicker(),
+                /// 6. Tree Remark
+                _buildRemarks(),
+                /// 8. next Maintenance Activity
+                _buildNextMaintenanceDate(),
+                /// 9. submit
+                _buildSubmitButton(context),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ---------------- UI Components ----------------
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: const Text("Maintenance Activity"),
+      backgroundColor: Colors.green.shade700,
+    );
+  }
+  /*
+  Widget _buildTreeHealth() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Tree health', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildButtonWithEmoji('Good', '😊', 'Good'),
+            _buildButtonWithEmoji('Better', '😐', 'Better'),
+            _buildButtonWithEmoji('Sick', '😟', 'Sick'),
+            _buildButtonWithEmoji('Worse', '🙁', 'Worse'),
+            _buildButtonWithEmoji('Bad', '☹️', 'Bad'),
+          ],
+        ),
+      ],
+    );
+  }
+
+   */
+  Widget _buildTreeHealth() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tree Health',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildButtonWithEmoji('Healthy', '🌳', 'healthy'),
+            _buildButtonWithEmoji('Good', '😊', 'good'),
+            _buildButtonWithEmoji('Better', '🙂', 'better'),
+            _buildButtonWithEmoji('Bad', '☹️', 'bad'),
+            _buildButtonWithEmoji('Worse', '💀', 'worse'),
+            _buildButtonWithEmoji('Require Attention', '🛠️', 'require_attention'),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildGrowthStage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tree growth stage',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildButton('Sapling', 'sapling'),
+            _buildButton('Young', 'young'),
+            _buildButton('Mature', 'mature'),
+            _buildButton('Half Grown', 'half_grown'),
+            _buildButton('Fully Grown', 'fully_grown'),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+  Widget _buildMaintenanceActivities() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Maintenance activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        Column(
+          children: [
+            _buildMaintenanceCard(Icons.water_drop, 'Watering', 'Watering'),
+            _buildMaintenanceCard(Icons.local_shipping, 'Fertilizer', 'Fertilizer'),
+            _buildMaintenanceCard(Icons.local_hospital, 'Pesticides', 'Pesticides'),
+            _buildMaintenanceCard(Icons.border_all, 'Fencing', 'Fencing'),
+            _buildMaintenanceCard(Icons.ac_unit_sharp, 'Trimming', 'Trimming'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNextMaintenanceDate() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Next Maintenance Date',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+          // style: TextStyle(
+          //   fontSize: 16,
+          //   fontWeight: FontWeight.bold,
+          //   // color: Color(0xFF1A5F3E), // Theme green
+          // ),
+        ),
+        SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now().add(Duration(days: 1)),
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) {
+              setState(() {
+                nextMaintenanceDate = picked;
+              });
+            }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_rounded,
+                        color: Color(0xFF1A5F3E), size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      nextMaintenanceDate != null
+                          ? DateFormat('EEE, MMM d, yyyy')
+                          .format(nextMaintenanceDate!)
+                          : "Select date",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: nextMaintenanceDate != null
+                            ? Colors.black
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 16, color: Colors.grey.shade400),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhotoPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Take photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        Row(
+          children: [
+            InkWell(
+              onTap: () => _pickImage(ImageSource.camera),
+              child: _photoButton(Icons.camera_alt),
+            ),
+            SizedBox(width: 8),
+            InkWell(
+              onTap: () => _pickImage(ImageSource.gallery),
+              child: _photoButton(Icons.photo),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: photos.map((photo) {
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(File(photo.path), width: 100, height: 100, fit: BoxFit.cover),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: IconButton(
+                          icon: Icon(Icons.delete, size: 20, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              photos.remove(photo);
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _photoButton(IconData icon) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1.5),
+      ),
+      child: Icon(icon, size: 32, color: Colors.grey.withOpacity(0.3)),
+    );
+  }
+
+  Widget _buildRemarks() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Remark (Optional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        TextField(
+          controller: remarkController,
+          decoration: InputDecoration(
+            hintText: 'Write your remark here',
+            // border: Border.all(color: Colors.grey.shade300, width: 1.2),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12.r)),
+              borderSide: BorderSide(
+                color: Colors.grey.shade50, // Default border color
+                width: 1,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(BuildContext context) {
+    return BlocConsumer<MaintenanceBloc, ApiState<MaintenanceResponse, ResponseModel>>(
+      listener: (context, state) {
+        if (state is ApiSuccess<MaintenanceResponse, ResponseModel>) {
+          showNotification(type: Not.success,context, message: state.data.toString());
+        } else if (state is ApiFailure<MaintenanceResponse, ResponseModel>) {
+          showNotification(type: Not.failed,context, message: state.error.toString());
+        }else if (state is TokenExpired<MaintenanceResponse, ResponseModel>) {
+          AppRoute.pushReplacement(context, SignInScreen.route,
+              arguments: {});
+        }
+      },
+      builder: (context, state) {
+        return ElevatedButton(
+          onPressed: state is ApiLoading
+              ? null
+              : () {
+            showNotification(context,type: Not.success, message: "Record added successfully ");
+            final request = MaintenanceRequestModel(
+              maintenance_date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+              location:{} ,
+              tree_diseases: treeDiseases,
+              tree_health: selectedHealth,
+              tree_growth: selectedGrowthStage,
+              maintenance_activity: selectedMaintenanceActivities,
+              remarks: remarkController.text,
+              media: photos.map((p) => File(p.path)).toList(),
+              plantation: [],
+              next_scheduled_date: nextMaintenanceDate != null ? DateFormat('yyyy-MM-dd').format(nextMaintenanceDate!) : null,
+              services: ''
+            );
+            maintenanceBloc.add(ApiAdd<MaintenanceRequestModel>(request));
+
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green.shade700,
+            minimumSize: Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: state is ApiLoading
+              ? CircularProgressIndicator(color: Colors.white)
+              : Text('Submit', style: TextStyle(color: Colors.white)),
+        );
+      },
+    );
+  }
+
+  /// Reusable Button with Emoji
+  Widget _buildButtonWithEmoji(String label, String emoji, String value) {
+    bool isSelected = selectedHealth == value;
+    return OutlinedButton(
+      onPressed: () => setState(() => selectedHealth = isSelected ? null : value),
+      style: _buttonStyle(isSelected),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [Text(emoji), SizedBox(width: 8), Text(label)],
+      ),
+    );
+  }
+
+  /// Reusable Button without Emoji
+  Widget _buildButton(String label, String value) {
+    bool isSelected = selectedGrowthStage == value;
+    return OutlinedButton(
+      onPressed: () => setState(() => selectedGrowthStage = isSelected ? null : value),
+      style: _buttonStyle(isSelected),
+      child: Text(label),
+    );
+  }
+
+  ButtonStyle _buttonStyle(bool isSelected) {
+    return OutlinedButton.styleFrom(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      side: BorderSide(color: isSelected ? Colors.green.shade700 : Colors.grey.shade300, width: 2),
+      backgroundColor: isSelected ? Colors.green.shade50 : null,
+    );
+  }
+
+  Widget _buildMaintenanceCard(IconData icon, String label, String value) {
+    bool isSelected = selectedMaintenanceActivities.contains(value);
+    return GestureDetector(
+      onTap: () => setState(() {
+        if (isSelected) {
+          selectedMaintenanceActivities.remove(value);
+        } else {
+          selectedMaintenanceActivities.add(value);
+        }
+      }),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: isSelected ? Colors.green.shade700 : Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Colors.green.shade50 : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.green.shade700),
+            SizedBox(width: 16),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 16))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 

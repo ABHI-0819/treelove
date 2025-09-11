@@ -23,14 +23,21 @@ class TreeSpeciesBloc extends Bloc<ApiEvent, ApiState<TreeSpeciesListResponse, R
     emit(ApiLoading());
 
     try {
-      final result = await repository.getTreeList();
+      final result = await repository.getTreeList(
+        areaId: event.areaId
+      );
 
       switch (result.status) {
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));
@@ -62,8 +69,13 @@ class TreeDetailBloc extends Bloc<ApiEvent, ApiState<SingleTreeSpeciesResponse, 
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));

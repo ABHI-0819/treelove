@@ -15,6 +15,7 @@ import 'package:treelove/features/fieldworker/home/screens/tree_monitor_list_scr
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../core/config/route/app_route.dart';
+import '../../../../core/config/themes/app_fonts.dart';
 import '../../../../core/widgets/common_notification.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
 import '../../home/screens/select_tree_species.dart';
@@ -80,50 +81,68 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
                 AssignedServiceTypeResponse service = state.data;
                 final areaData = service.data!;
                 final summaryList = areaData.serviceSummary; // ✅ Get from API
-                return Column(
-                  children: [
-                    _buildHeader(context: context,
+                return CustomScrollView(
+                  slivers: [
+                    _buildHeader(
+                        context: context,
                         title: service.data!.name,
-                        subTitle: 'Thane,India'),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: summaryList.length,
-                        itemBuilder: (context, index) {
-                          final summary = summaryList[index];
+                        subTitle: 'Thane, India'
+                    ),
 
-                          //  Decide icon & color based on service_type
-                          final iconData = _getServiceIcon(summary.serviceType);
-                          final bgColor = _getServiceColor(summary.serviceType);
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                            final summary = summaryList[index];
 
-                          return _buildActionCard(
-                            title: summary.serviceType,
-                            icon: iconData,
-                            totalRequired: summary.totalRequired,
-                            totalDone: summary.totalDone,
-                            // badgeCount: summary.totalRequired - summary.totalDone, // remaining work
-                            bgColor: bgColor,
-                            onTap: () {
+                            // Decide icon & color based on service_type
+                            final iconData = _getServiceIcon(summary.serviceType);
+                            final bgColor = _getServiceColor(summary.serviceType);
 
-                              switch (summary.serviceType.toLowerCase()) {
-                                case "plantation":
-                                  AppRoute.goToNextPage(
+                            return _buildActionCard(
+                              title: summary.serviceType,
+                              icon: iconData,
+                              totalRequired: summary.totalRequired,
+                              totalDone: summary.totalDone,
+                              bgColor: bgColor,
+                              onTap: () {
+                                switch (summary.serviceType.toLowerCase()) {
+                                  case "plantation":
+                                    AppRoute.goToNextPage(
                                       context: context,
                                       screen: SelectTreeTypeScreen.route,
                                       arguments: {
                                         "serviceType": summary.serviceType,
-                                        "projectAreaId":widget.projectAreaId
+                                        "projectAreaId": widget.projectAreaId
                                       },
                                     );
-                                case "maintenance":
-                                  AppRoute.goToNextPage(context: context, screen:  TreeMaintenanceListScreen.route, arguments: {});
-                                case "monitoring":
-                                  AppRoute.goToNextPage(context: context, screen:  TreeMonitorListScreen.route, arguments: {});
-                                default:
-                                  // AppRoute.goToNextPage(context: context, screen:  , arguments: {});
-                              }
-                            },
-                          );
-                        },
+                                    break;
+                                  case "maintenance":
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: TreeMaintenanceListScreen.route,
+                                        arguments: {
+                                          'serviceId': summary.serviceType
+                                        }
+                                    );
+                                    break;
+                                  case "monitoring":
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: TreeMonitorListScreen.route,
+                                        arguments: {}
+                                    );
+                                    break;
+                                  default:
+                                  // Handle other cases
+                                    break;
+                                }
+                              },
+                            );
+                          },
+                          childCount: summaryList.length,
+                        ),
                       ),
                     ),
                   ],
@@ -149,72 +168,58 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
     String? subTitle,
     int? capacity,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF00695C), Color(0xFF004D40)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(20), // soft curve bottom
-        ),
-      ),
-      child: SafeArea(
-        top: true,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 35, // centers vertically
-          children: [
-
-            GestureDetector(
-              onTap: () => AppRoute.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.arrow_back, color: Colors.white),
-              ),
-            ),
-
-            SizedBox(width: 10.w), // ✅ space between back & text
-
-            // 📍 Title + Location column
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              // ✅ aligns within column
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title ?? "Area Name",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on,
-                        color: Colors.white70, size: 18),
-                    SizedBox(width: 4.w),
-                    Text(
-                      subTitle ?? "Unknown location",
-                      style:
-                      const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
+    return SliverAppBar(
+      expandedHeight: 80,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF00695C),
+                Color(0xFF004D40),
               ],
             ),
-          ],
+          ),
         ),
+      ),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+          onPressed: () => AppRoute.pop(context),
+        ),
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title ?? "Project Area",
+            style: AppFonts.body.copyWith(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            subTitle ?? 'Project management dashboard',
+            style: AppFonts.regular.copyWith(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -376,129 +381,3 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
   }
 
 }
-
-
-
-/*
-
-class ProjectActionScreen extends StatelessWidget {
-  static const route = '/ProjectActionScreen';
-
-  final List<_ActionItem> actions = const [
-    _ActionItem(
-      title: 'Plantation',
-      icon: Icons.spa,
-      color: Color(0xFFC8E6C9), // Colors.green.shade100
-      badge: 5,
-    ),
-    _ActionItem(
-      title: 'Geo-tagging',
-      icon: Icons.location_on,
-      color: Color(0xFFFFCDD2), // Colors.red.shade100
-      badge: 5,
-    ),
-    _ActionItem(
-      title: 'Monitoring',
-      icon: Icons.search,
-      color: Color(0xFFE1BEE7), // Colors.purple.shade100
-      badge: 5,
-    ),
-    _ActionItem(
-      title: 'Maintenance',
-      icon: Icons.water_drop,
-      color: Color(0xFFBBDEFB), // Colors.blue.shade100
-      badge: 5,
-    ),
-  ];
-
-  const ProjectActionScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.only(top: 16.h),
-                itemCount: actions.length,
-                separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                itemBuilder: (context, index) {
-                  final item = actions[index];
-                  return _ActionCard(
-                    title: item.title,
-                    icon: item.icon,
-                    badgeCount: item.badge,
-                    bgColor: item.color,
-                    onTap: () {
-                      // Navigate or handle tap
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          height: 180.h,
-          width: double.infinity,
-          color: const Color(0xFF005247),
-          padding: EdgeInsets.only(top: 20.h, left: 16.w, right: 16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Icon(Icons.arrow_back, color: Colors.white),
-              ),
-              SizedBox(height: 16.h),
-              const Text(
-                'Thane Plantation Metro Drive 2023',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              const Row(
-                children: [
-                  Icon(Icons.location_on, color: Colors.white70, size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    'Thane, Mumbai',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: 30.h,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-*/

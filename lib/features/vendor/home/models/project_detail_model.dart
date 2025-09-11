@@ -78,6 +78,7 @@
 
 import 'dart:convert';
 import 'package:geojson_vi/geojson_vi.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:treelove/core/utils/logger.dart';
 
 /// Helper functions
@@ -277,7 +278,8 @@ class ProjectArea {
   final String id;
   final String name;
   final int capacity;
-  final String location; // raw GeoJSON string
+  final GeoJSONPolygon? polygon;
+  // final String location; // raw GeoJSON string
   final List<ServiceSummary> serviceSummary;
   final List<Fieldworker> fieldworkers;
 
@@ -285,16 +287,19 @@ class ProjectArea {
     required this.id,
     required this.name,
     required this.capacity,
-    required this.location,
+    required this.polygon,
     required this.serviceSummary,
     required this.fieldworkers,
   });
+
+
+  /*
 
   factory ProjectArea.fromJson(Map<String, dynamic> json) => ProjectArea(
         id: json["id"] ?? '',
         name: json["name"] ?? '',
         capacity: json["capacity"] ?? 0,
-        location: json["location"] ?? '',
+        // location: json["location"] ?? '',
         serviceSummary: (json["service_summary"] as List? ?? [])
             .map((x) => ServiceSummary.fromJson(x))
             .toList(),
@@ -303,14 +308,90 @@ class ProjectArea {
             .toList(),
       );
 
+   */
+
+  factory ProjectArea.fromJson(Map<String, dynamic> json) {
+    // Parse centroid [lng, lat] → LatLng(lat, lng)
+    final List<dynamic> centroidJson = json['centroid'] ?? [];
+
+
+    // Parse location GeoJSON (string or object)
+    GeoJSONPolygon? parsedPolygon;
+    if (json['location'] != null && json['location'].toString().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(json['location']);
+        final Map<String, dynamic> feature = decoded['type'] == 'Feature'
+            ? decoded
+            : {
+          "type": "Feature",
+          "geometry": decoded,
+          "properties": {}
+        };
+
+        final geoFeature = GeoJSONFeature.fromJSON(jsonEncode(feature));
+        if (geoFeature.geometry is GeoJSONPolygon) {
+          parsedPolygon = geoFeature.geometry as GeoJSONPolygon;
+        }
+      } catch (e) {
+        debugLog("GeoJSON parse error in ProjectArea: $e");
+      }
+    }
+    return ProjectArea(
+      id: json["id"] ?? '',
+      name: json["name"] ?? '',
+      capacity: json["capacity"] ?? 0,
+
+      polygon: parsedPolygon,
+      serviceSummary: (json["service_summary"] as List? ?? [])
+          .map((x) => ServiceSummary.fromJson(x))
+          .toList(),
+      fieldworkers: (json["fieldworkers"] as List? ?? [])
+          .map((x) => Fieldworker.fromJson(x))
+          .toList(),
+    );
+  }
+
+
+
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
         "capacity": capacity,
-        "location": location,
+        "polygon": polygon,
         "service_summary": serviceSummary.map((e) => e.toJson()).toList(),
         "fieldworkers": fieldworkers.map((e) => e.toJson()).toList(),
       };
+
+  /// ✅ Helpers (aligned with ProjectAreaItem)
+  List<LatLng> get polygonLatLngs {
+    if (polygon == null) return [];
+    final coords = polygon!.coordinates.first; // outer ring
+    return coords.map((p) => LatLng(p[1], p[0])).toList();
+  }
+
+  // LatLng get effectiveCenter =>
+  //     centroid == const LatLng(0, 0) ? (polygonCenter ?? const LatLng(0, 0)) : centroid;
+
+  LatLng? get polygonCenter {
+    if (polygon != null) {
+      final coords = polygon!.coordinates.first;
+      final latSum = coords.fold(0.0, (sum, p) => sum + p[1]);
+      final lngSum = coords.fold(0.0, (sum, p) => sum + p[0]);
+      return LatLng(latSum / coords.length, lngSum / coords.length);
+    }
+    return null;
+  }
+
+  int get totalRequiredTreesInThisArea =>
+      serviceSummary.fold(0, (sum, s) => sum + s.totalRequired);
+
+  int get totalDoneTreesInThisArea =>
+      serviceSummary.fold(0, (sum, s) => sum + s.totalDone);
+
+  List<String> get areaFieldworkerNames =>
+      fieldworkers.map((fw) => fw.fullName).toList();
+
+/*
 
   ///  Total required trees for this specific area
   int get totalRequiredTreesInThisArea =>
@@ -338,6 +419,8 @@ class ProjectArea {
   }
 
   ///  Get coordinates as List<List<List<double>>> (GeoJSON standard)
+  ///
+
   List<List<List<double>>>? get polygonCoordinates {
     final polygon = geoPolygon;
     return polygon?.coordinates;
@@ -354,6 +437,8 @@ class ProjectArea {
     }
     return null;
   }
+
+  */
 }
 
 extension ProjectDetailHelpers on ProjectDetailData {
@@ -365,7 +450,7 @@ extension ProjectDetailHelpers on ProjectDetailData {
         id: '',
         name: '',
         capacity: 0,
-        location: '',
+        polygon: null,
         serviceSummary: [],
         fieldworkers: [],
       ),

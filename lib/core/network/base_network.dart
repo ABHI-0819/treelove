@@ -21,6 +21,7 @@ class BaseNetwork {
   static const String FailedMessage = 'Connection Failed, Please try Again';
   static const String NetworkError= 'Oh no! Something went wrong';
   static const String BASE_Image_URL ="http://43.205.169.130/";
+  static const String BASE_Share_URL = 'http://43.205.169.130';
 
   static const String loginURL = "${_BASE_URL}api/v1/auth/login/";
   static const String loginOAuthURL = "${_BASE_URL}api/v1/auth/oidc/login/";
@@ -30,20 +31,26 @@ class BaseNetwork {
 
   static const String projectListURL = "${_BASE_URL}api/v1/projects/projects/";
   static const String projectDashboardURL = "${_BASE_URL}api/v1/projects/vendor-dashboard/";
+  static const String projectAreaURL =  "${_BASE_URL}api/v1/projects/project-areas/";
 
 
+  static const String treeDiseasesURL = "${_BASE_URL}api/v1/trees/tree-diseases/";
 
   //TODO: Retailer URL :
   static const String treeSpeciesURL = "${_BASE_URL}api/v1/trees/tree-species/";
   static const String cartItemsURL = "${_BASE_URL}api/v1/orders/order-items/";
-  ///orders/order-items/
+  static const String allCartItemsUrl ="${_BASE_URL}api/v1/orders/order-items/cart-items/";
+  static const String orderPlaceUrl = "${_BASE_URL}api/v1/orders/orders/";
+  static const String orderTrackingUrl = "${_BASE_URL}api/v1/orders/order-tracking/";
+  ///orders/order-items
   static const String paymentURL ="${_BASE_URL}api/v1/payments/payments/";
 
 
   //TODO: Fieldworker URL :
   static const String plantationListURL = "${_BASE_URL}api/v1/survey/plantation/";
   static const String plantationCreateURL= "${_BASE_URL}api/v1/survey/plantation/";
-  static const String maintenanceAddURL="${_BASE_URL}api/v1/survey/plantation/";
+  static const String maintenanceCreatedURL="${_BASE_URL}api/v1/survey/maintenance/";
+  static const String monitorAddURL ="${_BASE_URL}api/v1/survey/plantation/";
   static const String projectAreasURl = "${_BASE_URL}api/v1/projects/project-areas/";
   //http://43.205.169.130/api/v1/projects/fieldworker-dashboard/
   static const String fieldworkerDashboardUrl = "${_BASE_URL}api/v1/projects/fieldworker-dashboard/";
@@ -55,6 +62,9 @@ class BaseNetwork {
   static const String serviceDetailUrl = "${_BASE_URL}api/v1/projects/service-detail/";
 
 
+  //TODO: B2B URL:
+  static const String b2bDashboardUrl = "${_BASE_URL}api/v1/projects/client/home-dashboard/";
+  static const String b2bProjectDashboardURL = "${_BASE_URL}api/v1/projects/client-dashboard/";
   //http://10.202.100.187:9004/swagger/
 
   static Map<String, String> getJsonHeaders() {

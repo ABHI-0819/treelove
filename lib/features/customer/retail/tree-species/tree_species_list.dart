@@ -7,6 +7,7 @@ import 'package:treelove/features/customer/retail/tree-species/bloc/tree_species
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/tree_species_repository.dart';
+import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
@@ -17,8 +18,9 @@ import 'tree_species_details.dart';
 
 class TreeSpeciesList extends StatefulWidget {
   static const route = "/tree-species-list";
+  final String areaId;
 
-  const TreeSpeciesList({super.key});
+  const TreeSpeciesList({super.key,required this.areaId});
 
   @override
   State<TreeSpeciesList> createState() => _TreeSpeciesListState();
@@ -115,13 +117,14 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
                               onTap: (){
                                 AppRoute.goToNextPage(
                                     context: context, screen: TreeSpeciesDetails.route, arguments: {
-                                      'id' :item.id
+                                      'id' :item.id,
+                                      'areaId':widget.areaId
                                 });
                               },
                               tree: TreeType(
                                 name: item.treeName,
                                 species: item.scientificName,
-                                imageUrl:item.image??'https://m.media-amazon.com/images/I/51AWjGozihL._UF1000,1000_QL80_.jpg',
+                                imageUrl:item.image??"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s",
                               ),)
                         );
                       },
@@ -279,10 +282,26 @@ class TreeTypeCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                tree.imageUrl,
+                tree.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s', // Fallback to empty string if null to avoid errors
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    Images.sampleImg, // Replace with your asset path
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  );
+                },
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) return child;
+                  return AnimatedOpacity(
+                    opacity: frame == null ? 0 : 1,
+                    duration: const Duration(milliseconds: 300),
+                    child: child,
+                  );
+                },
               ),
             ),
             Column(

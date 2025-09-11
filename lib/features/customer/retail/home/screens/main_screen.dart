@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:treelove/features/customer/retail/home/screens/home_screen.dart';
 import '../../../../../core/widgets/custom_bottom_nav.dart';
+import '../../FAQ/inquery_screen.dart';
 import '../../profile/screen/account_screen.dart';
 import '../../project/screens/project_main_screen.dart';
 
@@ -36,6 +37,7 @@ class _RetailMainScreenState extends State<RetailMainScreen> {
     final bottomBarPages = [
       HomeScreen(),
       ProjectMainScreen(),
+      InquiryScreen(),
       MyAccountScreen(),
     ];
     return Scaffold(

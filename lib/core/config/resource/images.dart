@@ -24,6 +24,7 @@ class Images{
   static const String homeFilledIcon =  '${_basePathSvg}homeIconFilled.svg';
   static const String projectFilledIcon =  '${_basePathSvg}projectIconFilled.svg';
   static const String inquiryIcon =  '${_basePathSvg}inquiry_icon.svg';
+  static const String inquiryFilledIcon = '${_basePathSvg}inquiryIcon_filled.svg';
   static const String mapIcon =  '${_basePathSvg}map_icon.svg';
   static const String rightArrowIcon =  '${_basePathSvg}right_arrow.svg';
   static const String monitorIcon = '${_basePathSvg}monitor_icon.svg';
@@ -36,6 +37,7 @@ class Images{
   static const String supportIcon = '${_basePathSvg}support_icon.svg';
   static const String settingIcon = '${_basePathSvg}setting_icon.svg';
   static const String cartIcon = '${_basePathSvg}cart_icon.svg';
+  static const String orderIcon =  '${_basePathSvg}order_icon.svg';
   static const String suspendedIcon = '${_basePathSvg}suspended_icon.svg';
   static const String maintenanceIcon = '${_basePathSvg}maintenance_icon.svg';
 
@@ -55,4 +57,7 @@ class Images{
   static const String areaIcon = '${_basePathSvg}area_icon.svg';
   static const String treeMarker = '${_basePathSvg}tree_marker.svg';
 
+  static const String whatsappIcon = '${_basePathSvg}whatsappIcon.svg';
+  static const String instagramIcon = '${_basePathSvg}instagramIcon.svg';
+  static const String facebookIcon = '${_basePathSvg}facebookIcon.svg';
 }

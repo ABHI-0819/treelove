@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 
 import '../../../../core/widgets/faq.dart';
 
 class FaqScreen extends StatelessWidget {
+  static const route = "/faq-section";
   const FaqScreen({super.key});
 
   @override

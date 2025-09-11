@@ -1,0 +1,27 @@
+import 'package:treelove/features/fieldworker/activity/models/maintenance_request_model.dart';
+
+import '../../core/network/api_connection.dart';
+import '../../core/network/base_network.dart';
+import '../../core/network/base_network_status.dart';
+import '../../core/storage/preference_keys.dart';
+import '../../core/storage/secure_storage.dart';
+import '../../features/fieldworker/activity/models/maintenance_created_response_model.dart';
+
+class MaintenanceRepository{
+  final ApiConnection api;
+  MaintenanceRepository({required this.api});
+
+  final pref = SecurePreference();
+  Future<ApiResult> addMaintenanceRecord(MaintenanceRequestModel request) async {
+    final token = await pref.getString(Keys.accessToken);
+    return await api.apiConnectionMultipart<MaintenanceResponse>(
+        BaseNetwork.maintenanceCreatedURL,
+        BaseNetwork.getHeaderWithToken(token),
+        'post',
+        maintenanceResponseFromJson,
+        fields: request.toJson(),
+        fileKey: 'media',
+        files: request.media
+    );
+  }
+}

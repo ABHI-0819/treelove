@@ -1,3 +1,6 @@
+// To parse this JSON data, do
+//
+//     final plantedListResponseModel = plantedListResponseModelFromJson(jsonString);
 
 
 import 'dart:convert';
@@ -9,7 +12,7 @@ String plantedListResponseModelToJson(PlantedListResponseModel data) => json.enc
 class PlantedListResponseModel {
   String status;
   String message;
-  List<Datum> data;
+  List<PlantedTreeModel> data;
 
   PlantedListResponseModel({
     required this.status,
@@ -20,7 +23,7 @@ class PlantedListResponseModel {
   factory PlantedListResponseModel.fromJson(Map<String, dynamic> json) => PlantedListResponseModel(
     status: json["status"],
     message: json["message"],
-    data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
+    data: List<PlantedTreeModel>.from(json["data"].map((x) => PlantedTreeModel.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -29,86 +32,95 @@ class PlantedListResponseModel {
     "data": List<dynamic>.from(data.map((x) => x.toJson())),
   };
 }
-
-class Datum {
+/*
+class PlantedTreeModel {
   String id;
   String? thumbnail;
-  Location location;
-  Remarks remarks;
-  DateTime createdAt;
-  DateTime updatedAt;
+  TreeSpeciesModel treeSpecies;
+  dynamic nextMaintenanceDate;
+  dynamic maintenanceServiceId;
+  dynamic monitoringServiceId;
+  LocationModel location;
+  String? remarks;
+  String createdAt;
+  String updatedAt;
   String treeHeight;
-  TreeUnit treeHeightUnit;
+  String treeHeightUnit;
   String treeGirth;
-  TreeUnit treeGirthUnit;
-  String? canopySize;
-  CanopySizeUnit canopySizeUnit;
-  int? treeAge;
-  TreeHealth treeHealth;
-  TreeGrowth treeGrowth;
-  DateTime plantationDate;
-  PlantationType plantationType;
+  String treeGirthUnit;
+  dynamic canopySize;
+  String canopySizeUnit;
+  dynamic treeAge;
+  String treeHealth;
+  String treeGrowth;
+  String plantationDate;
+  String plantationType;
   bool isVerified;
   dynamic verifiedAt;
   String services;
-  String treeSpecies;
   String vendor;
   String createdBy;
   String updatedBy;
   dynamic verifiedBy;
   List<dynamic> treeDiseases;
 
-  Datum({
+  PlantedTreeModel({
     required this.id,
-    required this.thumbnail,
+    this.thumbnail,
+    required this.treeSpecies,
+    this.nextMaintenanceDate,
+    this.maintenanceServiceId,
+    this.monitoringServiceId,
     required this.location,
-    required this.remarks,
+    this.remarks,
     required this.createdAt,
     required this.updatedAt,
     required this.treeHeight,
     required this.treeHeightUnit,
     required this.treeGirth,
     required this.treeGirthUnit,
-    required this.canopySize,
+    this.canopySize,
     required this.canopySizeUnit,
-    required this.treeAge,
+    this.treeAge,
     required this.treeHealth,
     required this.treeGrowth,
     required this.plantationDate,
     required this.plantationType,
     required this.isVerified,
-    required this.verifiedAt,
+    this.verifiedAt,
     required this.services,
-    required this.treeSpecies,
     required this.vendor,
     required this.createdBy,
     required this.updatedBy,
-    required this.verifiedBy,
+    this.verifiedBy,
     required this.treeDiseases,
   });
 
-  factory Datum.fromJson(Map<String, dynamic> json) => Datum(
+  factory PlantedTreeModel.fromJson(Map<String, dynamic> json) => PlantedTreeModel(
     id: json["id"],
     thumbnail: json["thumbnail"],
-    location: Location.fromJson(json["location"]),
-    remarks: remarksValues.map[json["remarks"]]!,
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
+    treeSpecies: TreeSpeciesModel.fromJson(json["tree_species"]),
+    nextMaintenanceDate: json["next_maintenance_date"],
+    maintenanceServiceId: json["maintenance_service_id"],
+    monitoringServiceId: json["monitoring_service_id"],
+    location: LocationModel.fromJson(json["location"]),
+    remarks: json["remarks"],
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
     treeHeight: json["tree_height"],
-    treeHeightUnit: treeUnitValues.map[json["tree_height_unit"]]!,
+    treeHeightUnit: json["tree_height_unit"],
     treeGirth: json["tree_girth"],
-    treeGirthUnit: treeUnitValues.map[json["tree_girth_unit"]]!,
+    treeGirthUnit: json["tree_girth_unit"],
     canopySize: json["canopy_size"],
-    canopySizeUnit: canopySizeUnitValues.map[json["canopy_size_unit"]]!,
+    canopySizeUnit: json["canopy_size_unit"],
     treeAge: json["tree_age"],
-    treeHealth: treeHealthValues.map[json["tree_health"]]!,
-    treeGrowth: treeGrowthValues.map[json["tree_growth"]]!,
-    plantationDate: DateTime.parse(json["plantation_date"]),
-    plantationType: plantationTypeValues.map[json["plantation_type"]]!,
+    treeHealth: json["tree_health"],
+    treeGrowth: json["tree_growth"],
+    plantationDate: json["plantation_date"],
+    plantationType: json["plantation_type"],
     isVerified: json["is_verified"],
     verifiedAt: json["verified_at"],
     services: json["services"],
-    treeSpecies: json["tree_species"],
     vendor: json["vendor"],
     createdBy: json["created_by"],
     updatedBy: json["updated_by"],
@@ -119,25 +131,28 @@ class Datum {
   Map<String, dynamic> toJson() => {
     "id": id,
     "thumbnail": thumbnail,
+    "tree_species": treeSpecies.toJson(),
+    "next_maintenance_date": nextMaintenanceDate,
+    "maintenance_service_id": maintenanceServiceId,
+    "monitoring_service_id": monitoringServiceId,
     "location": location.toJson(),
-    "remarks": remarksValues.reverse[remarks],
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
+    "remarks": remarks,
+    "created_at": createdAt,
+    "updated_at": updatedAt,
     "tree_height": treeHeight,
-    "tree_height_unit": treeUnitValues.reverse[treeHeightUnit],
+    "tree_height_unit": treeHeightUnit,
     "tree_girth": treeGirth,
-    "tree_girth_unit": treeUnitValues.reverse[treeGirthUnit],
+    "tree_girth_unit": treeGirthUnit,
     "canopy_size": canopySize,
-    "canopy_size_unit": canopySizeUnitValues.reverse[canopySizeUnit],
+    "canopy_size_unit": canopySizeUnit,
     "tree_age": treeAge,
-    "tree_health": treeHealthValues.reverse[treeHealth],
-    "tree_growth": treeGrowthValues.reverse[treeGrowth],
-    "plantation_date": "${plantationDate.year.toString().padLeft(4, '0')}-${plantationDate.month.toString().padLeft(2, '0')}-${plantationDate.day.toString().padLeft(2, '0')}",
-    "plantation_type": plantationTypeValues.reverse[plantationType],
+    "tree_health": treeHealth,
+    "tree_growth": treeGrowth,
+    "plantation_date": plantationDate,
+    "plantation_type": plantationType,
     "is_verified": isVerified,
     "verified_at": verifiedAt,
     "services": services,
-    "tree_species": treeSpecies,
     "vendor": vendor,
     "created_by": createdBy,
     "updated_by": updatedBy,
@@ -146,94 +161,244 @@ class Datum {
   };
 }
 
-enum CanopySizeUnit {
-  M2
+ */
+class PlantedTreeModel {
+  String id;
+  String? thumbnail;
+  TreeSpeciesModel treeSpecies;
+  dynamic nextMaintenanceDate;
+  dynamic maintenanceServiceId;
+  dynamic monitoringServiceId;
+
+  // 🆕 New fields
+  String? fieldworkerName;
+  String? maintenanceStatus;
+  String? maintenanceStatusColor;
+  dynamic maintenanceStatusDays;
+  dynamic lastMaintainedDate;
+  dynamic nextMonitoringDate;
+  String? monitoringStatus;
+  String? monitoringStatusColor;
+  dynamic monitoringStatusDays;
+  dynamic lastMonitoredDate;
+
+  LocationModel location;
+  String? remarks;
+  String createdAt;
+  String updatedAt;
+  String treeHeight;
+  String treeHeightUnit;
+  String treeGirth;
+  String treeGirthUnit;
+  dynamic canopySize;
+  String canopySizeUnit;
+  dynamic treeAge;
+  String treeHealth;
+  String treeGrowth;
+  String plantationDate;
+  String plantationType;
+  bool isVerified;
+  dynamic verifiedAt;
+  String services;
+  String vendor;
+  String createdBy;
+  String updatedBy;
+  dynamic verifiedBy;
+  List<dynamic> treeDiseases;
+
+  PlantedTreeModel({
+    required this.id,
+    this.thumbnail,
+    required this.treeSpecies,
+    this.nextMaintenanceDate,
+    this.maintenanceServiceId,
+    this.monitoringServiceId,
+    this.fieldworkerName,
+    this.maintenanceStatus,
+    this.maintenanceStatusColor,
+    this.maintenanceStatusDays,
+    this.lastMaintainedDate,
+    this.nextMonitoringDate,
+    this.monitoringStatus,
+    this.monitoringStatusColor,
+    this.monitoringStatusDays,
+    this.lastMonitoredDate,
+    required this.location,
+    this.remarks,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.treeHeight,
+    required this.treeHeightUnit,
+    required this.treeGirth,
+    required this.treeGirthUnit,
+    this.canopySize,
+    required this.canopySizeUnit,
+    this.treeAge,
+    required this.treeHealth,
+    required this.treeGrowth,
+    required this.plantationDate,
+    required this.plantationType,
+    required this.isVerified,
+    this.verifiedAt,
+    required this.services,
+    required this.vendor,
+    required this.createdBy,
+    required this.updatedBy,
+    this.verifiedBy,
+    required this.treeDiseases,
+  });
+
+  factory PlantedTreeModel.fromJson(Map<String, dynamic> json) => PlantedTreeModel(
+    id: json["id"],
+    thumbnail: json["thumbnail"],
+    treeSpecies: TreeSpeciesModel.fromJson(json["tree_species"]),
+    nextMaintenanceDate: json["next_maintenance_date"],
+    maintenanceServiceId: json["maintenance_service_id"],
+    monitoringServiceId: json["monitoring_service_id"],
+    fieldworkerName: json["fieldworker_name"],
+    maintenanceStatus: json["maintenance_status"],
+    maintenanceStatusColor: json["maintenance_status_color"],
+    maintenanceStatusDays: json["maintenance_status_days"],
+    lastMaintainedDate: json["last_maintained_date"],
+    nextMonitoringDate: json["next_monitoring_date"],
+    monitoringStatus: json["monitoring_status"],
+    monitoringStatusColor: json["monitoring_status_color"],
+    monitoringStatusDays: json["monitoring_status_days"],
+    lastMonitoredDate: json["last_monitored_date"],
+    location: LocationModel.fromJson(json["location"]),
+    remarks: json["remarks"],
+    createdAt: json["created_at"],
+    updatedAt: json["updated_at"],
+    treeHeight: json["tree_height"],
+    treeHeightUnit: json["tree_height_unit"],
+    treeGirth: json["tree_girth"],
+    treeGirthUnit: json["tree_girth_unit"],
+    canopySize: json["canopy_size"],
+    canopySizeUnit: json["canopy_size_unit"],
+    treeAge: json["tree_age"],
+    treeHealth: json["tree_health"],
+    treeGrowth: json["tree_growth"],
+    plantationDate: json["plantation_date"],
+    plantationType: json["plantation_type"],
+    isVerified: json["is_verified"],
+    verifiedAt: json["verified_at"],
+    services: json["services"],
+    vendor: json["vendor"],
+    createdBy: json["created_by"],
+    updatedBy: json["updated_by"],
+    verifiedBy: json["verified_by"],
+    treeDiseases: List<dynamic>.from(json["tree_diseases"].map((x) => x)),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "thumbnail": thumbnail,
+    "tree_species": treeSpecies.toJson(),
+    "next_maintenance_date": nextMaintenanceDate,
+    "maintenance_service_id": maintenanceServiceId,
+    "monitoring_service_id": monitoringServiceId,
+    "fieldworker_name": fieldworkerName,
+    "maintenance_status": maintenanceStatus,
+    "maintenance_status_color": maintenanceStatusColor,
+    "maintenance_status_days": maintenanceStatusDays,
+    "last_maintained_date": lastMaintainedDate,
+    "next_monitoring_date": nextMonitoringDate,
+    "monitoring_status": monitoringStatus,
+    "monitoring_status_color": monitoringStatusColor,
+    "monitoring_status_days": monitoringStatusDays,
+    "last_monitored_date": lastMonitoredDate,
+    "location": location.toJson(),
+    "remarks": remarks,
+    "created_at": createdAt,
+    "updated_at": updatedAt,
+    "tree_height": treeHeight,
+    "tree_height_unit": treeHeightUnit,
+    "tree_girth": treeGirth,
+    "tree_girth_unit": treeGirthUnit,
+    "canopy_size": canopySize,
+    "canopy_size_unit": canopySizeUnit,
+    "tree_age": treeAge,
+    "tree_health": treeHealth,
+    "tree_growth": treeGrowth,
+    "plantation_date": plantationDate,
+    "plantation_type": plantationType,
+    "is_verified": isVerified,
+    "verified_at": verifiedAt,
+    "services": services,
+    "vendor": vendor,
+    "created_by": createdBy,
+    "updated_by": updatedBy,
+    "verified_by": verifiedBy,
+    "tree_diseases": List<dynamic>.from(treeDiseases.map((x) => x)),
+  };
+
+  // ✅ Helpers to format dates like "2 days ago"
+  String get lastMaintainedAgo => _timeAgo(lastMaintainedDate);
+  String get nextMonitoringAgo => _timeAgo(nextMonitoringDate);
+
+  static String _timeAgo(String? dateStr) {
+    if (dateStr == null) return "N/A";
+    try {
+      final date = DateTime.parse(dateStr);
+      final diff = DateTime.now().difference(date);
+
+      if (diff.inSeconds < 60) return "just now";
+      if (diff.inMinutes < 60) return "${diff.inMinutes} min ago";
+      if (diff.inHours < 24) return "${diff.inHours} hour${diff.inHours > 1 ? "s" : ""} ago";
+      if (diff.inDays < 30) return "${diff.inDays} day${diff.inDays > 1 ? "s" : ""} ago";
+      if (diff.inDays < 365) return "${(diff.inDays / 30).floor()} month${(diff.inDays / 30).floor() > 1 ? "s" : ""} ago";
+      return "${(diff.inDays / 365).floor()} year${(diff.inDays / 365).floor() > 1 ? "s" : ""} ago";
+    } catch (e) {
+      return "Invalid date";
+    }
+  }
 }
 
-final canopySizeUnitValues = EnumValues({
-  "m2": CanopySizeUnit.M2
-});
 
-class Location {
-  Type type;
+class LocationModel {
+  String type;
   List<double> coordinates;
 
-  Location({
+  LocationModel({
     required this.type,
     required this.coordinates,
   });
 
-  factory Location.fromJson(Map<String, dynamic> json) => Location(
-    type: typeValues.map[json["type"]]!,
+  factory LocationModel.fromJson(Map<String, dynamic> json) => LocationModel(
+    type: json["type"],
     coordinates: List<double>.from(json["coordinates"].map((x) => x?.toDouble())),
   );
 
   Map<String, dynamic> toJson() => {
-    "type": typeValues.reverse[type],
+    "type": type,
     "coordinates": List<dynamic>.from(coordinates.map((x) => x)),
   };
 }
 
-enum Type {
-  POINT
-}
+class TreeSpeciesModel {
+  String id;
+  String localName;
+  dynamic image;
+  String scientificName;
 
-final typeValues = EnumValues({
-  "Point": Type.POINT
-});
+  TreeSpeciesModel({
+    required this.id,
+    required this.localName,
+    this.image,
+    required this.scientificName,
+  });
 
-enum PlantationType {
-  NEW
-}
+  factory TreeSpeciesModel.fromJson(Map<String, dynamic> json) => TreeSpeciesModel(
+    id: json["id"],
+    localName: json["local_name"],
+    image: json["image"],
+    scientificName: json["scientific_name"],
+  );
 
-final plantationTypeValues = EnumValues({
-  "new": PlantationType.NEW
-});
-
-enum Remarks {
-  EMPTY,
-  STRING,
-  TESTING
-}
-
-final remarksValues = EnumValues({
-  "": Remarks.EMPTY,
-  "string": Remarks.STRING,
-  "Testing": Remarks.TESTING
-});
-
-enum TreeUnit {
-  FT
-}
-
-final treeUnitValues = EnumValues({
-  "ft": TreeUnit.FT
-});
-
-enum TreeGrowth {
-  SAPLING
-}
-
-final treeGrowthValues = EnumValues({
-  "sapling": TreeGrowth.SAPLING
-});
-
-enum TreeHealth {
-  HEALTHY
-}
-
-final treeHealthValues = EnumValues({
-  "healthy": TreeHealth.HEALTHY
-});
-
-class EnumValues<T> {
-  Map<String, T> map;
-  late Map<T, String> reverseMap;
-
-  EnumValues(this.map);
-
-  Map<T, String> get reverse {
-    reverseMap = map.map((k, v) => MapEntry(v, k));
-    return reverseMap;
-  }
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "local_name": localName,
+    "image": image,
+    "scientific_name": scientificName,
+  };
 }

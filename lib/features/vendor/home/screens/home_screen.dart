@@ -235,7 +235,7 @@ class _StatsSection extends StatelessWidget {
         children: const [
           _StatBox(
               title: 'Ongoing Projects',
-              value: '01'), // Consider making these dynamic
+              value: '02'), // Consider making these dynamic
           _StatBox(title: 'Upcoming Projects', value: '00'),
         ],
       ),

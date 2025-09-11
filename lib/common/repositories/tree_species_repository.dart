@@ -9,11 +9,11 @@ class TreeSpeciesRepository{
   final ApiConnection? api;
 
   TreeSpeciesRepository({this.api});
-  Future<ApiResult> getTreeList({String ? treeId}) async {
-    final url = treeId != null
-        ? '${BaseNetwork.treeSpeciesURL}/${treeId}/'
+  Future<ApiResult> getTreeList({String ? areaId}) async {
+    final url = areaId != null
+        ? '${BaseNetwork.treeSpeciesURL}$areaId/'
         : BaseNetwork.treeSpeciesURL;
-    ApiResult result = await api!.getApiConnection(BaseNetwork.treeSpeciesURL, BaseNetwork.getJsonHeaders(), treeSpeciesListResponseFromJson);
+    ApiResult result = await api!.getApiConnection(url, BaseNetwork.getJsonHeaders(), treeSpeciesListResponseFromJson);
     debugLog(result.status.toString(),name: "Bhosda Loaded");
     if (result.status == ApiStatus.success) {
       return result;

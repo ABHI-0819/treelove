@@ -31,8 +31,13 @@ class ServiceDetailBloc extends Bloc<ApiEvent, ApiState<ServiceDetailResponse, R
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
         case ApiStatus.unAuthorized:
-          emit(TokenExpired(result.response));
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
           break;
         default:
           emit(ApiFailure(result.response));

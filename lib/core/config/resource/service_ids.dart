@@ -1,8 +1,11 @@
+import '../../../common/repositories/service_repository.dart';
+import '../../network/api_connection.dart';
 import '../../storage/preference_keys.dart';
 import '../../storage/secure_storage.dart';
 
 class ServiceIds {
   ServiceIds._(); // Prevent instantiation
+
 
   // ✅ In-memory cache
   static String? _plantationId;
@@ -12,7 +15,8 @@ class ServiceIds {
   /// ✅ Load IDs from SecurePreference into memory
   static Future<void> load() async {
     final pref = SecurePreference();
-
+    final repo = ServicesRepository(api: ApiConnection());
+    await repo.cacheServiceIds();
     _plantationId = await pref.getString(Keys.plantationServiceId);
     _maintenanceId = await pref.getString(Keys.maintenanceServiceId);
     _monitoringId = await pref.getString(Keys.monitoringServiceId);

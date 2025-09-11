@@ -1,15 +1,15 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
+import '../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../core/config/resource/images.dart';
-import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
+import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/common_tree_diseases.dart';
 
 class MonitorActivityScreen extends StatefulWidget {
   static const route = "/monitor-activity";
@@ -22,6 +22,8 @@ class MonitorActivityScreen extends StatefulWidget {
 class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
 
   String today = '';
+
+  List<String> treeDiseases=[];
 
   /// get today date
   String getTodayDate() {
@@ -53,13 +55,59 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar: AppBar(
-        backgroundColor:const Color(0xFF004D40),
-        title: const Text('Monitor',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => AppRoute.pop(context),
+      appBar:PreferredSize(
+        preferredSize: const Size.fromHeight(80), // same height
+        child: AppBar(
+          automaticallyImplyLeading: false, // we'll use our custom button
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF00695C),
+                  Color(0xFF004D40),
+                ],
+              ),
+            ),
+          ),
+          leading: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          titleSpacing: 0, // aligns title properly
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Tree Monitor',
+                style: AppFonts.body.copyWith(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                'Monitoring green spaces',
+                // '${_treeData.length} trees under observation',
+                style: AppFonts.regular.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -75,9 +123,9 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
                 children: [
                   Text(
                     'Monitoring date',
-                    style: AppFonts.body.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppColor.black, // Remove default underline
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Container(
@@ -100,19 +148,18 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
                             color: Color(0xFF1A5F3E),
                             fontWeight: FontWeight.w500
                         ),),
-
                         InkWell(
                             onTap: (){
                               // _selectDate(context);
                             },
                             child: SvgPicture.asset(Images.calendarIcon,width: 18.w,height: 18.h,))
-
                       ],
                     ),
                   )
                 ],
               ),
               SizedBox(height: 24),
+              /// tree Health
               Text(
                 'Tree health',
                 style: TextStyle(
@@ -132,7 +179,6 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
                   _buildButtonWithEmoji('Bad', '☹️', 'Bad'),
                 ],
               ),
-
               // Tree Growth Stage Section
               SizedBox(height: 24),
               Text(
@@ -152,7 +198,13 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
                   _buildButton('Full growth', 'Full growth'),
                 ],
               ),
-
+              SizedBox(height: 24),
+              CommonTreeDiseasesWidget(
+                onChanged: (selectedDiseases) {
+                  treeDiseases=selectedDiseases.map((d) => d.id).toList();
+                  debugPrint("Selected IDs: ${selectedDiseases.map((d) => d.id).toList()}");
+                },
+              ),
               // Take Photo Section
               SizedBox(height: 24),
               Text(
@@ -168,7 +220,7 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
 
                   InkWell(
                     onTap: () async {
-                      final XFile? pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+                      final XFile? pickedFile = await _imagePicker.pickImage(source: ImageSource.camera);
                       if (pickedFile != null) {
                         setState(() {
                           photos.add(pickedFile);
@@ -298,7 +350,7 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
   }
 
   void _onSubmit(){
-
+    showNotification(context,type: Not.success, message: "Record added successfully ");
   }
 
   // Reusable Button with Emoji

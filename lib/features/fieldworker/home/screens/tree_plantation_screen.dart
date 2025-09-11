@@ -90,7 +90,7 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
           } else if (state is ApiSuccess<PlantationResponseModel, ResponseModel>) {
             EasyLoading.dismiss();
             showNotification(type: Not.success,context, message: state.data.message);
-            AppRoute.pop(context);
+            // AppRoute.pop(context);
           } else if (state is ApiFailure<PlantationResponseModel, ResponseModel>) {
             EasyLoading.dismiss();
             showNotification(type: Not.failed,context, message: state.error.message.toString());
@@ -103,7 +103,62 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
         },
         child: Scaffold(
           backgroundColor: AppColor.white,
-          appBar: AppBar(
+          appBar:PreferredSize(
+            preferredSize: const Size.fromHeight(80), // same height
+            child: AppBar(
+              automaticallyImplyLeading: false, // we'll use our custom button
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF00695C),
+                      Color(0xFF004D40),
+                    ],
+                  ),
+                ),
+              ),
+              leading: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new,
+                      color: Colors.white, size: 18),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              titleSpacing: 0, // aligns title properly
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Plant a Tree',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Making the world greener', // generic and reusable
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+/*
+          AppBar(
             backgroundColor: const Color(0xFF0E5D57),
             title: const Text('Plant a Tree',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -112,6 +167,8 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
               onPressed: () => AppRoute.pop(context),
             ),
           ),
+
+ */
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -425,7 +482,7 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
       services: widget.serviceId,
       location: {
         "type": "Point",
-        "coordinates": [lat,lng],
+        "coordinates": [lng,lat],
       },
       treeHeight: heightController.text.trim(),
       treeGirth: girthController.text.trim(),

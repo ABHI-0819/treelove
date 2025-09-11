@@ -16,7 +16,7 @@ class MapConstant{
   static const LatLng initialCenter = LatLng(18.97871986, 72.83684766);
   static const double minimumZoom = 8;
   static const double maximumZoom = 21.0;
-  static const double initialZoom = 16.5;
+  static const double initialZoom = 13.5;
   static const double zoomToPoint = 18.0;
   static const List<String> wmsBaseLayerName = ["RaniBagh:Ranibagh_Base_Map"];
 }

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:treelove/core/config/route/app_route.dart';
+import 'package:treelove/features/customer/retail/FAQ/faq_screen.dart';
+import 'package:treelove/features/customer/retail/cart/cart_screen.dart';
+import 'package:treelove/features/customer/retail/invite-friend/screens/invite_friend_screen.dart';
+import 'package:treelove/features/customer/retail/my-trees/screens/my_trees_screen.dart';
+import 'package:treelove/features/customer/retail/order/order_list_screen.dart';
 
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
@@ -30,8 +37,8 @@ class MyAccountScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: Colors.grey[200], // light grey background
-                child: SvgPicture.asset(
-                  'assets/icons/profile.svg',
+                child: Image.network(
+                  '',
                   height: 30,
                   width: 30,
                   color: Colors.grey[800], // optional: darker icon for contrast
@@ -112,11 +119,17 @@ class MyAccountScreen extends StatelessWidget {
                   spacing: 15.w,
                   runSpacing:15.h,
                   children: [
-                    _buildButton(icon: Images.babyPlantIcon, label: 'My Plantation', onTap: () {}),
-                    _buildButton(icon: Images.inviteIcon, label: 'Invite a Friend', onTap: () {}),
+                    _buildButton(icon: Images.babyPlantIcon, label: 'My Plantation', onTap: () {
+                      AppRoute.goToNextPage(context: context, screen: MyTreeScreen.route, arguments: {});
+                    }),
+                    _buildButton(icon: Images.inviteIcon, label: 'Invite a Friend', onTap: () {
+                        AppRoute.goToNextPage(context: context, screen: InviteAndEarnScreen.route, arguments: {});
+                    }),
                     _buildButton(icon: Images.supportIcon, label: 'Support', onTap: () {}),
                     _buildButton(icon: Images.settingIcon, label: 'Settings', onTap: () {}),
-                    _buildButton(icon: Images.cartIcon, label: 'My Cart', onTap: () {}),
+                    _buildButton(icon: Images.orderIcon, label: 'My Order', onTap: () {
+                      AppRoute.goToNextPage(context: context, screen: OrderListScreen.route, arguments: {});
+                    }),
                   ],
                 ),
               ),
@@ -126,7 +139,7 @@ class MyAccountScreen extends StatelessWidget {
             const Divider(thickness: 1.2, indent: 16.0, endIndent: 16.0),
 
             // 📃 About Section
-            _buildAboutSection(),
+            _buildAboutSection(context),
 
             const Divider(thickness: 1.2, indent: 16.0, endIndent: 16.0),
 
@@ -140,7 +153,7 @@ class MyAccountScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildAboutSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -174,7 +187,9 @@ class MyAccountScreen extends StatelessWidget {
                 _buildDivider(),
                 _buildLinkRow('Privacy Policy', () {}),
                 _buildDivider(),
-                _buildLinkRow('FAQs', () {}),
+                _buildLinkRow('FAQs', () {
+                  AppRoute.goToNextPage(context: context, screen: FaqScreen.route, arguments: {});
+                }),
               ],
             ),
           ),
@@ -333,4 +348,5 @@ class MyAccountScreen extends StatelessWidget {
   }
 
 }
+
 

@@ -13,7 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   SecurePreference();
-  // getDeviceInfo();
+  ServiceIds.load();
   runApp(const MyApp());
 }
 // void getDeviceInfo() async {
@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title:'TREE-LOVE',
         builder: EasyLoading.init(
+
         ),
         debugShowCheckedModeBanner:false,
         theme: ThemeData(

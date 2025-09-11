@@ -21,6 +21,7 @@ class ServicesRepository {
             (res) => json.decode(res) as Map<String, dynamic>,
       );
 
+      debugLog(result.response.toString(),);
       if (result.status == ApiStatus.success) {
         final List<dynamic> dataList = result.response["data"];
 
