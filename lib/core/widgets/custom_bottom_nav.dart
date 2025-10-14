@@ -29,10 +29,9 @@ class CustomBottomNav extends StatelessWidget {
       items: [
         buildNavItem(index: 0, filledIcon: Images.homeFilledIcon, outlinedIcon: Images.homeIcon, label: 'Home'),
         buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Projects'),
-        buildNavItem(index: 2, filledIcon: Images.inquiryFilledIcon, outlinedIcon: Images.inquiryIcon, label: 'Inquiry'),
+        buildNavItem(index: 2, filledIcon: Images.inquiryFilledIcon, outlinedIcon: Images.inquiryIcon, label: 'Enquiry'),
         buildNavItem(index: 3, filledIcon: Images.moreFilledIcon, outlinedIcon: Images.moreIcon, label: 'More'),
       ],
-
     );
   }
 

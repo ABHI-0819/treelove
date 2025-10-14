@@ -1067,9 +1067,11 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {
+                                debugLog(treeData.maintenanceServiceId.toString(),name:  "Service ID");
+                                debugLog(treeData.id.toString(), name :"Maintenance");
                                 AppRoute.goToNextPage(context: context, screen: MaintenanceActivityScreen.route, arguments: {
-                                  // 'plantationId':treeData.,
-                                  // 'serviceId':treeData.sevi
+                                  'plantationId':treeData.id.toString(),
+                                  'serviceId':treeData.maintenanceServiceId
                                 });
                                 // AppRoute.goToNextPage(context: context, ...)
                               },

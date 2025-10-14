@@ -51,6 +51,8 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
 
   double price = 0;
 
+  String monitoringMode = 'manual';
+
   void incrementQuantity() {
     setState(() {
       quantity++;
@@ -278,7 +280,50 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
                           ),
 
                           // Maintenance Toggle
-
+// 👇 SHOW MONITORING MODE OPTIONS ONLY IF ENABLED
+                          if (monitoring)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Select Monitoring Type",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      _buildMonitoringOption(
+                                        label: "Manual",
+                                        value: "manual",
+                                        isSelected: monitoringMode == "manual",
+                                        onTap: () {
+                                          setState(() {
+                                            monitoringMode = "manual";
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildMonitoringOption(
+                                        label: "Satellite",
+                                        value: "satellite",
+                                        isSelected: monitoringMode == "satellite",
+                                        onTap: () {
+                                          setState(() {
+                                            monitoringMode = "satellite";
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           // Add to Cart Button
                           Spacer(),
                           BlocListener<CartBloc,
@@ -339,6 +384,7 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
                                       isGeotagOnly: geoTagging,
                                       parentService: null,
                                       quantity: quantity,
+                                      monitoringMode: monitoring ? monitoringMode : null,
                                       treeSpecies: treeDetail.data.id,
                                       status: "pending",
                                       // required
@@ -385,6 +431,7 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
                                       // required
                                       isGeotagOnly: geoTagging,
                                       parentService: null,
+                                      monitoringMode: monitoring ? monitoringMode : null,
                                       quantity: quantity,
                                       treeSpecies: treeDetail.data.id,
                                       status: "pending",
@@ -420,6 +467,38 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
       ),
     );
   }
+
+  // 👇 Helper Widget for Monitoring Option Button
+  Widget _buildMonitoringOption({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.grey.shade700,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.grey.shade500,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
 }
 /*
   backgroundColor: const Color(0xFFF6F2E8),

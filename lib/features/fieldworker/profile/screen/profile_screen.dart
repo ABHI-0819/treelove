@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -287,6 +288,487 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+ */
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:treelove/core/widgets/input_field.dart';
+import 'dart:io';
+
+// Assuming these exist in your project
+
+import '../../../../common/bloc/api_state.dart';
+import '../../../../common/models/response.mode.dart';
+import '../../../../common/repositories/staff_repository.dart';
+import '../../../../core/config/themes/app_color.dart';
+import '../../../../core/config/themes/app_fonts.dart';
+import '../../../../core/network/api_connection.dart';
+import '../../../../core/widgets/common_notification.dart';
+import '../../../vendor/Staff/bloc/staff_bloc.dart';
+import '../../../vendor/Staff/models/staff_response_model.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
+
+
+class ProfileScreen extends StatefulWidget {
+  static const String route = '/profile';
+
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late StaffBloc staffBloc;
+
+  // Controllers for editable fields
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  // Country Code
+  String _selectedCountryCode = '+91';
+  final List<String> _countryCodes = ['+91', '+1', '+44', '+61', '+971'];
+
+  // Profile Pic
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
+
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    staffBloc = StaffBloc(StaffRepository(api: ApiConnection()));
+    _loadProfile(); // Load current user profile
+  }
+
+  Future<void> _loadProfile() async {
+    // TODO: Fetch current staff profile from API/BLoC
+    // For now, we'll simulate with mock data
+    // final mockProfile = StaffResponseModel(
+    //   id: "1",
+    //   firstName: "John",
+    //   lastName: "Doe",
+    //   email: "john.doe@example.com",
+    //   phone: "9876543210",
+    //   countryCode: "+91",
+    //   profilePictureUrl: null,
+    // );
+    //
+    // _populateFields(mockProfile);
+  }
+
+  // void _populateFields(StaffResponseModel profile) {
+  //   firstNameController.text = profile.firstName ?? "";
+  //   lastNameController.text = profile.lastName ?? "";
+  //   emailController.text = profile.email ?? "";
+  //   phoneController.text = profile.phone ?? "";
+  //   _selectedCountryCode = profile.countryCode ?? "+91";
+  //   setState(() {});
+  // }
+
+  Future<void> _showImageSourceSheet() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text("Take a Photo"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Choose from Gallery"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.close, color: Colors.red),
+              title: const Text("Cancel"),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedImage = await _picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 70,
+    );
+
+    if (pickedImage != null) {
+      setState(() {
+        _profileImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  void _toggleEditMode() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  void _saveProfile() {
+    // TODO: Validate and send update request
+    showNotification(context, message: "Profile updated successfully");
+    setState(() {
+      _isEditing = false;
+    });
+  }
+
+  void _logout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showNotification(context, message: "Logged out successfully");
+              Future.delayed(const Duration(milliseconds: 800), () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/signIn', // Replace with your SignIn route
+                      (route) => false,
+                );
+              });
+            },
+            child: const Text(
+              "Logout",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    staffBloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: AppColor.white,
+      body: BlocProvider.value(
+        value: staffBloc,
+        child: BlocListener<StaffBloc, ApiState<StaffResponseModel, ResponseModel>>(
+          listener: (context, state) {
+            // Handle API states if needed
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 👇 Optional Title (Remove if not needed)
+                const SizedBox(height: 10),
+                Text(
+                  'My Profile',
+                  style: AppFonts.subtitle.copyWith(fontSize: 24, color: Colors.black87),
+                ),
+                const SizedBox(height: 30),
+
+                // Profile Picture
+                GestureDetector(
+                  onTap: _isEditing ? _showImageSourceSheet : null,
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: _profileImage != null
+                            ? FileImage(_profileImage!)
+                            : const AssetImage("assets/images/default_avatar.png") as ImageProvider?,
+                        child: _profileImage == null
+                            ? const Icon(Icons.person, size: 40, color: Colors.white70)
+                            : null,
+                      ),
+                      if (_isEditing)
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey, width: 2),
+                          ),
+                          child: const Icon(Icons.edit, size: 16, color: Colors.grey),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (!_isEditing)
+                  Text(
+                    "${firstNameController.text} ${lastNameController.text}".trim(),
+                    style: AppFonts.subtitle.copyWith(fontSize: 20),
+                  ),
+                if (!_isEditing)
+                  const SizedBox(height: 4),
+                if (!_isEditing)
+                  Text(
+                    emailController.text,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                const SizedBox(height: 32),
+
+                // ✏️ Edit Mode
+                if (_isEditing) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: size.width * 0.42,
+                        child: SecondaryInputField(
+                          controller: firstNameController,
+                          asterisk: "*",
+                          labelText: 'First Name',
+                          hintText: 'Enter first name',
+                          inputType: TextInputType.name,
+                          maxline: 1,
+                        ),
+                      ),
+                      SizedBox(
+                        width: size.width * 0.42,
+                        child: SecondaryInputField(
+                          controller: lastNameController,
+                          asterisk: "*",
+                          labelText: 'Last Name',
+                          hintText: 'Enter last name',
+                          inputType: TextInputType.name,
+                          maxline: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SecondaryInputField(
+                    controller: emailController,
+                    labelText: 'Email',
+                    hintText: 'Enter email',
+                    inputType: TextInputType.emailAddress,
+                    asterisk: "*",
+                    maxline: 1,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(children: [
+                              TextSpan(
+                                  text: 'Code',
+                                  style: const TextStyle(color: AppColor.primary)),
+                              const TextSpan(
+                                  text: "*", style: TextStyle(color: Colors.red, fontSize: 14))
+                            ]),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedCountryCode,
+                                dropdownColor: AppColor.white,
+                                items: _countryCodes.map((code) {
+                                  return DropdownMenuItem(
+                                    value: code,
+                                    child: Text(code),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() => _selectedCountryCode = value!);
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SecondaryInputField(
+                          controller: phoneController,
+                          labelText: 'Phone Number',
+                          hintText: 'Enter phone number',
+                          asterisk: "*",
+                          inputType: TextInputType.phone,
+                          maxline: 1,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF004D40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                      ),
+                      onPressed: _saveProfile,
+                      child: const Text(
+                        'Save Changes',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ]
+                // 👀 View Mode
+                else ...[
+                  _buildProfileRow(Icons.person, "Name", "${firstNameController.text} ${lastNameController.text}"),
+                  _buildProfileRow(Icons.email, "Email", emailController.text),
+                  _buildProfileRow(Icons.phone, "Phone", "$_selectedCountryCode ${phoneController.text}"),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0E5D57),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                      ),
+                      onPressed: _toggleEditMode,
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      label: const Text(
+                        'Edit Profile',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // 🔴 Logout Button
+                  GestureDetector(
+                    onTap: _logout,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.red.shade300),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.logout, color: Colors.red, size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ]
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileRow(IconData icon, String label, String value) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey[600], size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

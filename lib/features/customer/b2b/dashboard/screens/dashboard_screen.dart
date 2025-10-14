@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/common/bloc/api_event.dart';
@@ -13,6 +14,8 @@ import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/dashboard_repository.dart';
 import '../../../../../core/config/resource/images.dart';
+import '../../../../../core/config/route/app_route.dart';
+import '../../map/screens/b2b_map_screen.dart';
 import '../model/dashboard_response_model.dart';
 
 class ClientDashboardScreen extends StatefulWidget {
@@ -158,9 +161,13 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
                           // Investment Overview
+                          mapOverView(),
+                          /*
                           _buildInvestmentOverview(
                               investment: dashboard.data.projectOverview
                                   .totalInvestment.toString()),
+
+                           */
                           const SizedBox(height: 28),
 
                           // Project Stats
@@ -210,6 +217,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
     );
   }
 
+  /*
   Widget _buildInvestmentOverview({required String investment}) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -310,6 +318,61 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+   */
+
+  Widget mapOverView(){
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 180,
+              child: FlutterMap(
+                options: MapOptions(
+                  // initialCenter:LatLng(polygonPoints.last.latitude, polygonPoints.first.longitude),
+                  initialZoom: 12,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    tileProvider: NetworkTileProvider(
+                      headers: {'User-Agent': 'TreelovApp/1.0'},
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.fullscreen,
+                    color: Colors.white, size: 20),
+                onPressed: () {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: B2bMapScreen.route,
+                    arguments: {
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),

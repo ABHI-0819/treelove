@@ -23,8 +23,10 @@ import '../../../../core/config/themes/app_color.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/api_connection.dart';
+import '../../../../core/services/watermark_service.dart';
 import '../../../../core/utils/location_permission_helper.dart';
 import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/image_viewe.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
 import '../../activity/screens/project_action_screen.dart';
 import '../../plantation/bloc/plantation_bloc.dart';
@@ -61,11 +63,14 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
   LatLng? selectedLatLng; // store current selection
   final mapController = MapController();
 
+  final WatermarkCameraService _service = WatermarkCameraService();
+
   @override
   void initState() {
     plantationBloc = PlantationBloc(
       PlantationRepository(api: ApiConnection()),
     );
+
     // TODO: implement initState
     super.initState();
   }
@@ -76,6 +81,39 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
     super.dispose();
   }
 
+  bool _isProcessing = false;
+  Future<void> _captureImage() async {
+    if (_isProcessing) return; // prevent double-tap spam
+
+    setStateSafe(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final file = await _service.captureAndSaveImage();
+
+      if (file != null && mounted) {
+        setStateSafe(() {
+          treeImages.add(file);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error capturing image: $e")),
+        );
+      }
+    } finally {
+      setStateSafe(() {
+        _isProcessing = false;
+      });
+    }
+  }
+
+  /// Safe setState to avoid calling after dispose
+  void setStateSafe(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
 
 
   @override
@@ -157,18 +195,6 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
               ),
             ),
           ),
-/*
-          AppBar(
-            backgroundColor: const Color(0xFF0E5D57),
-            title: const Text('Plant a Tree',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => AppRoute.pop(context),
-            ),
-          ),
-
- */
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -310,30 +336,40 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(file.path),
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
+                          child: InkWell(
+                            onTap: () {
+                              if (!mounted) return;
+                              AppRoute.goToNextPage(
+                                context: context,
+                                screen: FullScreenImageViewer.route,
+                                arguments: {
+                                  'imagePath': file.path,
+                                  'heroTag': 'photo_${file.hashCode}',
+                                },
+                              );
+                            },
+                            child: Image.file(
+                              file,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _selectedImages.remove(file);
-                            });
+                            setStateSafe(() => treeImages.remove(file));
                           },
                           child: const CircleAvatar(
                             radius: 10,
                             backgroundColor: Colors.red,
-                            child: Icon(Icons.close,
-                                size: 14, color: Colors.white),
+                            child: Icon(Icons.close, size: 14, color: Colors.white),
                           ),
-                        )
+                        ),
                       ],
                     )),
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _captureImage,
                       child: Container(
                         width: 80,
                         height: 80,
@@ -341,14 +377,19 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
                           border: Border.all(color: Colors.grey.shade400, width: 1.5),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Center(
-                          child: Icon(Icons.camera_alt_outlined, size: 28),
+                        child: Center(
+                          child: _isProcessing
+                              ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                              : const Icon(Icons.camera_alt_outlined, size: 28),
                         ),
                       ),
                     ),
                   ],
                 ),
-                // ✅ REMARK FIELD
                 const SizedBox(height: 16),
                 TextFormField(
                   maxLines: 2,

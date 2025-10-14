@@ -50,8 +50,10 @@ class BaseNetwork {
   static const String plantationListURL = "${_BASE_URL}api/v1/survey/plantation/";
   static const String plantationCreateURL= "${_BASE_URL}api/v1/survey/plantation/";
   static const String maintenanceCreatedURL="${_BASE_URL}api/v1/survey/maintenance/";
+  static const String monitorCreatedURL ="${_BASE_URL}api/v1/survey/monitoring/";
   static const String monitorAddURL ="${_BASE_URL}api/v1/survey/plantation/";
   static const String projectAreasURl = "${_BASE_URL}api/v1/projects/project-areas/";
+  static const String satelliteMonitorResultUrl = "${_BASE_URL}api/v1/survey/satellite-monitoring/";
   //http://43.205.169.130/api/v1/projects/fieldworker-dashboard/
   static const String fieldworkerDashboardUrl = "${_BASE_URL}api/v1/projects/fieldworker-dashboard/";
 
@@ -65,6 +67,7 @@ class BaseNetwork {
   //TODO: B2B URL:
   static const String b2bDashboardUrl = "${_BASE_URL}api/v1/projects/client/home-dashboard/";
   static const String b2bProjectDashboardURL = "${_BASE_URL}api/v1/projects/client-dashboard/";
+  static const String maintenanceActivityUrl ="${_BASE_URL}api/v1/survey/maintenance-activity/";
   //http://10.202.100.187:9004/swagger/
 
   static Map<String, String> getJsonHeaders() {

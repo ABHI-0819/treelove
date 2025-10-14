@@ -916,6 +916,7 @@ class ApiConnection {
         }
 
         final request = http.MultipartRequest(method, Uri.parse(url));
+
         debugLog(request.url.toString(),name: "Request header");
         request.headers.addAll(header);
         fields.forEach((key, value) => request.fields[key] = value.toString());
@@ -930,6 +931,7 @@ class ApiConnection {
         }
 
         final streamedResponse = await request.send();
+        debugLog(request.fields.toString(),name: "All fields");
         return await http.Response.fromStream(streamedResponse);
       },
       parser,
@@ -947,6 +949,8 @@ class ApiConnection {
     String? projectId,
     String? serviceName,
     String? projectAreaId,
+    String? plantationId,
+    String? plantation,
     String? areaId,
     String? orderId,
     String? vendorId,
@@ -968,6 +972,8 @@ class ApiConnection {
     if (projectId!=null) queryParameters['project_id'] = projectId;
     if (serviceName != null) queryParameters['service_type'] = serviceName;
     if (projectAreaId != null) queryParameters['project_area_id'] = projectAreaId;
+    if (plantationId != null) queryParameters['plantationId'] = plantationId;
+    if (plantation != null) queryParameters['plantation'] = plantation;
     if (areaId != null) queryParameters['area'] = areaId;
     if (orderId != null) queryParameters['order_id'] = orderId;
     if (vendorId != null) queryParameters['vendor'] = vendorId;

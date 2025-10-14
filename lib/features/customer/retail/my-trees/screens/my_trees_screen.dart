@@ -5,6 +5,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:treelove/common/repositories/plantation_repository.dart';
+import 'package:treelove/common/screens/satellite_history_screen.dart';
+import 'package:treelove/common/screens/satellite_monitoring_result_screen.dart';
 import 'package:treelove/features/authentication/screens/sign_in_screen.dart';
 import 'package:treelove/features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
 import 'package:treelove/features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
@@ -117,6 +119,7 @@ import '../../../../../core/config/route/app_route.dart';
 import '../../../../../core/config/themes/app_color.dart';
 import '../../../../../core/network/api_connection.dart';
 import '../../../../../core/network/base_network.dart';
+import '../../../../../core/widgets/tree_bottomsheet.dart';
 import '../../../../vendor/home/bloc/map_bloc.dart';
 import '../../../../vendor/home/models/project_list_model.dart';
 import 'tree_monitoring_history.dart';
@@ -581,7 +584,44 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
           setState(() {
             selectedTree = tree;
           });
-          _showTreeDetails(tree);
+          // _showTreeDetails(tree);
+          TreeDetailsBottomSheet.show(
+            context,
+            treeName: tree.treeSpecies.localName,
+            scientificName: tree.treeSpecies.scientificName,
+            imageUrl: tree.thumbnail??tree.treeSpecies.image, // or null
+            health: tree.treeHealth,
+            growth:tree.treeGrowth,
+            girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
+            direction: 'Direction',
+            onDirectionTap: (){
+
+            },
+            nextMaintenanceDate: tree.nextMaintenanceDate,
+            nextMonitoringDate: tree.nextMonitoringDate,
+            onMaintenanceHistoryTap: () {
+              AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
+                'treeSpecies':'neem',
+                'location':"mumbai",
+                'treeId':'2131'
+              });
+              // Navigate to maintenance history
+            },
+            onManualMonitorHistoryTap: () {
+              AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
+                'treeSpecies':'neem',
+                'location':"mumbai",
+                'treeId':'2131'
+              });
+              // Navigate to manual monitoring history
+            },
+            onSatelliteMonitorHistoryTap: () {
+              AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
+                'plantationId':tree.id,
+              });
+              // Navigate to satellite monitoring history
+            },
+          );
         },
         child: SvgPicture.asset(Images.treeMarker),
       ),
@@ -777,7 +817,8 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _TreeDetailsBottomSheet(tree: tree),
+      builder: (context) =>
+          _TreeDetailsBottomSheet(tree: tree),
     );
   }
 
@@ -1065,11 +1106,16 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                         // Monitoring History
                         Expanded(
                           child: InkWell(
-                            onTap: () => AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                              'treeSpecies':'neem',
-                              'location':"mumbai",
-                              'treeId':'2131'
-                            }),
+                            onTap: () {
+                              AppRoute.goToNextPage(context: context, screen: SatelliteMonitoringResultScreen.route, arguments: {
+                                'monitorId':'653a1175-f498-421d-9668-5841533e102d'
+                              });
+                            //   AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
+                            //   'treeSpecies':'neem',
+                            //   'location':"mumbai",
+                            //   'treeId':'2131'
+                            // });
+                            },
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),

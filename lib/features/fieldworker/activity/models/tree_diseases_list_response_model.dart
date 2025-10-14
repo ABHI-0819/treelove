@@ -82,4 +82,8 @@ class TreeDisease {
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
   };
+
+  /// ✅ Override toString so dropdowns / debuggers show diseaseName
+  @override
+  String toString() => diseaseName;
 }

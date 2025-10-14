@@ -51,7 +51,7 @@ class CommonTreeDiseasesWidget extends StatelessWidget {
                         // style: const TextStyle(color: AppColor.primary),
                       ),
                       TextSpan(
-                        text: "*",
+                        text: "",
                         style: TextStyle(color: Colors.red, fontSize: 14),
                       ),
                     ],
@@ -60,6 +60,7 @@ class CommonTreeDiseasesWidget extends StatelessWidget {
                 const SizedBox(height: 5),
                 MultiSelectSearchableDropdown<TreeDisease>(
                   items: treeDisease,
+
                   itemAsString: (disease) => disease.diseaseName,
                   searchableAttributes: (disease) => [disease.diseaseName!],
                   hintText: hintText,
