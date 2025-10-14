@@ -1,42 +1,57 @@
 {
   "project_info": {
-    "project_number": "359037552305",
-    "project_id": "authentication-6e780",
-    "storage_bucket": "authentication-6e780.firebasestorage.app"
+    "project_number": "570898943557",
+    "project_id": "treelov-2937c",
+    "storage_bucket": "treelov-2937c.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:359037552305:android:78a28dd4e163359d9e4490",
+        "mobilesdk_app_id": "1:570898943557:android:8832d1a8a5c070686b5d2c",
         "android_client_info": {
-          "package_name": "com.treelove.app.treelove"
+          "package_name": "com.treelov.mobile"
         }
       },
       "oauth_client": [
         {
-          "client_id": "359037552305-hjj35u0kn3b64641egb05krmbf5v1dq6.apps.googleusercontent.com",
+          "client_id": "570898943557-0pog3tdrcv2k4u0dc5r61i7e5v7t3li1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.treelove.app.treelove",
+            "package_name": "com.treelov.mobile",
             "certificate_hash": "a1a6fc503d6255719f0048cc4498c68ae26bd4b7"
           }
         },
         {
-          "client_id": "359037552305-7p0d93rlk2opml12smtevhap4vd0uj50.apps.googleusercontent.com",
+          "client_id": "570898943557-cgjenmtn71ab8ag9voabsjc3427f2tq9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.treelov.mobile",
+            "certificate_hash": "70a31420ec7a3b61be03c23cd7a39d989bf83fe9"
+          }
+        },
+        {
+          "client_id": "570898943557-ufelm8khr2b0gt00dl7st77p99v9gvnl.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBrL4DWMCyahZMs0MMbUnuDbeGV6E2qLfg"
+          "current_key": "AIzaSyCT-FBnbXyzqh9WAbrdA1GOdWtUecCohPQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "359037552305-7p0d93rlk2opml12smtevhap4vd0uj50.apps.googleusercontent.com",
+              "client_id": "570898943557-ufelm8khr2b0gt00dl7st77p99v9gvnl.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "570898943557-n72iebkdug08h4vn08tp7sq93fnebs7g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.treelov.mobile"
+              }
             }
           ]
         }
