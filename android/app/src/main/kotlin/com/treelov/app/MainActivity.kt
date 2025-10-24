@@ -1,4 +1,4 @@
-package com.treelov.mobile
+package com.treelov.app
 
 import io.flutter.embedding.android.FlutterActivity
 

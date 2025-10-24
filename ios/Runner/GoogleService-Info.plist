@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>570898943557-n72iebkdug08h4vn08tp7sq93fnebs7g.apps.googleusercontent.com</string>
+	<string>570898943557-5bp9psngcutpce3kutiob448nc5vlt2k.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.570898943557-n72iebkdug08h4vn08tp7sq93fnebs7g</string>
+	<string>com.googleusercontent.apps.570898943557-5bp9psngcutpce3kutiob448nc5vlt2k</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>570898943557-0pog3tdrcv2k4u0dc5r61i7e5v7t3li1.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyD-t53tz1rIh_90qmuV4zzgi1eYVoFWHXM</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.treelov.mobile</string>
+	<string>com.treelov.app</string>
 	<key>PROJECT_ID</key>
 	<string>treelov-2937c</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:570898943557:ios:ac1ff0526e4a25686b5d2c</string>
+	<string>1:570898943557:ios:348462347824714d6b5d2c</string>
+	<key>DATABASE_URL</key>
+	<string>https://treelov-2937c-default-rtdb.asia-southeast1.firebasedatabase.app</string>
 </dict>
 </plist>
