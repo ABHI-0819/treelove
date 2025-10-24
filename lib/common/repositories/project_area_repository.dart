@@ -17,12 +17,13 @@ class ProjectAreaRepository {
   Future<ApiResult> fetchProjectAreas({
     String? filter,
     String? search,
+    String? project,
     int? page,
     int? limit,
   }) async {
 
     final token = await pref.getString(Keys.accessToken);
-    final url = api.generateUrl(baseUrl: BaseNetwork.projectAreasURl,status: filter,searchQuery: search);
+    final url = api.generateUrl(baseUrl: BaseNetwork.projectAreasURl,status: filter,searchQuery: search,project: project);
     ApiResult result = await api.getApiConnection<ProjectAreasResponse>(
       // BaseNetwork.projectListURL,
       url,

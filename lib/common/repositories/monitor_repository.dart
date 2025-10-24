@@ -1,11 +1,10 @@
-
-
 import '../../core/network/api_connection.dart';
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
 import '../../core/utils/logger.dart';
+import '../../features/customer/retail/my-trees/models/monitor_history_list_response.dart';
 import '../../features/fieldworker/activity/models/monitor_created_response_model.dart';
 import '../../features/fieldworker/activity/models/monitor_request_model.dart';
 import '../models/satellite_monitor_history_response.dart';
@@ -60,5 +59,15 @@ class MonitorRepository {
     return result;
   }
 
+  Future<ApiResult> fetchMonitorHistory({required String plantationId})async{
+    final token = await pref.getString(Keys.accessToken);
+    final url = api.generateUrl(baseUrl: BaseNetwork.monitorCreatedURL,plantation: plantationId);
+    ApiResult result=  await api.getApiConnection<MonitoringHistoryListResponse>(
+      url, // assuming endpoint like /monitor/{id}/
+      BaseNetwork.getHeaderWithToken(token),
+      monitoringHistoryListResponseFromJson, // JSON deserializer
+    );
+    return result;
+  }
 
 }

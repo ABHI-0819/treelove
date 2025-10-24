@@ -12,6 +12,7 @@ import '../../../../../core/storage/preference_keys.dart';
 import '../../../../../core/storage/secure_storage.dart';
 import '../../../../fieldworker/home/screens/main_screen.dart';
 import '../../cart/cart_screen.dart';
+import '../../project/screens/project_template_screen.dart';
 import 'location_selection_screen.dart';
 
 SecurePreference preference= SecurePreference();
@@ -45,8 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildFarmerProjects(),
             GovtProjectsCard(
               imagePath: Images.birthdayBg, // Replace with your actual image path
-              totalProjects: 7,
+              totalProjects: 0,
+              onSeeAllTap: (){
+                AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
+                  'title':'Government Plantations',
+                  'category':'government'
+                });
+              },
               onTap: () {
+                AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
+                  'title':'Government Plantations',
+                  'category':'government'
+                });
                 // Navigate or show dialog
                 print("Know more tapped");
               },
@@ -428,7 +439,7 @@ class HomeTopSection extends StatelessWidget {
     );
   }
   Future<String> _getUserName() async {
-    return await preference.getString(Keys.name, defaultValue: 'Arman');
+    return await preference.getString(Keys.name, defaultValue: 'Ankit Sharma');
   }
 
   Widget _buildGreeting() {
@@ -489,13 +500,23 @@ class HomeTopSection extends StatelessWidget {
             imagePath: 'assets/forest.jpg',
             icon: Icons.park,
             isActive: false,
-            onTap: () {},
+            onTap: () {
+              AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
+                'title':'Forest Projects',
+                'category':'ngo'
+              });
+            },
           ),
           ExplorePlantationCard(
-            title: 'Farmers Plantation',
+            title: 'Farmer\'s Plantation',
             imagePath: 'assets/type.jpg',
             icon: Icons.eco,
-            onTap: () {},
+            onTap: () {
+              AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
+                'title':'Farmers Plantations',
+                'category':'farmer'
+              });
+            },
           ),
         ],
       ),

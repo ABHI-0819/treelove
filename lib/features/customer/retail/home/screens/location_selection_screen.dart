@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
+import 'package:treelove/core/utils/logger.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
 import '../../../../../common/bloc/api_event.dart';
 import '../../../../../common/bloc/api_state.dart';
@@ -28,7 +30,8 @@ import '../../../../fieldworker/activity/models/project_area_list_response.dart'
 
 class MapScreen extends StatefulWidget {
   static const route ="/plant-by-location";
-  const MapScreen({super.key});
+  final String ? projectId;
+  const MapScreen({this.projectId,super.key});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -118,7 +121,13 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     projectAreaBloc = ProjectAreaBloc(ProjectAreaRepository(api: ApiConnection()));
-    projectAreaBloc.add(ApiListFetch());
+    if(widget.projectId!=null){
+      debugLog(widget.projectId.toString(),name: "projectId");
+      projectAreaBloc.add(ApiListFetch(id: widget.projectId));
+    }else{
+      projectAreaBloc.add(ApiListFetch());
+    }
+
     // TODO: implement initState
     super.initState();
   }
@@ -222,9 +231,9 @@ class _MapScreenState extends State<MapScreen> {
                       ],
                     ),
                     Positioned(
-                      top: 140, // Below your search bar
-                      left: 20,
-                      right: 20,
+                      top: 120, // Below your search bar
+                      left: 15,
+                      right: 15,
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -258,7 +267,13 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                     ),
                     SafeArea(
-                        child: _SearchBar(mapController: mapController)),
+                        child: _SearchBar(mapController: mapController,
+                          onBackPressed: () {
+                            Navigator.of(context).pop(); // or pushReplacement, etc.
+                          },
+                        )),
+
+
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: SafeArea(
@@ -293,8 +308,7 @@ class _MapScreenState extends State<MapScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
-                                  padding:
-                                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  padding:  EdgeInsets.symmetric(horizontal: 16.w,vertical: 10),
                                   elevation: 5,
                                 ),
                               ),
@@ -324,6 +338,122 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
+
+class _SearchBar extends StatelessWidget {
+  final MapController mapController;
+  final VoidCallback? onBackPressed; // Optional back callback
+
+  const _SearchBar({
+    required this.mapController,
+    this.onBackPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false, // Avoid double padding at bottom
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          spacing: 10,
+          children: [
+            // Back Button
+            if (onBackPressed != null)
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new,
+                      color: AppColor.black, size: 18),
+                  onPressed: onBackPressed!,
+                ),
+              )
+            /*
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: onBackPressed!,
+                child: Icon(
+                  CupertinoIcons.back,
+                  color: Theme.of(context).platform == TargetPlatform.iOS
+                      ? CupertinoColors.systemBlue
+                      : Theme.of(context).iconTheme.color,
+                  size: 30,
+                ),
+              )
+
+               */
+            else
+              const SizedBox(width: 36), // Reserve space if no back button
+
+            // Search Field
+            Expanded(
+              child: Container(
+                height: 44, // Standard iOS control height
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(12), // iOS-style rounding
+                  boxShadow: Theme.of(context).platform == TargetPlatform.iOS
+                      ? [] // iOS typically avoids heavy shadows
+                      : [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  onSubmitted: (value) async {
+                    final location = await getLatLngFromQuery(value);
+                    if (location != null) {
+                      mapController.move(location, 17);
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Search for location...",
+                    hintStyle: const TextStyle(fontSize: 16),
+                    border: InputBorder.none,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Icon(
+                        Icons.search,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  ),
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Replace this with your actual geocoding logic (e.g., using geocoding package)
+  Future<LatLng?> getLatLngFromQuery(String query) async {
+    // Example:
+    // final geocoding = Geocoding();
+    // final results = await geocoding.search(query);
+    // if (results.isNotEmpty) {
+    //   final first = results.first;
+    //   return LatLng(first.latitude, first.longitude);
+    // }
+    // return null;
+
+    // For now, return null or mock
+    return null;
+  }
+}
+/*
 class _SearchBar extends StatelessWidget {
   final MapController mapController;
 
@@ -371,6 +501,8 @@ class _SearchBar extends StatelessWidget {
     // Return example: LatLng(19.0760, 72.8777);
   }
 }
+
+ */
 /*
 class _TreeCounter extends StatefulWidget {
   final int initialCount;

@@ -3,8 +3,10 @@ import 'dart:convert';
 import '../../core/network/api_connection.dart';
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
+import '../../core/utils/logger.dart';
 import '../../features/authentication/models/login.response.model.dart';
 import '../models/response.mode.dart';
 
@@ -40,7 +42,20 @@ class LoginRepository{
       securePref.setString(Keys.refreshToken,obj.data.tokens.refresh);
       securePref.setString(Keys.accessTokenExpires,obj.data.tokens.accessTokenExpires.toString());
       securePref.setString(Keys.refreshTokenExpires,obj.data.tokens.refresh.toString());
+
+      // 🔹 Send FCM token after login automatically
+      final accessToken = obj.data.tokens.access;
+      if (accessToken.isNotEmpty) {
+        Future.microtask(() async {
+          try {
+            await FirebasePushService().onLogin(accessToken);
+          } catch (e) {
+            debugLog('Failed to sync FCM token: $e');
+          }
+        });
+      }
     }
+
     return result;
   }
 

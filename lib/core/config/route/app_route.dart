@@ -12,6 +12,7 @@ import 'package:treelove/features/customer/retail/tree-species/tree_species_deta
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
 import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
 import 'package:treelove/features/vendor/home/screens/project_detail_screen.dart';
+import '../../../common/screens/notification_screen.dart';
 import '../../../common/screens/satellite_history_screen.dart';
 import '../../../common/screens/satellite_monitoring_result_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
@@ -19,7 +20,8 @@ import '../../../features/customer/b2b/home/screens/main_screen.dart';
 import '../../../features/customer/b2b/map/screens/b2b_map_screen.dart';
 import '../../../features/customer/b2b/projects/screens/project_detail_screen.dart';
 import '../../../features/customer/retail/FAQ/faq_screen.dart';
-import '../../../features/customer/retail/Grievance/screens/raise_grievance_screen.dart';
+import '../../../features/customer/retail/grievance/screens/grievance_list_screen.dart';
+import '../../../features/customer/retail/grievance/screens/raise_grievance_screen.dart';
 import '../../../features/customer/retail/home/screens/home_screen.dart';
 import '../../../features/customer/retail/home/screens/location_selection_screen.dart';
 import '../../../features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
@@ -28,6 +30,7 @@ import '../../../features/customer/retail/order/congratulations_screen.dart';
 import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
 import '../../../features/customer/retail/profile/screen/account_screen.dart';
+import '../../../features/customer/retail/project/screens/project_template_screen.dart';
 import '../../../features/fieldworker/home/screens/main_screen.dart';
 import '../../../features/fieldworker/activity/screens/project_action_screen.dart';
 import '../../../features/fieldworker/home/screens/maintenance_activity_screen.dart';
@@ -49,11 +52,6 @@ class AppRoute{
     switch(settings.name){
       case '/':
         return MaterialPageRoute(builder: (_) => WelcomeScreen());
-        // return MaterialPageRoute(builder: (_) => TreeMaintenanceHistoryScreen(
-        //   treeSpecies: 'Neem',
-        //   location: 'Mumbai Zone 2',
-        //   treeId: 'TL-001',
-        // ));
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
       case 'user-type':
@@ -77,7 +75,12 @@ class AppRoute{
       case '/retail-home-screen':
         return MaterialPageRoute(builder: (_)=> HomeScreen());
       case '/plant-by-location':
-        return MaterialPageRoute(builder: (_)=> MapScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> MapScreen(
+          projectId: argument!['projectId'],
+        ));
+      case '/notification':
+        return MaterialPageRoute(builder: (_)=>NotificationsScreen());
       case '/satellite-history':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> SatelliteHistoryScreen(
@@ -99,6 +102,16 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> InviteAndEarnScreen());
       case '/my-trees':
         return MaterialPageRoute(builder: (_)=> MyTreeScreen());
+      case'/grievance':
+        return MaterialPageRoute(builder: (_)=> GrievanceListScreen());
+      case '/raise-grievance':
+        return MaterialPageRoute(builder: (_)=> RaiseGrievanceScreen());
+      case '/project-template':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> ProjectTemplateScreen(
+          title: argument!['title'],
+            category:argument['category'],
+        ));
       case '/congratulations':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> CongratulationsScreen(
@@ -116,17 +129,13 @@ class AppRoute{
       case '/tree-maintenance-history':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> TreeMaintenanceHistoryScreen(
-            treeSpecies:argument!['treeSpecies'],
-            treeId: argument['treeId'],
-            location: argument['location'],
+            treeId: argument!['treeId'],
           //orderId :argument!['orderId'],
         ));
       case '/tree-monitoring-history':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> TreeMonitoringHistoryScreen(
-          treeSpecies:argument!['treeSpecies'],
-          treeId: argument['treeId'],
-          location: argument['location'],
+          treeId: argument!['treeId'],
           //orderId :argument!['orderId'],
         ));
       case '/tree-species-details':
@@ -172,7 +181,11 @@ class AppRoute{
       case '/tree-monitor-list':
         return MaterialPageRoute(builder: (_)=>TreeMonitorListScreen());
       case '/monitor-activity':
-        return MaterialPageRoute(builder: (_)=>MonitorActivityScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=>MonitorActivityScreen(
+          plantationId: argument!['plantationId'],
+          serviceId: argument['serviceId'] ,
+        ));
 
       case '/CartScreen':
         return MaterialPageRoute(builder: (_)=> CartScreen());

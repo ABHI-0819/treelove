@@ -64,9 +64,10 @@ class ProjectListBloc  extends Bloc<ApiEvent, ApiState<ProjectListResponse, Resp
       final result = await repository.fetchProjects(
         filter: event.filter,
         search: event.search,
+        category: event.category,
+        type: event.type,
         page: event.page,
         limit: event.pageSize,
-
       );
 
       switch (result.status) {

@@ -68,6 +68,7 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
   }
 
   void _handleSubmit() {
+    final size = MediaQuery.of(context).size;
     if (_formKey.currentState!.validate()) {
       final assignedTrees = int.parse(treeController.text.trim());
       if (stuffId == null) {

@@ -17,12 +17,16 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
+import '../../../../common/screens/satellite_history_screen.dart';
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/network/api_connection.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/tree_bottomsheet.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
+import '../../../customer/retail/my-trees/screens/tree_maintenance_list.dart';
+import '../../../customer/retail/my-trees/screens/tree_monitoring_history.dart';
 import '../bloc/map_bloc.dart';
 /// this is important
 /*
@@ -2726,7 +2730,46 @@ class _VendorMapScreenState extends State<VendorMapScreen>
         width: 40,
         height: 40,
         child: GestureDetector(
-          onTap: () => _showEnhancedTreeBottomSheet(context, datum),
+          onTap: () {
+            // _showEnhancedTreeBottomSheet(context, datum);
+            TreeDetailsBottomSheet.show(
+              context,
+              treeName: datum.treeSpecies.localName,
+              scientificName: datum.treeSpecies.scientificName,
+              imageUrl: BaseNetwork.BASE_Image_URL+datum.thumbnail!??datum.treeSpecies.image, // or null
+              health: datum.treeHealth,
+              growth:datum.treeGrowth,
+              girth: '${datum.treeGirth} ${datum.treeGirthUnit}',
+              direction: 'Direction',
+              onDirectionTap: (){
+
+              },
+              nextMaintenanceDate: datum.nextMaintenanceDate,
+              nextMonitoringDate: datum.nextMonitoringDate,
+              onMaintenanceHistoryTap: () {
+                AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
+                  'treeSpecies':'neem',
+                  'location':"mumbai",
+                  'treeId':'2131'
+                });
+                // Navigate to maintenance history
+              },
+              onManualMonitorHistoryTap: () {
+                AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
+                  'treeSpecies':'neem',
+                  'location':"mumbai",
+                  'treeId':'2131'
+                });
+                // Navigate to manual monitoring history
+              },
+              onSatelliteMonitorHistoryTap: () {
+                AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
+                  'plantationId':datum.id,
+                });
+                // Navigate to satellite monitoring history
+              },
+            );
+          },
           child: Container(
             // Add container to prevent tap conflicts
             width: 40,
@@ -2914,7 +2957,42 @@ class _VendorMapScreenState extends State<VendorMapScreen>
     final imageUrl = BaseNetwork.BASE_Image_URL + tree.thumbnail.toString();
 
     return GestureDetector(
-      onTap: () => _showEnhancedTreeBottomSheet(context, tree),
+      onTap: () {
+        // _showEnhancedTreeBottomSheet(context, tree);
+        TreeDetailsBottomSheet.show(
+          context,
+          treeName: tree.treeSpecies.localName,
+          scientificName: tree.treeSpecies.scientificName,
+          imageUrl: BaseNetwork.BASE_Image_URL+tree.thumbnail!??tree.treeSpecies.image, // or null
+          health: tree.treeHealth,
+          growth:tree.treeGrowth,
+          girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
+          direction: 'Direction',
+          onDirectionTap: (){
+
+          },
+          nextMaintenanceDate: tree.nextMaintenanceDate,
+          nextMonitoringDate: tree.nextMonitoringDate,
+          onMaintenanceHistoryTap: () {
+            AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
+              'treeId':tree.id
+            });
+            // Navigate to maintenance history
+          },
+          onManualMonitorHistoryTap: () {
+            AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
+              'treeId':tree.id
+            });
+            // Navigate to manual monitoring history
+          },
+          onSatelliteMonitorHistoryTap: () {
+            AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
+              'plantationId':tree.id,
+            });
+            // Navigate to satellite monitoring history
+          },
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

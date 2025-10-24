@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:treelove/common/screens/notification_screen.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
@@ -209,10 +210,15 @@ class _HeaderSection extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.notifications,
-              color: Colors.white,
-              size: 24.r, // Responsive icon size
+            InkWell(
+              onTap: (){
+                AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
+              },
+              child: Icon(
+                Icons.notifications,
+                color: Colors.white,
+                size: 24.r, // Responsive icon size
+              ),
             )
           ],
         ),

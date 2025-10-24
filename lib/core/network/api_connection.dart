@@ -402,10 +402,12 @@ class ApiConnection {
 }
 
  */
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../common/models/response.mode.dart';
+import '../config/constants/enum/session_status.dart';
 import '../storage/preference_keys.dart';
 import '../storage/secure_storage.dart';
 import '../utils/logger.dart';
@@ -699,6 +701,11 @@ class ApiConnection {
 
 
 class ApiConnection {
+
+  // Step 1: Add this stream to broadcast session changes
+  final _sessionController = StreamController<SessionStatus>.broadcast();
+  Stream<SessionStatus> get sessionStream => _sessionController.stream;
+
   final securePref = SecurePreference();
 
   Future<String?> _getAccessToken() async {
@@ -708,6 +715,7 @@ class ApiConnection {
   Future<String?> _getRefreshToken() async {
     return await securePref.getString(Keys.refreshToken);
   }
+
 
   /// 🔄 Refresh the token
   /*
@@ -783,7 +791,8 @@ class ApiConnection {
   }
 
 
-  /// 🔑 Centralized request handler
+  ///  Centralized request handler
+  /*
   Future<ApiResult> _handleRequest<T>(
       Future<http.Response> Function(String? token) requestFn,
       T Function(String) parser,
@@ -858,6 +867,97 @@ class ApiConnection {
       );
     }
   }
+
+   */
+  Future<ApiResult> _handleRequest<T>(
+      Future<http.Response> Function(String? token) requestFn,
+      T Function(String) parser,
+      ) async {
+    try {
+      String? token = await _getAccessToken();
+      http.Response response = await requestFn(token);
+
+      debugLog(response.body, name: "Api Response");
+
+      if (response.statusCode == ApiStatusCode.success ||
+          response.statusCode == ApiStatusCode.created) {
+        _sessionController.add(SessionStatus.active); // ✅ NEW
+        return ApiResult<T>(
+          status: ApiStatus.success,
+          response: parser(response.body),
+        );
+      } else if (response.statusCode == ApiStatusCode.noContent ||
+          response.statusCode == ApiStatusCode.resetContent) {
+        _sessionController.add(SessionStatus.active); // ✅ NEW
+        return ApiResult<ResponseModel>(
+          status: ApiStatus.resetContent,
+          response: ResponseModel(
+            status: "success",
+            message: "No content / reset content response",
+            data: null,
+          ),
+        );
+      }
+
+      // 🟡 Handle unauthorized response
+      if (response.statusCode == ApiStatusCode.unAuthorized) {
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          _sessionController.add(SessionStatus.refreshed); // ✅ NEW
+          final newToken = await _getAccessToken();
+          final retryResponse = await requestFn(newToken);
+
+          if (retryResponse.statusCode == ApiStatusCode.success ||
+              retryResponse.statusCode == ApiStatusCode.created) {
+            return ApiResult<T>(
+              status: ApiStatus.success,
+              response: parser(retryResponse.body),
+            );
+          } else {
+            return ApiResult<ResponseModel>(
+              status: ApiStatus.badRequest,
+              response: responseModelFromJson(retryResponse.body)!,
+            );
+          }
+        } else {
+          // 🔴 Refresh token failed -> expired
+          _sessionController.add(SessionStatus.expired); // ✅ NEW
+          return ApiResult<ResponseModel>(
+            status: ApiStatus.refreshTokenExpired,
+            response: ResponseModel(
+              message: "Session expired. Please login again.",
+              status: "unauthorized",
+            ),
+          );
+        }
+      }
+
+      // Other error cases
+      _sessionController.add(SessionStatus.active);
+      return ApiResult<ResponseModel>(
+        status: ApiStatus.badRequest,
+        response: responseModelFromJson(response.body)!,
+      );
+    } on SocketException {
+      _sessionController.add(SessionStatus.active);
+      return ApiResult<ResponseModel>(
+        status: ApiStatus.failed,
+        response: ResponseModel(message: BaseNetwork.FailedMessage),
+      );
+    } catch (e, stackTrace) {
+      debugLog(e.toString(), stackTrace: stackTrace);
+      _sessionController.add(SessionStatus.active);
+      return ApiResult<ResponseModel>(
+        status: ApiStatus.failed,
+        response: ResponseModel(
+          message: "Something went wrong! ${e.toString()}",
+          status: '',
+        ),
+      );
+    }
+  }
+
 
   /// 📌 POST / PUT requests
   Future<ApiResult> apiConnection<T>(
@@ -947,6 +1047,7 @@ class ApiConnection {
     String? filterBy,
     String? status,
     String? projectId,
+    String? project,
     String? serviceName,
     String? projectAreaId,
     String? plantationId,
@@ -954,6 +1055,7 @@ class ApiConnection {
     String? areaId,
     String? orderId,
     String? vendorId,
+    String? type,
     String ? createdBy,
     String ? maintenanceStatus,
     String ? requireMaintenance,
@@ -970,6 +1072,7 @@ class ApiConnection {
     if (filterBy != null) queryParameters['category'] = filterBy;
     if (status != null) queryParameters['status'] = status;
     if (projectId!=null) queryParameters['project_id'] = projectId;
+    if (project!=null) queryParameters['project'] = project;
     if (serviceName != null) queryParameters['service_type'] = serviceName;
     if (projectAreaId != null) queryParameters['project_area_id'] = projectAreaId;
     if (plantationId != null) queryParameters['plantationId'] = plantationId;
@@ -977,6 +1080,7 @@ class ApiConnection {
     if (areaId != null) queryParameters['area'] = areaId;
     if (orderId != null) queryParameters['order_id'] = orderId;
     if (vendorId != null) queryParameters['vendor'] = vendorId;
+    if (type != null) queryParameters['type'] = type;
     if (createdBy != null) queryParameters['created_by'] = createdBy;
     if (maintenanceStatus != null) queryParameters['maintenance_status'] = maintenanceStatus;
     if (group != null) queryParameters['group'] = group;
@@ -991,6 +1095,11 @@ class ApiConnection {
     final uri = Uri.parse(baseUrl ?? '').replace(query: fullParams);
     return uri.toString();
   }
+
+  void dispose() {
+    _sessionController.close();
+  }
+
 }
 
 

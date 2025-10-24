@@ -42,6 +42,8 @@ class BaseNetwork {
   static const String allCartItemsUrl ="${_BASE_URL}api/v1/orders/order-items/cart-items/";
   static const String orderPlaceUrl = "${_BASE_URL}api/v1/orders/orders/";
   static const String orderTrackingUrl = "${_BASE_URL}api/v1/orders/order-tracking/";
+  static const String grievanceCreateURL = "${_BASE_URL}api/v1/grievance/";
+  static const String grievanceCategoriesURL = "${_BASE_URL}api/v1/grievance/grievance-categories/";
   ///orders/order-items
   static const String paymentURL ="${_BASE_URL}api/v1/payments/payments/";
 
@@ -68,6 +70,10 @@ class BaseNetwork {
   static const String b2bDashboardUrl = "${_BASE_URL}api/v1/projects/client/home-dashboard/";
   static const String b2bProjectDashboardURL = "${_BASE_URL}api/v1/projects/client-dashboard/";
   static const String maintenanceActivityUrl ="${_BASE_URL}api/v1/survey/maintenance-activity/";
+
+  static const String notificationUrl =  "${_BASE_URL}api/v1/notifications/device-tokens/register/";
+  static const String notificationsListUrl ="${_BASE_URL}api/v1/notifications/";
+
   //http://10.202.100.187:9004/swagger/
 
   static Map<String, String> getJsonHeaders() {

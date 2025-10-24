@@ -36,7 +36,7 @@ class _RetailMainScreenState extends State<RetailMainScreen> {
   Widget build(BuildContext context) {
     final bottomBarPages = [
       HomeScreen(),
-      ProjectMainScreen(),
+      ProjectsScreen(),
       InquiryScreen(),
       MyAccountScreen(),
     ];

@@ -166,7 +166,10 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                       AppRoute.goToNextPage(
                           context: context,
                           screen: MonitorActivityScreen.route,
-                          arguments: {}
+                          arguments: {
+                            'plantationId':plantedTrees[index].id.toString(),
+                            'serviceId':plantedTrees[index].monitoringServiceId
+                          }
                       );
                     },
                   ),

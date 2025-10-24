@@ -18,6 +18,8 @@ class ProjectRepository {
   Future<ApiResult> fetchProjects({
     String? filter,
     String? search,
+    String? category,
+    String? type,
     int? page,
     int? limit,
   }) async {
@@ -25,6 +27,8 @@ class ProjectRepository {
     final url = api.generateUrl(
         baseUrl: BaseNetwork.projectListURL,
         status: filter,
+        category: category,
+        type : type,
         searchQuery: search);
     ApiResult result = await api.getApiConnection<ProjectListResponse>(
       // BaseNetwork.projectListURL,

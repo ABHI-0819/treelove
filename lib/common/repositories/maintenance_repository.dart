@@ -6,6 +6,7 @@ import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
+import '../../features/customer/retail/my-trees/models/maintenance_history_list_response.dart';
 import '../../features/fieldworker/activity/models/maintenance_activity_response_model.dart';
 import '../../features/fieldworker/activity/models/maintenance_created_response_model.dart';
 
@@ -36,6 +37,17 @@ class MaintenanceRepository{
         maintenanceActivityResponseModelFromJson
     );
      return result;
+  }
+
+  Future<ApiResult> fetchMaintenanceHistoryList({required String id})async{
+    final token = await pref.getString(Keys.accessToken);
+    final url = api.generateUrl(baseUrl: BaseNetwork.maintenanceCreatedURL,plantation: id);
+    ApiResult result=  await api.getApiConnection<MaintenanceHistoryListResponse>(
+      url, // assuming endpoint like /monitor/{id}/
+      BaseNetwork.getHeaderWithToken(token),
+      maintenanceHistoryListResponseFromJson,  // JSON deserializer
+    );
+    return result;
   }
 
 }

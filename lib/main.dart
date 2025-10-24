@@ -9,18 +9,30 @@ import 'core/config/resource/service_ids.dart';
 import 'core/config/route/app_route.dart';
 import 'core/services/firebase_background_handler.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/session_manager.dart';
 import 'core/storage/secure_storage.dart';
 import 'core/utils/device_identifier.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
+  final sessionManager = SessionManager();
+  sessionManager.initialize(navigatorKey);
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  // Initialize push notification service
-  await FirebasePushService.initialize();
-  debugLog(FirebasePushService.fcmToken.toString(),name: "fcm token");
+
+  final pushService = FirebasePushService();
+  await pushService.initialize();
+
+
+  // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // // Initialize push notification service
+  // await FirebasePushService().initialize();
+  //
+  // debugLog(FirebasePushService().fcmToken.toString(), name: "fcm token");
   //
   SecurePreference();
   ServiceIds.load();
@@ -43,6 +55,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       child: MaterialApp(
+        navigatorKey:navigatorKey,
         title:'TREE-LOVE',
         builder: EasyLoading.init(
 

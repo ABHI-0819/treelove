@@ -34,6 +34,7 @@ class Images{
   static const String individualIcon = '${_basePathSvg}individual.svg';
   static const String organizationIcon = '${_basePathSvg}organization.svg';
   static const String inviteIcon ='${_basePathSvg}invite_icon.svg';
+  static const String grievanceIcon ='${_basePathSvg}grievance_icon.svg';
   static const String supportIcon = '${_basePathSvg}support_icon.svg';
   static const String settingIcon = '${_basePathSvg}setting_icon.svg';
   static const String cartIcon = '${_basePathSvg}cart_icon.svg';

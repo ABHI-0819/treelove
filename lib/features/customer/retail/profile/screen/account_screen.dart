@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/core/config/route/app_route.dart';
@@ -9,13 +11,49 @@ import 'package:treelove/features/customer/retail/invite-friend/screens/invite_f
 import 'package:treelove/features/customer/retail/my-trees/screens/my_trees_screen.dart';
 import 'package:treelove/features/customer/retail/order/order_list_screen.dart';
 
+import '../../../../../common/bloc/api_event.dart';
+import '../../../../../common/bloc/api_state.dart';
+import '../../../../../common/models/response.mode.dart';
+import '../../../../../common/repositories/login_repository.dart';
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
+import '../../../../../core/network/api_connection.dart';
+import '../../../../../core/storage/preference_keys.dart';
+import '../../../../../core/storage/secure_storage.dart';
+import '../../../../../core/widgets/common_notification.dart';
+import '../../../../authentication/bloc/auth_bloc.dart';
+import '../../../../authentication/screens/sign_in_screen.dart';
+import '../../grievance/screens/grievance_list_screen.dart';
+import '../../grievance/screens/raise_grievance_screen.dart';
 
-class MyAccountScreen extends StatelessWidget {
+class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
 
-  Widget _buildHeader() {
+  @override
+  State<MyAccountScreen> createState() => _MyAccountScreenState();
+}
+
+class _MyAccountScreenState extends State<MyAccountScreen> {
+  late LogoutBloc logoutBloc;
+  final pref = SecurePreference();
+
+  @override
+  void initState() {
+    logoutBloc = LogoutBloc(LoginRepository(api: ApiConnection()));
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    logoutBloc.close();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+/*
+  Widget _buildHeader()  {
+    final email = await pref.getString(Keys.email);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: SafeArea(
@@ -51,7 +89,7 @@ class MyAccountScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'Saurabh',
+                      'Ankit sharma',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -63,7 +101,7 @@ class MyAccountScreen extends StatelessWidget {
                         Icon(Icons.phone, size: 16, color: Colors.grey),
                         SizedBox(width: 6.0),
                         Text(
-                          '+911234567967',
+                          'Not available',
                           style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
@@ -74,11 +112,110 @@ class MyAccountScreen extends StatelessWidget {
                         Icon(Icons.email, size: 16, color: Colors.grey),
                         SizedBox(width: 6.0),
                         Text(
-                          'xyzl2s@gmail.com',
+                          ,
                           style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.verified_rounded,
+                color: AppColor.primary,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+ */
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey[200],
+                child: Image.network(
+                  '',
+                  height: 30,
+                  width: 30,
+                  color: Colors.grey[800],
+                ),
+              ),
+              const SizedBox(width: 16.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FutureBuilder<String?>(
+                        future: pref.getString(Keys.name,defaultValue: 'Ankit Sharma'),
+                        builder: (context, snapshot) {
+                          final name = snapshot.data??'Ankit Sharma';
+                          return Text(
+                            name ,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        }),
+                    const SizedBox(height: 4.0),
+                    FutureBuilder<String?>(
+                        future: pref.getString(Keys.phone),
+                        builder: (context, snapshot) {
+                          final phone = snapshot.data ?? 'Not available';
+                          return Row(
+                            children:  [
+                              Icon(Icons.phone, size: 16, color: Colors.grey),
+                              SizedBox(width: 6.0),
+                              Text(
+                                phone,
+                                style: TextStyle(fontSize: 14, color: Colors.grey),
+                              ),
+                            ],
+                          );
+                        }),
+
+                    const SizedBox(height: 4.0),
+                    FutureBuilder<String?>(
+                        future: pref.getString(Keys.email,defaultValue: 'Not available'),
+                        builder: (context, snapshot) {
+                          final email = snapshot.data ??'Not available';
+                          return  Row(
+                            children: [
+                              const Icon(Icons.email, size: 16, color: Colors.grey),
+                              const SizedBox(width: 6.0),
+                              Text(
+                                email,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+
                   ],
                 ),
               ),
@@ -125,7 +262,9 @@ class MyAccountScreen extends StatelessWidget {
                     _buildButton(icon: Images.inviteIcon, label: 'Invite a Friend', onTap: () {
                         AppRoute.goToNextPage(context: context, screen: InviteAndEarnScreen.route, arguments: {});
                     }),
-                    _buildButton(icon: Images.supportIcon, label: 'Support', onTap: () {}),
+                    _buildButton(icon: Images.grievanceIcon, label: 'Grievance', onTap: () {
+                      AppRoute.goToNextPage(context: context, screen: GrievanceListScreen.route, arguments: {});
+                    }),
                     _buildButton(icon: Images.settingIcon, label: 'Settings', onTap: () {}),
                     _buildButton(icon: Images.orderIcon, label: 'My Order', onTap: () {
                       AppRoute.goToNextPage(context: context, screen: OrderListScreen.route, arguments: {});
@@ -233,9 +372,20 @@ class MyAccountScreen extends StatelessWidget {
   }
 
   Widget _buildOtherOptionsSection() {
-    return Padding(
+    return BlocProvider(
+  create: (context) => logoutBloc,
+  child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
+      child: BlocListener<LogoutBloc, ApiState<ResponseModel, ResponseModel>>(
+        listener: (context, state) {
+          EasyLoading.dismiss();
+          if (state is ApiSuccess) {
+            AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
+          } else if (state is ApiFailure) {
+            showNotification(context, message: "Logout failed");
+          }
+        },
+  child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
@@ -261,7 +411,9 @@ class MyAccountScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildOptionRow('Log Out', () {}),
+                _buildOptionRow('Log Out', () {
+                  _showLogoutDialog(context);
+                }),
                 _buildDivider(),
                 _buildOptionRow('Version 1.x', () {}, showArrow: false),
               ],
@@ -269,9 +421,70 @@ class MyAccountScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+),
+    ),
+);
   }
 
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Log out',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColor.textPrimary,
+              fontSize: 20,
+            ),
+          ),
+          content: const Text(
+            'Are you sure you want to log out?',
+            style: TextStyle(
+              color: AppColor.textSecondary,
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: AppColor.textMuted,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async{
+                final refreshToken = await pref.getString(Keys.refreshToken) ?? '';
+                if (refreshToken.isNotEmpty) {
+                  EasyLoading.show();
+                  logoutBloc.add(ApiDelete(refreshToken));
+                } else {
+                  showNotification(context, message: "No refresh token found!");
+                }
+              },
+              child: const Text(
+                'Log out',
+                style: TextStyle(
+                  color: AppColor.error,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   // Section Header
   Widget _buildSectionHeader(String title) {
@@ -346,7 +559,6 @@ class MyAccountScreen extends StatelessWidget {
       ),
     );
   }
-
 }
 
 

@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/themes/app_fonts.dart';
 import '../../activity/screens/home_screen.dart';
+import '../../profile/screen/profile_screen.dart';
 import 'dashboard_screen.dart';
 class FieldWorkerMainScreen extends StatefulWidget {
   static const route ="/fieldworker-main-screen";
@@ -38,6 +39,7 @@ class _FieldWorkerMainScreenState extends State<FieldWorkerMainScreen> {
     final bottomBarPages = [
       DashboardScreen(),
       HomeScreen(),
+      ProfileScreen()
     ];
     return Scaffold(
       body: buildPageView(bottomBarPages),
@@ -77,7 +79,7 @@ class CustomFBottomNav extends StatelessWidget {
       items: [
         buildNavItem(index: 0, filledIcon: Images.homeFilledIcon, outlinedIcon: Images.homeIcon, label: 'Home'),
         buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Activity'),
-        buildNavItem(index: 2, filledIcon: Images.inquiryIcon, outlinedIcon: Images.inquiryIcon, label: 'Account'),
+        buildNavItem(index: 2, filledIcon: Images.accountFilledIcon, outlinedIcon: Images.accountIcon, label: 'Account'),
       ],
     );
   }

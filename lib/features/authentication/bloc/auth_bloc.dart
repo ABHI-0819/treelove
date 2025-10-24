@@ -7,6 +7,8 @@ import '../../../common/bloc/api_event.dart';
 import '../../../common/bloc/api_state.dart';
 import '../../../common/repositories/login_repository.dart';
 import '../../../core/network/base_network_status.dart';
+import '../../../core/services/notification_service.dart';
+import '../../../core/utils/logger.dart';
 
 
 class AuthBloc extends Bloc<ApiEvent, ApiState<LoginResponseModel,ResponseModel>> {
@@ -30,6 +32,7 @@ class AuthBloc extends Bloc<ApiEvent, ApiState<LoginResponseModel,ResponseModel>
     switch (result.status) {
       case ApiStatus.success:
         emit(ApiSuccess(result.response));
+        // Background FCM token sync
         break;
       case ApiStatus.unAuthorized:
         emit( TokenExpired(result.response));
@@ -60,6 +63,8 @@ class LogoutBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> 
     switch (result.status) {
       case ApiStatus.success:
         emit(ApiSuccess(result.response));
+        //  Clear FCM reference on logout
+        FirebasePushService().onLogout();
       case ApiStatus.resetContent: // ✅ for 204/205 status
         emit(ApiSuccess(result.response));
         break;

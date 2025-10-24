@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:treelove/core/config/route/app_route.dart';
 
+import '../../../../common/screens/notification_screen.dart';
 import '../../../../core/config/themes/app_color.dart';
 /*
 class AppColors {
@@ -56,7 +58,9 @@ class DashboardScreen extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.notifications, color: Colors.white),
-                onPressed: () {},
+                onPressed: () {
+                  AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
+                },
               ),
             ],
           ),

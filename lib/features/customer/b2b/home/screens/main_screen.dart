@@ -41,6 +41,7 @@ class _OrganizationMainScreenState extends State<OrganizationMainScreen> {
     final bottomBarPages = [
       ClientDashboardScreen(),
       B2BProjectScreen(),
+      ProfileScreen()
       // AccountScreen()
       // index 2
     ];

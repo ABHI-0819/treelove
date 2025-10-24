@@ -29,6 +29,7 @@ class ProjectAreaBloc  extends Bloc<ApiEvent, ApiState<ProjectAreasResponse, Res
       final result = await repository.fetchProjectAreas(
         filter: event.filter,
         search: event.search,
+        project: event.id,
         page: event.page,
         limit: event.pageSize,
       );

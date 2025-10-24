@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/common/bloc/api_event.dart';
+import 'package:treelove/common/screens/notification_screen.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/core/network/api_connection.dart';
@@ -100,10 +101,15 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
 
                             ),
                             // Profile Avatar
-                            CircleAvatar(
-                              backgroundColor: AppColor.white.withOpacity(0.2),
-                              child: const Icon(
-                                  Icons.person, color: AppColor.white),
+                            InkWell(
+                              onTap: (){
+                                AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
+                              },
+                              child: CircleAvatar(
+                                backgroundColor: AppColor.white.withOpacity(0.2),
+                                child: const Icon(
+                                    Icons.notifications, color: AppColor.white),
+                              ),
                             ),
                           ],
                         ),
