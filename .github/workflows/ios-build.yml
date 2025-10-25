@@ -27,7 +27,7 @@ jobs:
         run: sudo gem install fastlane -NV
 
       - name: Upload to TestFlight
-        uses: maierj/fastlane-action@v2
+        uses: maierj/fastlane-action@v3.1.0
         with:
           lane: ios beta
         env:
