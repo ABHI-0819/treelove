@@ -2736,7 +2736,7 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               context,
               treeName: datum.treeSpecies.localName,
               scientificName: datum.treeSpecies.scientificName,
-              imageUrl: BaseNetwork.BASE_Image_URL+datum.thumbnail!??datum.treeSpecies.image, // or null
+              imageUrl: datum.treeSpecies.image, // or null
               health: datum.treeHealth,
               growth:datum.treeGrowth,
               girth: '${datum.treeGirth} ${datum.treeGirthUnit}',

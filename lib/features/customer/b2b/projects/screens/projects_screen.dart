@@ -27,7 +27,7 @@ class B2BProjectScreen extends StatefulWidget {
 }
 
 class _B2BProjectScreenState extends State<B2BProjectScreen> {
-  String selectedTab = 'All';
+  String? selectedTab;
 
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
@@ -198,7 +198,7 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedTab = value.toString();
+          selectedTab = value;
           projectListBloc.add(ApiListFetch(filter: value));
         });
       },

@@ -605,7 +605,7 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
             EasyLoading.dismiss();
             showNotification(type: Not.success,context, message: state.data.message.toString());
             // Optional: reset form or go back
-            // Navigator.pop(context);
+            AppRoute.pop(context);
           } else if (state is ApiFailure<MonitorResponse, ResponseModel>) {
             EasyLoading.dismiss();
             showNotification(type: Not.failed,context, message: state.error.toString());

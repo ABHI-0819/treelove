@@ -21,7 +21,8 @@ class MonitorResponse {
       MonitorResponse(
         status: json["status"] ?? "",
         message: json["message"] ?? "",
-        data: MonitorData.fromJson(json["data"]),
+        // Check if data is null before parsing
+        data: MonitorData.fromJson(json["data"] ?? {}),
       );
 
   Map<String, dynamic> toJson() => {
@@ -32,86 +33,89 @@ class MonitorResponse {
 }
 
 class MonitorData {
+  final String id; // 💡 NEW: Added 'id'
   final List<String> plantation;
+  final TreeSpecies treeSpecies; // 💡 NEW: Added 'tree_species' object
   final String monitoringDate;
   final String nextScheduledDate;
-  final List<String> treeDiseases;
-  final String weatherCondition;
+  // 💡 REMOVED: 'tree_diseases', 'weather_condition', 'tree_height',
+  // 'tree_height_unit', 'tree_girth', 'tree_girth_unit', 'canopy_size',
+  // 'canopy_size_unit', 'tree_age', 'tree_health', 'tree_growth' - (Missing from API response)
   final String monitoringType;
   final String services;
   final Location location;
   final String remarks;
-  final String treeHeight;
-  final String treeHeightUnit;
-  final String treeGirth;
-  final String treeGirthUnit;
-  final String canopySize;
-  final String canopySizeUnit;
-  final int treeAge;
-  final String treeHealth;
-  final String treeGrowth;
+  final String thumbnail; // 💡 NEW: Added 'thumbnail'
 
   MonitorData({
+    required this.id,
     required this.plantation,
+    required this.treeSpecies,
     required this.monitoringDate,
     required this.nextScheduledDate,
-    required this.treeDiseases,
-    required this.weatherCondition,
     required this.monitoringType,
     required this.services,
     required this.location,
     required this.remarks,
-    required this.treeHeight,
-    required this.treeHeightUnit,
-    required this.treeGirth,
-    required this.treeGirthUnit,
-    required this.canopySize,
-    required this.canopySizeUnit,
-    required this.treeAge,
-    required this.treeHealth,
-    required this.treeGrowth,
+    required this.thumbnail,
   });
 
   factory MonitorData.fromJson(Map<String, dynamic> json) => MonitorData(
-    plantation: List<String>.from(json["plantation"].map((x) => x)),
+    id: json["id"] ?? "", // Parsing 'id'
+    plantation: List<String>.from(json["plantation"]?.map((x) => x) ?? []),
+    treeSpecies: TreeSpecies.fromJson(json["tree_species"] ?? {}), // Parsing 'tree_species'
     monitoringDate: json["monitoring_date"] ?? "",
     nextScheduledDate: json["next_scheduled_date"] ?? "",
-    treeDiseases: List<String>.from(json["tree_diseases"].map((x) => x)),
-    weatherCondition: json["weather_condition"] ?? "",
     monitoringType: json["monitoring_type"] ?? "",
     services: json["services"] ?? "",
-    location: Location.fromJson(json["location"]),
+    location: Location.fromJson(json["location"] ?? {}),
     remarks: json["remarks"] ?? "",
-    treeHeight: json["tree_height"] ?? "",
-    treeHeightUnit: json["tree_height_unit"] ?? "",
-    treeGirth: json["tree_girth"] ?? "",
-    treeGirthUnit: json["tree_girth_unit"] ?? "",
-    canopySize: json["canopy_size"] ?? "",
-    canopySizeUnit: json["canopy_size_unit"] ?? "",
-    treeAge: json["tree_age"] ?? 0,
-    treeHealth: json["tree_health"] ?? "",
-    treeGrowth: json["tree_growth"] ?? "",
+    thumbnail: json["thumbnail"] ?? "", // Parsing 'thumbnail'
+
+    // Note: All fields present in your original model but missing
+    // in the API response have been removed from this updated model.
   );
 
   Map<String, dynamic> toJson() => {
-    "plantation": plantation,
+    "id": id,
+    "plantation": List<dynamic>.from(plantation.map((x) => x)),
+    "tree_species": treeSpecies.toJson(),
     "monitoring_date": monitoringDate,
     "next_scheduled_date": nextScheduledDate,
-    "tree_diseases": treeDiseases,
-    "weather_condition": weatherCondition,
     "monitoring_type": monitoringType,
     "services": services,
     "location": location.toJson(),
     "remarks": remarks,
-    "tree_height": treeHeight,
-    "tree_height_unit": treeHeightUnit,
-    "tree_girth": treeGirth,
-    "tree_girth_unit": treeGirthUnit,
-    "canopy_size": canopySize,
-    "canopy_size_unit": canopySizeUnit,
-    "tree_age": treeAge,
-    "tree_health": treeHealth,
-    "tree_growth": treeGrowth,
+    "thumbnail": thumbnail,
+  };
+}
+
+// 💡 NEW CLASS: TreeSpecies
+class TreeSpecies {
+  final String id;
+  final String localName;
+  final String image;
+  final String scientificName;
+
+  TreeSpecies({
+    required this.id,
+    required this.localName,
+    required this.image,
+    required this.scientificName,
+  });
+
+  factory TreeSpecies.fromJson(Map<String, dynamic> json) => TreeSpecies(
+    id: json["id"] ?? "",
+    localName: json["local_name"] ?? "",
+    image: json["image"] ?? "",
+    scientificName: json["scientific_name"] ?? "",
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "local_name": localName,
+    "image": image,
+    "scientific_name": scientificName,
   };
 }
 
@@ -126,12 +130,11 @@ class Location {
 
   factory Location.fromJson(Map<String, dynamic> json) => Location(
     type: json["type"] ?? "",
-    coordinates:
-    List<double>.from(json["coordinates"].map((x) => x.toDouble())),
+    coordinates: List<double>.from(json["coordinates"]?.map((x) => x.toDouble()) ?? []),
   );
 
   Map<String, dynamic> toJson() => {
     "type": type,
-    "coordinates": coordinates,
+    "coordinates": List<dynamic>.from(coordinates.map((x) => x)),
   };
 }

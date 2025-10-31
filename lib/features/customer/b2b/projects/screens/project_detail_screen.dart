@@ -7,7 +7,9 @@ import '../../../../../common/bloc/api_event.dart';
 import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/project_repository.dart';
+import '../../../../../core/config/route/app_route.dart';
 import '../../../../../core/network/api_connection.dart';
+import '../../../../authentication/screens/sign_in_screen.dart';
 import '../bloc/b2b_project_bloc.dart';
 import '../model/b2b_project_detail_response_model.dart';
 
@@ -145,6 +147,8 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                   if (state is TokenExpired<B2BProjectDetailResponseModel,
                       ResponseModel>) {
                     // Handle token expiration
+                    AppRoute.pushReplacement(
+                        context, SignInScreen.route, arguments: {});
                   }
                 },
                 child: BlocBuilder<B2BProjectBloc,

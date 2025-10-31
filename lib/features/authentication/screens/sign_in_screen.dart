@@ -15,6 +15,9 @@ import '../../../core/storage/preference_keys.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/common_notification.dart';
+import '../../customer/b2b/home/screens/main_screen.dart';
+import '../../customer/retail/home/screens/home_screen.dart';
+import '../../customer/retail/home/screens/main_screen.dart';
 import 'user_type_screen.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -220,12 +223,14 @@ class _SignInScreenState extends State<SignInScreen> {
       AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
     }else {
       // Existing user: fetch profile
-      /*
-      final userProfile = await apiService.getUserProfile(); // returns {user_type: "individual", ...}
 
+      // final userProfile = await apiService.getUserProfile(); // returns {user_type: "individual", ...}
+        final userProfile= {
+          "user_type":"individudal"
+        };
       if (userProfile == null) {
         debugLog('Failed to fetch user profile');
-        showErrorSnackBar(context, 'Failed to load user profile');
+        showNotification(context, message: 'Failed to load user profile');
         return;
       }
 
@@ -234,19 +239,20 @@ class _SignInScreenState extends State<SignInScreen> {
       if (userType == 'individual') {
         AppRoute.goToNextPage(
           context: context,
-          screen: HomeScreen.route,
+          screen: RetailMainScreen.route,
           arguments: {'type': 'individual'},
         );
       } else if (userType == 'organisation') {
         AppRoute.goToNextPage(
           context: context,
-          screen: OrganisationHomeScreen.route,
+          screen: OrganizationMainScreen.route,
           arguments: {'type': 'organisation'},
         );
       } else {
         debugLog('Unknown user type: $userType');
-        showErrorSnackBar(context, 'Unknown user type');
-      }*/
+        AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
+        // showNotification(context,type: Not.failed, message: 'Unknown user type');
+      }
 
     }
 

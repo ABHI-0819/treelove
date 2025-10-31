@@ -16,6 +16,7 @@ import '../../../common/screens/notification_screen.dart';
 import '../../../common/screens/satellite_history_screen.dart';
 import '../../../common/screens/satellite_monitoring_result_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
+import '../../../features/authentication/screens/user_type_screen.dart';
 import '../../../features/customer/b2b/home/screens/main_screen.dart';
 import '../../../features/customer/b2b/map/screens/b2b_map_screen.dart';
 import '../../../features/customer/b2b/projects/screens/project_detail_screen.dart';
@@ -54,8 +55,8 @@ class AppRoute{
         return MaterialPageRoute(builder: (_) => WelcomeScreen());
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
-      case 'user-type':
-        return MaterialPageRoute(builder: (_) => SignInScreen());
+      case '/user-type':
+        return MaterialPageRoute(builder: (_) => UserTypeSelectionScreen());
       case '/login-password':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_) => PasswordLoginScreen(

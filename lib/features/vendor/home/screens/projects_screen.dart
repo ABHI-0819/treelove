@@ -27,7 +27,7 @@ class ProjectsScreen extends StatefulWidget {
 
 class _ProjectsScreenState extends State<ProjectsScreen> {
 
-  String selectedTab = 'All';
+  String ? selectedTab ;
 
   late ProjectListBloc projectListBloc;
 
@@ -221,7 +221,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedTab = value.toString();
+          selectedTab = value;
           projectListBloc.add(ApiListFetch(filter: value));
         });
       },
