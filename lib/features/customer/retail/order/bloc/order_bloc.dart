@@ -27,9 +27,10 @@ class OrderPlaceBloc extends Bloc<ApiEvent, ApiState<OrderPlacedResponse, Respon
     try {
       final result = await repository.makeOrder(fields: event.data);
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -38,6 +39,8 @@ class OrderPlaceBloc extends Bloc<ApiEvent, ApiState<OrderPlacedResponse, Respon
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         case ApiStatus.failed:
           emit(ApiFailure(result.response));
         default:

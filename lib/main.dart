@@ -3,12 +3,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:treelove/core/utils/logger.dart';
 
 import 'core/config/resource/service_ids.dart';
 import 'core/config/route/app_route.dart';
 import 'core/services/firebase_background_handler.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/order_item_service.dart';
 import 'core/services/session_manager.dart';
 import 'core/storage/secure_storage.dart';
 import 'core/utils/device_identifier.dart';
@@ -27,13 +29,19 @@ void main() async {
   final pushService = FirebasePushService();
   await pushService.initialize();
 
+// 1. Initialize Hive
+  await Hive.initFlutter();
+
+  // 2. Initialize the manager (opens the box)
+  await OrderItemMapManager().init();
+
 
   // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   // // Initialize push notification service
   // await FirebasePushService().initialize();
   //
   // debugLog(FirebasePushService().fcmToken.toString(), name: "fcm token");
-  //
+
   SecurePreference();
   ServiceIds.load();
   runApp(const MyApp());
@@ -56,7 +64,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       child: MaterialApp(
         navigatorKey:navigatorKey,
-        title:'TREE-LOVE',
+        title:'TreeLov',
         builder: EasyLoading.init(
 
         ),

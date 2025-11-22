@@ -140,9 +140,11 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
         showNotification(context, message: "First name is required");
       }else if(lastNameController.text.isEmpty){
         showNotification(context, message: "Last name is required");
-      }else if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+      }else if(emailController.text.isEmpty && phoneController.text.isEmpty){
+        showNotification(context, message: "Either email or phone number is required");
+      } else if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
         showNotification(context, message: "Passwords do not match");
-      }{
+      }else{
         // Create request model
         final staffRequest = AddStaffRequestModel(
           firstName: firstNameController.text.trim(),

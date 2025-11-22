@@ -25,6 +25,7 @@ class BaseNetwork {
 
   static const String loginURL = "${_BASE_URL}api/v1/auth/login/";
   static const String loginOAuthURL = "${_BASE_URL}api/v1/auth/oidc/login/";
+  static const String normalRegisterUrl = "${_BASE_URL}api/v1/auth/register/complete/";
   static const String refreshTokenURL = "${_BASE_URL}api/v1/auth/token/refresh/";
   static const String logoutURL = "${_BASE_URL}api/v1/auth/logout/";
   static const String servicesURL = "${_BASE_URL}api/v1/projects/service-types/";
@@ -46,6 +47,7 @@ class BaseNetwork {
   static const String grievanceCategoriesURL = "${_BASE_URL}api/v1/grievance/grievance-categories/";
   ///orders/order-items
   static const String paymentURL ="${_BASE_URL}api/v1/payments/payments/";
+  static const String inquiryUrl = "${_BASE_URL}api/v1/inquiries/";
 
 
   //TODO: Fieldworker URL :
@@ -75,7 +77,7 @@ class BaseNetwork {
   static const String notificationsListUrl ="${_BASE_URL}api/v1/notifications/";
 
   //http://10.202.100.187:9004/swagger/
-
+/*
   static Map<String, String> getJsonHeaders() {
     return {
       'content-type': 'application/json',
@@ -109,6 +111,40 @@ class BaseNetwork {
 
   static Map<String, String> getJsonHeaderForLogin() {
     return {"Content-Type": "application/json", "accept": "application/json"};
+  }
+
+ */
+  /// ✅ Standard JSON headers (for all authenticated API calls)
+  /// Token is added automatically by ApiConnection
+  static Map<String, String> getJsonHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+  }
+
+  /// ✅ Form-urlencoded headers (for token refresh)
+  static Map<String, String> getHeaderForLogin() {
+    return {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+    };
+  }
+
+  /// ✅ Multipart headers (for file uploads)
+  /// ⚠️ DO NOT set Content-Type - http package sets it automatically with boundary
+  static Map<String, String> getMultipartHeaders() {
+    return {
+      'Accept': 'application/json',
+    };
+  }
+
+  /// ✅ JSON headers for login/signup (no token required)
+  static Map<String, String> getJsonHeaderForLogin() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
   }
 
 }

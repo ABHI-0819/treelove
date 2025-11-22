@@ -28,6 +28,7 @@ class ProjectBloc extends Bloc<ApiEvent, ApiState<ProjectDetailResponse, Respons
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -36,6 +37,8 @@ class ProjectBloc extends Bloc<ApiEvent, ApiState<ProjectDetailResponse, Respons
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         default:
           emit(ApiFailure(result.response));
       }
@@ -74,6 +77,7 @@ class ProjectListBloc  extends Bloc<ApiEvent, ApiState<ProjectListResponse, Resp
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -82,6 +86,8 @@ class ProjectListBloc  extends Bloc<ApiEvent, ApiState<ProjectListResponse, Resp
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         default:
           emit(ApiFailure(result.response));
       }

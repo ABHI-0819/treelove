@@ -968,11 +968,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               if (state is ApiFailure<ProjectDetailResponse, ResponseModel>) {
                 showNotification(context,
                     message: state.error.message ?? "An error occurred");
-              } else if (state
+              }/* else if (state
                   is TokenExpired<ProjectDetailResponse, ResponseModel>) {
                 AppRoute.pushReplacement(context, SignInScreen.route,
                     arguments: {});
-              } else if (state
+              } */else if (state
                   is ApiSuccess<ProjectDetailResponse, ResponseModel>) {
                 final data = state.data.data;
                 if (_selectedAreaId == null && data.projectAreas.isNotEmpty) {

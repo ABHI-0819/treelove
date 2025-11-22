@@ -21,7 +21,8 @@ class MaintenanceRepository{
     final token = await pref.getString(Keys.accessToken);
     return await api.apiConnectionMultipart<MaintenanceResponse>(
         BaseNetwork.maintenanceCreatedURL,
-        BaseNetwork.getHeaderWithToken(token),
+        BaseNetwork.getMultipartHeaders(),
+        // BaseNetwork.getHeaderWithToken(token),
         'post',
         maintenanceResponseFromJson,
         fields: request.toFields(),
@@ -44,7 +45,8 @@ class MaintenanceRepository{
     final url = api.generateUrl(baseUrl: BaseNetwork.maintenanceCreatedURL,plantation: id);
     ApiResult result=  await api.getApiConnection<MaintenanceHistoryListResponse>(
       url, // assuming endpoint like /monitor/{id}/
-      BaseNetwork.getHeaderWithToken(token),
+      // BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
       maintenanceHistoryListResponseFromJson,  // JSON deserializer
     );
     return result;

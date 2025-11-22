@@ -26,9 +26,10 @@ class StaffBloc extends Bloc<ApiEvent, ApiState<StaffResponseModel, ResponseMode
       /// Call repository with the task assignment request model
       final result = await repository.createStaff(event.data);
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created :
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -37,6 +38,8 @@ class StaffBloc extends Bloc<ApiEvent, ApiState<StaffResponseModel, ResponseMode
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         default:
           emit(ApiFailure(result.response));
       }

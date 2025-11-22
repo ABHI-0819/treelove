@@ -26,9 +26,10 @@ class TaskAllocationBloc extends Bloc<ApiEvent, ApiState<TaskAllocationResponseM
       /// Call repository with the task assignment request model
       final result = await repository.createTaskAllocation(event.data);
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -37,6 +38,8 @@ class TaskAllocationBloc extends Bloc<ApiEvent, ApiState<TaskAllocationResponseM
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         default:
           emit(ApiFailure(result.response));
       }

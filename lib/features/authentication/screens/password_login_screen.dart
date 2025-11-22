@@ -152,7 +152,7 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
                 } else if (state is ApiFailure<LoginResponseModel, ResponseModel>) {
                   showNotification(
                     context,
-                    message: state.error.data.toString(), // Or customize based on ResponseModel structure
+                    message: state.error.message.toString(), // Or customize based on ResponseModel structure
                     type: Not.failed,
                   );
                 } else if (state is TokenExpired<LoginResponseModel, ResponseModel>) {

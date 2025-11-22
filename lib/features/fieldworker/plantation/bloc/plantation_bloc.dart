@@ -27,7 +27,7 @@ class PlantationBloc extends Bloc<ApiEvent, ApiState<PlantationResponseModel, Re
       final result = await repository.createPlantation(event.data);
 
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response)); // PlantationResponseModel
           break;
         case ApiStatus.refreshTokenExpired:

@@ -17,8 +17,9 @@ class ServicesRepository {
     try {
       final result = await api!.getApiConnection(
         BaseNetwork.servicesURL,
-        BaseNetwork.getJsonHeaders(),
+        BaseNetwork.getJsonHeaderForLogin(),
             (res) => json.decode(res) as Map<String, dynamic>,
+        isLogIn: true
       );
 
       debugLog(result.response.toString(),);

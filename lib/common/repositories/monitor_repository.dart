@@ -23,8 +23,9 @@ class MonitorRepository {
     final token = await pref.getString(Keys.accessToken);
 
     return await api.apiConnectionMultipart<MonitorResponse>(
-        BaseNetwork.monitorCreatedURL,                 // your monitor endpoint
-        BaseNetwork.getHeaderWithToken(token),         // headers with token
+        BaseNetwork.monitorCreatedURL,
+        BaseNetwork.getMultipartHeaders(),// your monitor endpoint
+        // BaseNetwork.getHeaderWithToken(token),         // headers with token
         'post',
         monitorResponseFromJson,                       // JSON deserializer
         fields: request.toFields(),                    // convert request to fields
@@ -39,7 +40,7 @@ class MonitorRepository {
     final url=BaseNetwork.satelliteMonitorResultUrl+id+"/";
    ApiResult result=  await api.getApiConnection<SatelliteMonitorResponse>(
      url, // assuming endpoint like /monitor/{id}/
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
       satelliteMonitorResponseFromJson, // JSON deserializer
     );
    return result;
@@ -53,7 +54,8 @@ class MonitorRepository {
     // final url=BaseNetwork.satelliteMonitorResultUrl+id+"/";
     ApiResult result=  await api.getApiConnection<SatelliteMonitoringHistoryResponse>(
       url, // assuming endpoint like /monitor/{id}/
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),
       satelliteMonitoringHistoryResponseFromJson, // JSON deserializer
     );
     return result;
@@ -63,8 +65,9 @@ class MonitorRepository {
     final token = await pref.getString(Keys.accessToken);
     final url = api.generateUrl(baseUrl: BaseNetwork.monitorCreatedURL,plantation: plantationId);
     ApiResult result=  await api.getApiConnection<MonitoringHistoryListResponse>(
-      url, // assuming endpoint like /monitor/{id}/
-      BaseNetwork.getHeaderWithToken(token),
+      url,
+      BaseNetwork.getJsonHeaders(),// assuming endpoint like /monitor/{id}/
+      // BaseNetwork.getHeaderWithToken(token),
       monitoringHistoryListResponseFromJson, // JSON deserializer
     );
     return result;

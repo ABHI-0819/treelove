@@ -25,7 +25,8 @@ class OrderRepository{
     final token = await pref.getString(Keys.accessToken);
     ApiResult result = await api!.apiConnectionMultipart<OrderPlacedResponse>(
         BaseNetwork.orderPlaceUrl,
-        BaseNetwork.getJsonHeadersWithToken(token), // use token if required
+        BaseNetwork.getMultipartHeaders(),
+        // BaseNetwork.getJsonHeadersWithToken(token), // use token if required
         'post',
         orderPlacedResponseFromJson,
         fields:fields.toJson()//fields.toJson(),
@@ -37,7 +38,8 @@ class OrderRepository{
     final token = await pref.getString(Keys.accessToken);
     ApiResult result = await api!.getApiConnection<OrderListResponse>(
         BaseNetwork.orderPlaceUrl,
-        BaseNetwork.getJsonHeadersWithToken(token), // use token if required
+        BaseNetwork.getJsonHeaders(),
+        // BaseNetwork.getJsonHeadersWithToken(token), // use token if required
       orderListResponseFromJson,
     );
     return result;
@@ -49,7 +51,8 @@ class OrderRepository{
     final url = api!.generateUrl(baseUrl: BaseNetwork.orderTrackingUrl,orderId: orderId);
     ApiResult result = await api!.getApiConnection<OrderTrackingResponse>(
       url,
-      BaseNetwork.getJsonHeadersWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getJsonHeadersWithToken(token),
       orderTrackingResponseFromJson,
     );
     return result;

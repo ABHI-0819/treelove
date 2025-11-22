@@ -79,7 +79,7 @@ class OrderPlacedData {
   final String paymentStatus;
   final String? treeMessageType;
   final String? treeCustomMessage;
-  final bool isQuery;
+  // final bool isQuery;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String user;
@@ -100,7 +100,7 @@ class OrderPlacedData {
     required this.paymentStatus,
     this.treeMessageType,
     this.treeCustomMessage,
-    required this.isQuery,
+    // required this.isQuery,
     required this.createdAt,
     required this.updatedAt,
     required this.user,
@@ -123,7 +123,7 @@ class OrderPlacedData {
     paymentStatus: json["payment_status"],
     treeMessageType: json["tree_message_type"],
     treeCustomMessage: json["tree_custom_message"],
-    isQuery: json["is_query"],
+   // isQuery: json["is_query"],
     createdAt: DateTime.parse(json["created_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
     user: json["user"],
@@ -145,7 +145,7 @@ class OrderPlacedData {
     "payment_status": paymentStatus,
     "tree_message_type": treeMessageType,
     "tree_custom_message": treeCustomMessage,
-    "is_query": isQuery,
+    // "is_query": isQuery,
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
     "user": user,

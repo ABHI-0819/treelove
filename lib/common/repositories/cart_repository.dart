@@ -29,7 +29,8 @@ class CartRepository{
     ApiResult result = await api!.apiConnectionMultipart<AddToCartResponseModel>(
       // BaseNetwork.cartItemsURL,
       url,
-      BaseNetwork.getHeaderWithToken(token),// use token if required
+      BaseNetwork.getMultipartHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),// use token if required
       'post',
       addToCartResponseModelFromJson,
       fields:fields.cartItemRequest.toJson()//fields.toJson(),

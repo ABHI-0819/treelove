@@ -21,7 +21,8 @@ class PlantationRepository {
     final token = await pref.getString(Keys.accessToken);
     return await api.apiConnectionMultipart<PlantationResponseModel>(
       BaseNetwork.plantationCreateURL,
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getMultipartHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),
       'post',
       plantationResponseModelFromJson,
       fields: request.toJson(),
@@ -36,7 +37,8 @@ class PlantationRepository {
     final url = api.generateUrl(baseUrl: BaseNetwork.plantationListURL,areaId:areaId,vendorId: vendorId,createdBy: createdBy,maintenanceStatus: maintenanceStatus);
     ApiResult result = await api.getApiConnection<PlantedListResponseModel>(
       url,
-      BaseNetwork.getJsonHeadersWithToken(token), // ✅ Pass token
+     BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getJsonHeadersWithToken(token), // ✅ Pass token
       plantedListResponseModelFromJson,        // ✅ Parse JSON into model
     );
     return result;

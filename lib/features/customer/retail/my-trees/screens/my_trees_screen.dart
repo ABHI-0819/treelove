@@ -149,6 +149,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
 
 
   // Sample tree data
+  /*
   final List<TreeData> trees = [
     TreeData(
       id: 'T001',
@@ -229,6 +230,8 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
       ],
     ),
   ];
+
+   */
 
   PlantedTreeModel? selectedTree;
 
@@ -700,7 +703,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
       ),
     ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3);
   }
-
+  /*
   Widget _buildStatsCard() {
     return Positioned(
       top: 120,
@@ -760,6 +763,8 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
       ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2),
     );
   }
+
+   */
 
   Widget _buildStatItem({
     required IconData icon,
@@ -1804,8 +1809,6 @@ class _TreeDetailsBottomSheet extends StatelessWidget {
 
 // Data Models
 enum TreeHealth { excellent, good, needsAttention }
-
-
 
 class TreeData {
   final String id;

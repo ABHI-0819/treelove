@@ -85,7 +85,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return InkWell(
       onTap: (){
         AppRoute.goToNextPage(context: context, screen: OrderTrackerScreen.route, arguments: {
-          'orderId':order.id
+          'orderId':order.id,
         });
       },
       child:  Container(
@@ -107,7 +107,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
             Row(
               children: [
                 Text(
-                  order.id.length > 10 ? order.id.substring(order.id.length - 10) : order.id,
+                  order.orderNumber??"Order id not Found",
+                  // order.id.length > 10 ? order.id.substring(order.id.length - 10) : order.id,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 // Text(

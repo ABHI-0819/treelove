@@ -1,23 +1,27 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/features/authentication/screens/create_account_screen.dart';
-import 'package:treelove/features/authentication/screens/forgot_password_screen.dart';
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
-
+import '../../../common/bloc/api_state.dart';
+import '../../../common/models/response.mode.dart';
+import '../../../common/repositories/sign_in_repository.dart';
 import '../../../core/config/constants/enum/input_enum.dart';
 import '../../../core/config/constants/enum/notification_enum.dart';
 import '../../../core/config/resource/images.dart';
 import '../../../core/config/themes/app_fonts.dart';
+import '../../../core/network/api_connection.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/storage/preference_keys.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/common_notification.dart';
 import '../../customer/b2b/home/screens/main_screen.dart';
-import '../../customer/retail/home/screens/home_screen.dart';
 import '../../customer/retail/home/screens/main_screen.dart';
+import '../bloc/register_bloc.dart';
+import '../models/register_request_model.dart';
 import 'user_type_screen.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -253,13 +257,14 @@ class _SignInScreenState extends State<SignInScreen> {
         AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
         // showNotification(context,type: Not.failed, message: 'Unknown user type');
       }
-
     }
-
-
     // Proceed with your app logic here.
   }
 }
+
+
+
+
 
 ///
 /// Android Debug Key
@@ -272,5 +277,4 @@ MD5: FE:0B:A3:10:C9:D3:0D:AA:E8:35:DD:C0:AE:94:68:68
 SHA1: A1:A6:FC:50:3D:62:55:71:9F:00:48:CC:44:98:C6:8A:E2:6B:D4:B7
 SHA-256: D0:6A:F6:AE:8D:FD:D5:D2:BF:5D:F8:46:14:38:34:58:8A:C8:87:EB:62:8B:E2:18:3D:00:9E:AD:C4:3D:61:4D
 Valid until: Monday, 28 December, 2054
-
  */

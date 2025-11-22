@@ -17,7 +17,8 @@ class StaffRepository {
     final token = await pref.getString(Keys.accessToken);  // fetch once async
     ApiResult result = await api.apiConnectionMultipart<StaffResponseModel>(
         BaseNetwork.staffCreationUrl,
-        BaseNetwork.getHeaderWithToken(token),
+        BaseNetwork.getMultipartHeaders(),
+        // BaseNetwork.getHeaderWithToken(token),
         'post',
         staffResponseModelFromJson,
         fields: request.toFields(),
@@ -45,7 +46,8 @@ class StaffRepository {
      // Call API
      ApiResult result = await api.getApiConnection<StaffListResponseModel>(
        BaseNetwork.staffCreationUrl,
-       BaseNetwork.getJsonHeadersWithToken(token), // ✅ Pass token
+       BaseNetwork.getJsonHeaders(),
+       // BaseNetwork.getJsonHeadersWithToken(token), // ✅ Pass token
        //
        staffListResponseModelFromJson,        // ✅ Parse JSON into model
      );
@@ -60,7 +62,8 @@ class StaffRepository {
      final url = "${BaseNetwork.staffListUrl}$userId/suspend/";
      ApiResult result = await api.apiConnectionMultipart<ResponseModel>(
          url,
-         BaseNetwork.getHeaderWithToken(token),
+       BaseNetwork.getJsonHeaders(),
+         // BaseNetwork.getHeaderWithToken(token),
          'post',
          responseModelFromJson,
      );

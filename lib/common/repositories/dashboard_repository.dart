@@ -18,7 +18,8 @@ class DashboardRepository {
     final token = await pref.getString(Keys.accessToken);
     ApiResult result = await api.getApiConnection(
       BaseNetwork.b2bDashboardUrl,
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),
       dashboardResponseModelFromJson,
     );
     return result;

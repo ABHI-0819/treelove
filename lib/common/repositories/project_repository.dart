@@ -33,7 +33,8 @@ class ProjectRepository {
     ApiResult result = await api.getApiConnection<ProjectListResponse>(
       // BaseNetwork.projectListURL,
       url,
-      BaseNetwork.getJsonHeadersWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getJsonHeadersWithToken(token),
       projectListResponseFromJson,
     );
 
@@ -48,7 +49,7 @@ class ProjectRepository {
     //projectDashboardURL
     ApiResult result = await api.getApiConnection<ProjectDetailResponse>(
       url,
-      BaseNetwork.getJsonHeadersWithToken(token),
+      BaseNetwork.getJsonHeaders(),
       projectDetailResponseFromJson,
     );
     return result;
@@ -62,7 +63,8 @@ class ProjectRepository {
     ApiResult result =
         await api.getApiConnection<B2BProjectDetailResponseModel>(
       url,
-      BaseNetwork.getJsonHeadersWithToken(token),
+          BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getJsonHeadersWithToken(token),
       b2bProjectDetailResponseModelFromJson,
     );
     return result;

@@ -429,7 +429,7 @@ class _SatelliteHistoryScreenState extends State<SatelliteHistoryScreen> {
             );
           }
           if (state is TokenExpired<SatelliteMonitoringHistoryResponse, ResponseModel>) {
-            final msg = state.error.data??'Something went wrong. Please try again';
+            final msg = state.error.message??'Something went wrong. Please try again';
             // final bool isTokenExpired = state is TokenExpired;
             // final String message = isTokenExpired
             //     ? 'Session expired. Please log in again.'

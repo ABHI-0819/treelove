@@ -27,7 +27,7 @@ class MonitorBloc extends Bloc<ApiEvent, ApiState<MonitorResponse, ResponseModel
       final result = await repository.addMonitorRecord(event.data);
 
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response)); // MonitorResponse
           break;
         case ApiStatus.refreshTokenExpired:

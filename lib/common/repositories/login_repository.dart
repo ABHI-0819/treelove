@@ -22,11 +22,11 @@ class LoginRepository{
     };
     ApiResult result = await api!.apiConnectionMultipart<LoginResponseModel>(
       BaseNetwork.loginURL,
-      BaseNetwork.getHeaderForLogin(),
+      BaseNetwork.getMultipartHeaders(),
       'post',
       loginResponseModelFromJson,
       fields: fields,
-      isLogIn: false
+      isLogIn: true
     );
     if (result.status == ApiStatus.success) {
       LoginResponseModel obj = result.response;
@@ -37,6 +37,7 @@ class LoginRepository{
       securePref.setString(Keys.email, obj.data.user.email);
       securePref.setString(Keys.groupName, obj.data.user.groupName);
       securePref.setString(Keys.profileId, obj.data.user.profile!.id);
+      securePref.setString(Keys.name, obj.data.user.profile!.fullName);
       securePref.setBool(Keys.isActive, obj.data.user.isActive);
       securePref.setString(Keys.accessToken,obj.data.tokens.access);
       securePref.setString(Keys.refreshToken,obj.data.tokens.refresh);
@@ -67,7 +68,8 @@ class LoginRepository{
     };
     ApiResult result = await api!.apiConnectionMultipart(
       BaseNetwork.logoutURL,
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),
       'post',
           (json) => ResponseModel.fromJson(jsonDecode(json)),
       fields: fields,

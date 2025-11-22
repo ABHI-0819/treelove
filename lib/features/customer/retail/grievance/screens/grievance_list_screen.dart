@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/features/customer/retail/grievance/screens/raise_grievance_screen.dart';
 
@@ -42,72 +44,115 @@ class _GrievanceListScreenState extends State<GrievanceListScreen> {
     super.dispose();
   }
 
+  Widget _buildHeader() {
+    return SafeArea(
+      top: true,
+      left: true,
+      right: true,
+      bottom: false,
+      child: Container(
+        padding:  EdgeInsets.symmetric(horizontal: 20,vertical: 5.h),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColor.cardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColor.primary.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: AppColor.primary,
+                  size: 18,
+                ),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "Grievances",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: AppColor.primary,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const Spacer(),
+            const SizedBox(width: 44), // Balance the back button
+          ],
+        ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.scaffoldBackground,
-      appBar: AppBar(
-        backgroundColor: AppColor.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColor.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'My Grievances',
-          style: TextStyle(
-            color: AppColor.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: BlocProvider(
   create: (context) => grievanceListBloc,
-  child: BlocBuilder<GrievanceListBloc,
-          ApiState<GrievanceListResponse, ResponseModel>>(
-        builder: (context, state) {
-          if (state is ApiLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+  child: Column(
+    children: [
+      _buildHeader(),
+      Expanded(
+        flex: 1,
+        child: BlocBuilder<GrievanceListBloc,
+                ApiState<GrievanceListResponse, ResponseModel>>(
+              builder: (context, state) {
+                if (state is ApiLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (state is ApiSuccess<GrievanceListResponse, ResponseModel>) {
-            final grievances = state.data.data;
-            if (grievances.isEmpty) {
-              return _buildEmptyState();
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: grievances.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                return _GrievanceCard(grievance: grievances[index]);
-              },
-            );
-          }
+                if (state is ApiSuccess<GrievanceListResponse, ResponseModel>) {
+                  final grievances = state.data.data;
+                  if (grievances.isEmpty) {
+                    return _buildEmptyState();
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: grievances.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return _GrievanceCard(grievance: grievances[index]);
+                    },
+                  );
+                }
 
-          if (state is ApiFailure<GrievanceListResponse, ResponseModel>) {
-            return _buildErrorState(
-              message: state.error.message ?? 'Failed to load',
-              onRetry: () {
-                grievanceListBloc.add(ApiListFetch());
-              },
-            );
-          }
-          if(state is TokenExpired<GrievanceListResponse, ResponseModel>){
-            _buildErrorState(
-              message: state.error.message ?? 'Session expired',
-              onRetry: () {
-                grievanceListBloc.add(ApiListFetch());
-              },
-            );
-          }
+                if (state is ApiFailure<GrievanceListResponse, ResponseModel>) {
+                  return _buildErrorState(
+                    message: state.error.message ?? 'Failed to load',
+                    onRetry: () {
+                      grievanceListBloc.add(ApiListFetch());
+                    },
+                  );
+                }
+                if(state is TokenExpired<GrievanceListResponse, ResponseModel>){
+                  _buildErrorState(
+                    message: state.error.message ?? 'Session expired',
+                    onRetry: () {
+                      grievanceListBloc.add(ApiListFetch());
+                    },
+                  );
+                }
 
-          return _buildEmptyState(); // fallback
-        },
+                return _buildEmptyState(); // fallback
+              },
+            ),
       ),
+    ],
+  ),
 ),
+      /*
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColor.primary,
         foregroundColor: Colors.white,
@@ -116,6 +161,8 @@ class _GrievanceListScreenState extends State<GrievanceListScreen> {
         },
         child: const Icon(Icons.add),
       ),
+
+       */
     );
   }
 

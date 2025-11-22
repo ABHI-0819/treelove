@@ -22,8 +22,9 @@ class GrievanceRepository {
     final token = await pref.getString(Keys.accessToken);
 
     return await api!.apiConnectionMultipart<GrievanceResponse>(
-      BaseNetwork.grievanceCreateURL,       // e.g., '/api/grievances/'
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.grievanceCreateURL,
+      BaseNetwork.getMultipartHeaders(),// e.g., '/api/grievances/'
+      // BaseNetwork.getHeaderWithToken(token),
       'post',
       grievanceResponseFromJson,            // your deserializer
       fields: request.toFields(),
@@ -36,8 +37,9 @@ class GrievanceRepository {
   Future<ApiResult> fetchAllGrievances() async {
     final token = await pref.getString(Keys.accessToken);
     return await api!.getApiConnection<GrievanceListResponse>(
-      BaseNetwork.grievanceCreateURL,         // e.g., '/api/grievances/'
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.grievanceCreateURL,
+      BaseNetwork.getJsonHeaders(),// e.g., '/api/grievances/'
+      // BaseNetwork.getHeaderWithToken(token),
       grievanceListResponseFromJson,
     );
   }
@@ -47,7 +49,8 @@ class GrievanceRepository {
     final token = await pref.getString(Keys.accessToken);
     return await api!.getApiConnection<GrievanceCategoryListResponse>(
       BaseNetwork.grievanceCategoriesURL, // e.g., '/api/v1/grievance/grievance-categories/'
-      BaseNetwork.getHeaderWithToken(token),
+      // BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
       grievanceCategoryListResponseFromJson,
     );
   }

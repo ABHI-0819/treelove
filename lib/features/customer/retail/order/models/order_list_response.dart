@@ -124,6 +124,7 @@ class OrderListResponse {
 class OrderData {
   final String id;
   final String name;
+  final String? orderNumber;
   final int totalItemCount;
   final String? project;
   final String? totalAmount;
@@ -140,6 +141,7 @@ class OrderData {
     required this.id,
     required this.name,
     required this.totalItemCount,
+    this.orderNumber,
     this.project,
     this.totalAmount,
     this.totalAmountPaid,
@@ -156,6 +158,7 @@ class OrderData {
     id: json["id"],
     name: json["name"],
     totalItemCount: json["total_item_count"],
+    orderNumber: json["order_number"],
     project: json["project"] as String?,
     totalAmount: json["total_amount"]?.toString(),
     totalAmountPaid: json["total_amount_paid"]?.toString(),
@@ -172,6 +175,7 @@ class OrderData {
     "id": id,
     "name": name,
     "total_item_count": totalItemCount,
+    "order_number":orderNumber,
     "project": project,
     "total_amount": totalAmount,
     "total_amount_paid": totalAmountPaid,

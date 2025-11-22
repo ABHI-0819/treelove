@@ -19,8 +19,11 @@ import 'tree_species_details.dart';
 class TreeSpeciesList extends StatefulWidget {
   static const route = "/tree-species-list";
   final String areaId;
+  final int treeCount;
+  final double ? latitude;
+  final double ? longitude;
 
-  const TreeSpeciesList({super.key,required this.areaId});
+  const TreeSpeciesList({super.key,required this.areaId,this.treeCount=1,this.latitude,this.longitude});
 
   @override
   State<TreeSpeciesList> createState() => _TreeSpeciesListState();
@@ -118,7 +121,10 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
                                 AppRoute.goToNextPage(
                                     context: context, screen: TreeSpeciesDetails.route, arguments: {
                                       'id' :item.id,
-                                      'areaId':widget.areaId
+                                      'areaId':widget.areaId,
+                                      'treeCount':widget.treeCount,
+                                      'latitude':widget.latitude,
+                                      'longitude':widget.longitude
                                 });
                               },
                               tree: TreeType(
@@ -183,10 +189,10 @@ class StickySearchBar extends SliverPersistentHeaderDelegate {
   // double get minExtent => 60;
 
   @override
-  double get maxExtent => 45.h! + 10;
+  double get maxExtent => 45.h + 10;
 
   @override
-  double get minExtent => 45.h! + 10;
+  double get minExtent => 45.h + 10;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>

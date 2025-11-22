@@ -149,7 +149,7 @@ class AddToCartResponseModel {
 }
 
 class CartData {
-  final String? id;
+  final String id;
   final bool? isGeotagOnly;
   final int? quantity;
   final String? startDate;
@@ -175,7 +175,7 @@ class CartData {
   final String? updatedBy;
 
   CartData({
-    this.id,
+   required this.id,
     this.isGeotagOnly,
     this.quantity,
     this.startDate,

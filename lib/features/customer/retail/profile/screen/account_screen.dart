@@ -10,11 +10,15 @@ import 'package:treelove/features/customer/retail/cart/cart_screen.dart';
 import 'package:treelove/features/customer/retail/invite-friend/screens/invite_friend_screen.dart';
 import 'package:treelove/features/customer/retail/my-trees/screens/my_trees_screen.dart';
 import 'package:treelove/features/customer/retail/order/order_list_screen.dart';
+import 'package:treelove/features/customer/retail/profile/screen/profile_screen.dart';
+import 'package:treelove/features/customer/retail/settings/setting_screen.dart';
 
 import '../../../../../common/bloc/api_event.dart';
 import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/login_repository.dart';
+import '../../../../../common/screens/privacy_policy_screen.dart';
+import '../../../../../common/screens/terms_conditions_screen.dart';
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
 import '../../../../../core/network/api_connection.dart';
@@ -231,6 +235,137 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
   }
 
+  Widget _buildHeaderCompact() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColor.cardBackground,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {
+                AppRoute.goToNextPage(context: context, screen: RetailProfileScreen.route, arguments: {});
+                 // Navigate to profile screen
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Row(
+                  children: [
+                    // Compact Avatar
+                    Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColor.primary,
+                                AppColor.primaryLight,
+                              ],
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(2),
+                          child: CircleAvatar(
+                            radius: 28,
+                            backgroundColor: AppColor.background,
+                            child: Icon(
+                              Icons.person_rounded,
+                              size: 30,
+                              color: AppColor.primary,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: AppColor.success,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColor.cardBackground,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 10,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+
+                    // User Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FutureBuilder<String?>(
+                            future: pref.getString(Keys.name, defaultValue: 'User'),
+                            builder: (context, snapshot) {
+                              return Text(
+                                snapshot.data ?? 'User',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColor.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 4),
+                          FutureBuilder<String?>(
+                            future: pref.getString(Keys.email),
+                            builder: (context, snapshot) {
+                              return Text(
+                                snapshot.data ?? 'Not available',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColor.textMuted,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Arrow Icon
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: AppColor.textMuted,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +380,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           children: [
 
             // 🔰 Header
-            _buildHeader(),
+            _buildHeaderCompact(),
+            // _buildHeader(),
             // 👤 My Account Section
             _buildSectionHeader('My Account'),
             Padding(
@@ -265,7 +401,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     _buildButton(icon: Images.grievanceIcon, label: 'Grievance', onTap: () {
                       AppRoute.goToNextPage(context: context, screen: GrievanceListScreen.route, arguments: {});
                     }),
-                    _buildButton(icon: Images.settingIcon, label: 'Settings', onTap: () {}),
+                    _buildButton(icon: Images.settingIcon, label: 'Settings', onTap: () {
+                      AppRoute.goToNextPage(context: context, screen: SettingsScreen.route, arguments: {});
+                    }),
                     _buildButton(icon: Images.orderIcon, label: 'My Order', onTap: () {
                       AppRoute.goToNextPage(context: context, screen: OrderListScreen.route, arguments: {});
                     }),
@@ -322,9 +460,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             ),
             child: Column(
               children: [
-                _buildLinkRow('Terms of Service', () {}),
+                _buildLinkRow('Terms of Service', () {
+                  AppRoute.goToNextPage(context: context, screen: TermsConditionsScreen.route, arguments: {});
+                }),
                 _buildDivider(),
-                _buildLinkRow('Privacy Policy', () {}),
+                _buildLinkRow('Privacy Policy', () {
+                  AppRoute.goToNextPage(context: context, screen: PrivacyPolicyScreen.route, arguments: {});
+                }),
                 _buildDivider(),
                 _buildLinkRow('FAQs', () {
                   AppRoute.goToNextPage(context: context, screen: FaqScreen.route, arguments: {});

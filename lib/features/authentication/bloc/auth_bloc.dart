@@ -65,7 +65,7 @@ class LogoutBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> 
         emit(ApiSuccess(result.response));
         //  Clear FCM reference on logout
         FirebasePushService().onLogout();
-      case ApiStatus.resetContent: // ✅ for 204/205 status
+      case ApiStatus.resetContent: //  for 204/205 status
         emit(ApiSuccess(result.response));
         break;
       case ApiStatus.unAuthorized:

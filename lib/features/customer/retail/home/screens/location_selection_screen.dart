@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +8,7 @@ import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:treelove/common/repositories/order_flow_state.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/core/utils/logger.dart';
@@ -17,11 +18,13 @@ import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/project_area_repository.dart';
 import '../../../../../core/config/constants/enum/notification_enum.dart';
+import '../../../../../core/config/constants/enum/order_enum.dart';
 import '../../../../../core/config/constants/map_constants.dart';
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_color.dart';
 import 'package:turf/turf.dart' as turf;
 import '../../../../../core/network/api_connection.dart';
+import '../../../../../core/services/order_item_service.dart';
 import '../../../../../core/utils/geofence_helper.dart';
 import '../../../../../core/widgets/common_notification.dart';
 import '../../../../authentication/screens/sign_in_screen.dart';
@@ -42,8 +45,6 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? selectedPoint;
   int treeCount = 1;
 
-
-
   bool isNavigate = false;
 
   final List<LatLng> polygonPoints = const [
@@ -54,6 +55,8 @@ class _MapScreenState extends State<MapScreen> {
     LatLng(19.1255, 72.8310),
     LatLng(19.1245, 72.8315), // Closed loop
   ];
+
+  final manager = OrderItemMapManager();
 
   String? insideAreaId;
   void _onMapTap(LatLng point, List<ProjectAreaItem> areas) {
@@ -116,6 +119,33 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  Widget _buildTreeCountMarker(int count) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Icon(Icons.location_on, color: Colors.green[900], size: 40),
+        Positioned(
+          top: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              "$count", // Display the individual tree count
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   late ProjectAreaBloc projectAreaBloc;
 
   @override
@@ -127,7 +157,6 @@ class _MapScreenState extends State<MapScreen> {
     }else{
       projectAreaBloc.add(ApiListFetch());
     }
-
     // TODO: implement initState
     super.initState();
   }
@@ -157,12 +186,23 @@ class _MapScreenState extends State<MapScreen> {
                 return Center(child: CircularProgressIndicator());
               } else  if (state is ApiSuccess<ProjectAreasResponse, ResponseModel>) {
                 ProjectAreasResponse areaList = state.data;
-                return Stack(
+                if(areaList.data.isEmpty){
+                  return  EmptyProjectAreasWidget(
+                    onRetry: () {
+                      // Add your retry logic here
+                      // Example: bloc.add(FetchProjectAreas());
+                      // Or: setState(() { _loadData(); });
+                    },
+                  );
+                }
+
+                return
+                  Stack(
                   children: [
                     FlutterMap(
                       mapController: mapController,
                       options: MapOptions(
-                        initialCenter:   areaList.data[0].centroid,
+                        initialCenter:   areaList.data.isEmpty? MapConstant.initialCenter: areaList.data[0].centroid,
                         // MapConstant.initialCenter,
                         initialZoom: MapConstant.initialZoom,
                         maxZoom: MapConstant.maximumZoom,
@@ -170,17 +210,27 @@ class _MapScreenState extends State<MapScreen> {
                         onTap: (_, latLng) => _onMapTap(latLng,areaList.data),
                       ),
                       children: [
+                        // TileLayer(
+                        //   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        //   tileProvider: NetworkTileProvider(
+                        //     headers: {
+                        //       'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
+                        //     },
+                        //   ),
+                        //   // subdomains: ['a', 'b', 'c'],
+                        //   // userAgentPackageName: 'com.example.app',
+                        // ),
                         TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          urlTemplate: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
                           tileProvider: NetworkTileProvider(
                             headers: {
-                              'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
+                              'User-Agent': 'Treelov/1.0',
                             },
                           ),
-                          // subdomains: ['a', 'b', 'c'],
-                          // userAgentPackageName: 'com.example.app',
                         ),
-                        // 🟩 Show Polygon
+                        CurrentLocationLayer(),
+                        //  Show Polygon
                         PolygonLayer(
                           polygons: [
                             ...List.generate(areaList.data.length, (index)=> Polygon(
@@ -192,6 +242,49 @@ class _MapScreenState extends State<MapScreen> {
                             ),)
 
                           ],
+                        ),
+                        FutureBuilder<List<Map<String, dynamic>>>(
+                          // Fetch all stored tree items once
+                          future: Future.value(manager.getAllOrderItems()),
+
+                          builder: (context, snapshot) {
+
+                            // 1. Handle loading state
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+
+                            // 2. Safely get the data list (defaults to empty if null/error)
+                            final List<Map<String, dynamic>> items = snapshot.data ?? [];
+
+                            // 3. Generate a list of Markers
+                            List<Marker> treeMarkers = [];
+
+                            // Iterate through every stored tree item to create a marker
+                            for (var item in items) {
+                              // Safely extract data
+                              final double lat = item['latitude'] as double? ?? 0.0;
+                              final double lon = item['longitude'] as double? ?? 0.0;
+                              final int count = item['count'] as int? ?? 1; // Default to 1 if count is missing
+
+                              // Skip if location data is invalid
+                              if (lat == 0.0 && lon == 0.0) continue;
+
+                              treeMarkers.add(
+                                Marker(
+                                  point: LatLng(lat, lon), // Use the specific coordinates from the item
+                                  width: 50,
+                                  height: 50,
+                                  child: _buildTreeCountMarker(count), // Helper to build the visual icon
+                                ),
+                              );
+                            }
+
+                            // 4. Return the MarkerLayer with the final list of markers
+                            return MarkerLayer(
+                              markers: treeMarkers,
+                            );
+                          },
                         ),
                         if (selectedPoint != null)
                           MarkerLayer(
@@ -267,13 +360,138 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                     ),
                     SafeArea(
-                        child: _SearchBar(mapController: mapController,
-                          onBackPressed: () {
-                            Navigator.of(context).pop(); // or pushReplacement, etc.
-                          },
-                        )),
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 15),
+                        child: Row(
+                          spacing: 10,
+                          children: [
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: AppColor.cardBackground,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColor.primary.withOpacity(0.15),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_back_ios_new,
+                                  color: AppColor.primary,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                            
+                            Expanded(
+                              child: SizedBox(
+                                height: 55,
+                                child: CustomDropdown<ProjectAreaItem>.search(
+                                  hintText: 'Search and select area',
+                                  items: areaList.data,
+                                  // Custom item builder to display area names
+                                  listItemBuilder: (context, item, isSelected, onItemSelect) {
+                                    return Text(
+                                      item.name ?? 'Unnamed Area',
+                                      style: TextStyle(
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        color: isSelected ? Colors.green.shade900 : Colors.black87,
+                                      ),
+                                    );
+                                  },
 
+                                  // Custom header builder (what shows when item is selected)
+                                  headerBuilder: (context, selectedItem, enabled) {
+                                    return Text(
+                                      selectedItem.name ?? 'Unnamed Area',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                  excludeSelected: false,
+                                  decoration: CustomDropdownDecoration(
+                                    closedFillColor: Colors.white,
+                                    expandedFillColor: Colors.white,
+                                    closedBorder: Border.all(color: Colors.green.shade300, width: 1.5),
+                                    expandedBorder: Border.all(color: Colors.green.shade400, width: 1.5),
+                                    closedBorderRadius: BorderRadius.circular(12),
+                                    expandedBorderRadius: BorderRadius.circular(12),
+                                    hintStyle: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    headerStyle: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                    closedSuffixIcon: Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Colors.green.shade700,
+                                    ),
+                                    expandedSuffixIcon: Icon(
+                                      Icons.keyboard_arrow_up,
+                                      color: Colors.green.shade700,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.location_on,
+                                      color: Colors.green.shade700,
+                                      size: 20,
+                                    ),
+                                    searchFieldDecoration: SearchFieldDecoration(
+                                      fillColor: Colors.grey.shade50,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.green.shade300),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                                      ),
+                                      hintStyle: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                      textStyle: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                  onChanged: (ProjectAreaItem? newArea) {
+                                    if (newArea != null) {
+                                      setState(() {
+                                        // selectedArea = newArea;
+                                      });
 
+                                      // Animate map to selected area's centroid
+                                      mapController.move(
+                                        newArea.centroid,
+                                        13.0, // Adjust zoom level as needed
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // SafeArea(
+                    //     child: _SearchBar(mapController: mapController,
+                    //       onBackPressed: () {
+                    //         Navigator.of(context).pop(); // or pushReplacement, etc.
+                    //       },
+                    //     )),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: SafeArea(
@@ -288,13 +506,35 @@ class _MapScreenState extends State<MapScreen> {
                               const SizedBox(width: 20),
                               ElevatedButton.icon(
                                 onPressed: () {
+                                  // await OrderItemMapManager().clear();
                                   if(insideAreaId!=null){
+                                  /*
+
+                                    final String uniqueId = 'T${DateTime.now().microsecondsSinceEpoch}';
+                                  await  manager.addItem(
+                                      treeId: uniqueId,
+                                      latitude:selectedPoint!.latitude,
+                                      longitude:selectedPoint!.longitude,
+                                      count: treeCount,
+                                    );
+
+                                   */
                                     AppRoute.goToNextPage(
                                       context: context,
                                       screen: TreeSpeciesList.route,
                                       arguments: {
-                                        'areaId':insideAreaId
+                                        'areaId':insideAreaId,
+                                        'treeCount':treeCount,
+                                        'latitude':selectedPoint!.latitude,
+                                        'longitude':selectedPoint!.longitude,
                                       },
+                                    );
+                                  }else{
+                                    HapticFeedback.mediumImpact();
+                                    showNotification(
+                                      context,
+                                      message: 'Please drop the pin inside the green area to plant.',
+                                      type: Not.warning,
                                     );
                                   }
                                 },
@@ -323,7 +563,7 @@ class _MapScreenState extends State<MapScreen> {
               } else {
                 return const Center(
                   child: Text(
-                    "No staff found",
+                    "No project areas found.",
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 );
@@ -619,6 +859,14 @@ class _TreeCounterState extends State<_TreeCounter> {
   void initState() {
     super.initState();
     count = widget.initialCount;
+    debugLog(OrderFlowState().orderType.name,name: "orderType");
+    if (OrderFlowState().orderType == OrderType.birthday) {
+      count = 20;
+    }
+
+    if (OrderFlowState().orderType == OrderType.anniversary) {
+      count = 25;
+    }
   }
 
   void _increment() {
@@ -1075,4 +1323,164 @@ class PinData {
   int plantCount;
 
   PinData({required this.position, required this.plantCount});
+}
+
+
+class EmptyProjectAreasWidget extends StatelessWidget {
+  final VoidCallback? onRetry;
+
+  const EmptyProjectAreasWidget({
+    super.key,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated Tree Illustration
+            Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                color: AppColor.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background circles for depth
+                  Positioned(
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppColor.secondary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  // Main icon
+                  Icon(
+                    Icons.park_outlined,
+                    size: 80,
+                    color: AppColor.primary.withOpacity(0.7),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Title
+            const Text(
+              "No Project Areas Yet",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColor.textPrimary,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Description
+            Text(
+              "We couldn't find any project areas at the moment.\nThis could be because:",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColor.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Reasons List
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColor.cardBackground,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColor.border,
+                  width: 1,
+                ),
+              ),
+              child: _buildReasonItem(
+                icon: Icons.folder_outlined,
+                text: "No areas have been created yet",
+                color: AppColor.secondary,
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Retry Button
+            if (onRetry != null)
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                label: const Text(
+                  "Try Again",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primary,
+                  foregroundColor: AppColor.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                  shadowColor: AppColor.primary.withOpacity(0.3),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReasonItem({
+    required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColor.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

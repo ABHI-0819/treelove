@@ -89,9 +89,13 @@ class _ProjectListSection extends StatelessWidget {
         if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
           showNotification(context,
               message: state.error.message ?? "An error occurred");
-        } else if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
+        }
+        /*
+        else if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
           AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
         }
+
+         */
       },
       child: BlocBuilder<
           ProjectListBloc, // Build UI based on BLoC state

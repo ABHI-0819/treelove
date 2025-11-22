@@ -67,9 +67,10 @@ class MaintenanceActivityBloc extends Bloc<ApiEvent, ApiState<MaintenanceActivit
       final result = await repository.fetchMaintenanceActivityList();
 
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response));
           break;
+        /*
         case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response)); // 🚀 go to SignIn
           break;
@@ -78,6 +79,8 @@ class MaintenanceActivityBloc extends Bloc<ApiEvent, ApiState<MaintenanceActivit
             message: "Unauthorized access. Please login again.",
           )));
           break;
+
+         */
         default:
           emit(ApiFailure(result.response));
       }

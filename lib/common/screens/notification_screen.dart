@@ -955,7 +955,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               },
             );
           } else if (state is ApiFailure<NotificationResponse, ResponseModel>) {
-            return _buildErrorState(state.error.data.toString());
+            return _buildErrorState(state.error.message.toString());
           } else {
             // ApiInitial or unknown
             return const Center(child: Text('Ready...'));

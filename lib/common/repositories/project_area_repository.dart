@@ -27,7 +27,8 @@ class ProjectAreaRepository {
     ApiResult result = await api.getApiConnection<ProjectAreasResponse>(
       // BaseNetwork.projectListURL,
       url,
-      BaseNetwork.getJsonHeadersWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getJsonHeadersWithToken(token),
       projectAreasResponseFromJson,
     );
 

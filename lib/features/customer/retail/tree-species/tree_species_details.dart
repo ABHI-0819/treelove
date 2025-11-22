@@ -11,7 +11,9 @@ import 'package:treelove/features/customer/retail/cart/bloc/cart_item_bloc.dart'
 import '../../../../common/bloc/api_event.dart';
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
+import '../../../../common/repositories/order_flow_state.dart';
 import '../../../../common/repositories/tree_species_repository.dart';
+import '../../../../core/config/constants/enum/order_enum.dart';
 import '../../../../core/config/constants/enum/status_enum.dart';
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/resource/service_ids.dart';
@@ -19,6 +21,7 @@ import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
 import '../../../../core/network/api_connection.dart';
+import '../../../../core/services/order_item_service.dart';
 import '../../../../core/storage/preference_keys.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../cart/cart_screen.dart';
@@ -27,13 +30,17 @@ import '../cart/model/cart_request_model.dart';
 import '../home/screens/location_selection_screen.dart';
 import 'bloc/tree_species_bloc.dart';
 import 'models/tree_species_model.dart';
-
+/*
 class TreeSpeciesDetails extends StatefulWidget {
   final String id;
   final String areaId;
+  final int treeCount;
+  final double ? latitude;
+  final double ? longitude;
+
   static const route = '/tree-species-details';
 
-  const TreeSpeciesDetails({super.key, required this.id, required this.areaId});
+  const TreeSpeciesDetails({super.key, required this.id, this.treeCount=1,required this.areaId,this.latitude,this.longitude});
 
   @override
   State<TreeSpeciesDetails> createState() => _TreeSpeciesDetailsState();
@@ -43,6 +50,7 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
   late TreeDetailBloc _treeDetailBloc;
 
   final pref = SecurePreference();
+  final manager = OrderItemMapManager();
 
   int quantity = 1;
   bool geoTagging = true;
@@ -71,13 +79,25 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
 
   String? navigateTo;
 
+  TextEditingController customMessageController = TextEditingController();
+  bool showCustomMessageField = false;
+
   @override
   void initState() {
+    quantity = widget.treeCount;
+    // quantity = manager.getLastItemCount();
     _treeDetailBloc = TreeDetailBloc(
       TreeSpeciesRepository(api: ApiConnection()),
     );
     cartBloc = CartBloc(CartRepository(api: ApiConnection()));
     _treeDetailBloc.add(ApiFetch(id: widget.id));
+
+    final orderType = OrderFlowState().orderType;
+    if (orderType == OrderType.birthday || orderType == OrderType.anniversary) {
+      showCustomMessageField = true;
+    }
+
+
     // TODO: implement initState
     super.initState();
   }
@@ -324,85 +344,138 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
                                 ],
                               ),
                             ),
-                          // Add to Cart Button
-                          Spacer(),
-                          BlocListener<CartBloc,
-                              ApiState<AddToCartResponseModel, ResponseModel>>(
-                            listener: (context, state) {
-                              debugLog(state.toString());
-                              if (state is ApiLoading<AddToCartResponseModel,
-                                  ResponseModel>) {
-                                EasyLoading.show();
-                              } else if (state is ApiSuccess<
-                                  AddToCartResponseModel, ResponseModel>) {
-                                EasyLoading.dismiss();
-                                if (navigateTo == 'another') {
-                                  AppRoute.goToNextPage(
-                                      context: context,
-                                      screen: MapScreen.route,
-                                      arguments: {});
-                                } else if (navigateTo == 'cart') {
-                                  AppRoute.goToNextPage(
-                                      context: context,
-                                      screen: CartScreen.route,
-                                      arguments: {});
-                                }
-                              } else if (state is TokenExpired<
-                                  AddToCartResponseModel, ResponseModel>) {
-                                EasyLoading.dismiss();
-                                showNotification(context,
-                                    message: "Token Expired");
-                              }else if(state is ApiFailure<AddToCartResponseModel, ResponseModel>){
-                                EasyLoading.dismiss();
-                                showNotification(context,
-                                    message: state.error.message.toString());
-                              }
-                            },
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFFF6F2E8),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(28),
-                                  ),
+
+                          if (showCustomMessageField)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              child: TextField(
+                                controller: customMessageController,
+                                maxLength: 100,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
                                 ),
-                                onPressed: () async {
-                                  navigateTo = 'another';
-                                  final userId = await pref.getString(Keys.id);
-                                  final cartItem = CartRequestDetail(
-                                    isMaintenance: maintenance,
-                                    isMonitoring: monitoring,
-                                    cartItemRequest: CartItemRequest(
-                                      user: userId,
-                                      // required UUID
-                                      projectArea: widget.areaId,
-                                      // optional
-                                      serviceType: ServiceIds.plantationId!,
-                                      // required
-                                      isGeotagOnly: geoTagging,
-                                      parentService: null,
-                                      quantity: quantity,
-                                      monitoringMode: monitoring ? monitoringMode : null,
-                                      treeSpecies: treeDetail.data.id,
-                                      status: "pending",
-                                      // required
-                                      unitPrice: treeDetail.data.servicePricing!
-                                          .plantingPrice, // required string decimal
-                                    )
-                                  );
-                                  debugLog(jsonEncode(cartItem.cartItemRequest.toJson()),
-                                      name: 'Cart item');
-                                  cartBloc.add(ApiAdd(cartItem));
-                                },
-                                child: Text('Add other Tree species',
-                                    style: AppFonts.regular
-                                        .copyWith(color: Color(0xFFD2C7A6))),
+                                decoration: InputDecoration(
+                                  hintText: 'Write a personal message or name(e.g., Happy Birthday, Happy Anniversary)',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  fillColor: Colors.transparent,
+                                  filled: false,
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4.0),
+                                  isDense: true,
+                                  // Only show bottom border
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(color: Colors.white30, width: 1.2),
+                                    borderRadius: BorderRadius.zero, // underline doesn't curve
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(color: Colors.white, width: 1.5),
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  disabledBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(color: Colors.white24),
+                                  ),
+                                  errorBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(color: Colors.redAccent),
+                                  ),
+                                  focusedErrorBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(color: Colors.red),
+                                  ),
+                                  counterText: '', // hide character counter
+                                ),
                               ),
                             ),
-                          ),
+                          // Add to Cart Button
+                          Spacer(),
 
+                            BlocListener<CartBloc,
+                                ApiState<AddToCartResponseModel, ResponseModel>>(
+                              listener: (context, state) {
+                                debugLog(state.toString());
+                                if (state is ApiLoading<AddToCartResponseModel,
+                                    ResponseModel>) {
+                                  EasyLoading.show();
+                                } else if (state is ApiSuccess<
+                                    AddToCartResponseModel, ResponseModel>) {
+                                  final cartId = state.data.data!.id;
+                                  EasyLoading.dismiss();
+                                  if (navigateTo == 'another') {
+                                    if(widget.latitude!=null && widget.longitude!=null){
+                                      manager.addItem(
+                                        treeId: cartId,
+                                        latitude:widget.latitude??0.0,
+                                        longitude:widget.longitude??0.0,
+                                        count: quantity,
+                                      );
+                                    }
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: MapScreen.route,
+                                        arguments: {});
+                                  } else if (navigateTo == 'cart') {
+                                    manager.clear();
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: CartScreen.route,
+                                        arguments: {});
+                                  }
+                                } else if (state is TokenExpired<
+                                    AddToCartResponseModel, ResponseModel>) {
+                                  EasyLoading.dismiss();
+                                  showNotification(context,
+                                      message: "Token Expired");
+                                }else if(state is ApiFailure<AddToCartResponseModel, ResponseModel>){
+                                  EasyLoading.dismiss();
+                                  showNotification(context,
+                                      message: state.error.message.toString());
+                                }
+                              },
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Color(0xFFF6F2E8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    navigateTo = 'another';
+                                    final userId = await pref.getString(Keys.id);
+                                    final cartItem = CartRequestDetail(
+                                      isMaintenance: maintenance,
+                                      isMonitoring: monitoring,
+                                      cartItemRequest: CartItemRequest(
+                                        user: userId,
+                                        // required UUID
+                                        projectArea: widget.areaId,
+                                        // optional
+                                        serviceType: ServiceIds.plantationId!,
+                                        // required
+                                        isGeotagOnly: geoTagging,
+                                        parentService: null,
+                                        quantity: quantity,
+                                        monitoringMode: monitoring ? monitoringMode : null,
+                                        treeSpecies: treeDetail.data.id,
+                                        status: "pending",
+                                        // required
+                                        unitPrice: treeDetail.data.servicePricing!
+                                            .plantingPrice, // required string decimal
+                                      )
+                                    );
+                                    debugLog(jsonEncode(cartItem.cartItemRequest.toJson()),
+                                        name: 'Cart item');
+                                    cartBloc.add(ApiAdd(cartItem));
+                                  },
+                                  child: Text('Add other Tree species',
+                                      style: AppFonts.regular
+                                          .copyWith(color: Color(0xFFD2C7A6))),
+                                ),
+                              ),
+                            ),
                           SizedBox(
                             height: 15.h,
                           ),
@@ -500,6 +573,488 @@ class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
   }
 
 }
+
+ */
+
+class TreeSpeciesDetails extends StatefulWidget {
+  final String id;
+  final String areaId;
+  final int treeCount;
+  final double? latitude;
+  final double? longitude;
+
+  static const route = '/tree-species-details';
+
+  const TreeSpeciesDetails({
+    super.key,
+    required this.id,
+    this.treeCount = 1,
+    required this.areaId,
+    this.latitude,
+    this.longitude,
+  });
+
+  @override
+  State<TreeSpeciesDetails> createState() => _TreeSpeciesDetailsState();
+}
+
+class _TreeSpeciesDetailsState extends State<TreeSpeciesDetails> {
+  late TreeDetailBloc _treeDetailBloc;
+  late CartBloc cartBloc;
+
+  final pref = SecurePreference();
+  final manager = OrderItemMapManager();
+
+  int quantity = 1;
+  bool geoTagging = true;
+  bool monitoring = false;
+  bool maintenance = true;
+  bool showCustomMessageField = false;
+
+  double price = 0;
+  String monitoringMode = 'manual';
+  String? navigateTo;
+
+  late TextEditingController customMessageController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    quantity = widget.treeCount;
+    customMessageController = TextEditingController();
+
+    _treeDetailBloc = TreeDetailBloc(
+      TreeSpeciesRepository(api: ApiConnection()),
+    );
+    cartBloc = CartBloc(CartRepository(api: ApiConnection()));
+    _treeDetailBloc.add(ApiFetch(id: widget.id));
+
+    final orderType = OrderFlowState().orderType;
+    if (orderType == OrderType.birthday || orderType == OrderType.anniversary) {
+      showCustomMessageField = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    customMessageController.dispose();
+    super.dispose();
+  }
+
+  void incrementQuantity() {
+    setState(() {
+      quantity++;
+    });
+  }
+
+  void decrementQuantity() {
+    if (quantity > 1) {
+      setState(() {
+        quantity--;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: MultiBlocProvider(
+  providers: [
+      BlocProvider(create: (context) => _treeDetailBloc),
+      BlocProvider(create: (context) => cartBloc),
+    ],
+  child: BlocListener<CartBloc, ApiState<AddToCartResponseModel, ResponseModel>>(
+        listener: (context, state) {
+          if (state is ApiLoading) {
+            EasyLoading.show();
+          } else if (state is ApiSuccess<AddToCartResponseModel, ResponseModel>) {
+            EasyLoading.dismiss();
+            final cartId = state.data.data!.id;
+
+            if (navigateTo == 'another') {
+              if (widget.latitude != null && widget.longitude != null) {
+                manager.addItem(
+                  treeId: cartId,
+                  latitude: widget.latitude!,
+                  longitude: widget.longitude!,
+                  count: quantity,
+                );
+              }
+              AppRoute.goToNextPage(
+                context: context,
+                screen: MapScreen.route,
+                arguments: {},
+              );
+            } else if (navigateTo == 'cart') {
+              manager.clear();
+              // Determine message type
+              String type= OrderFlowState().orderType.name;
+
+              AppRoute.goToNextPage(
+                context: context,
+                screen: CartScreen.route,
+                arguments: {
+                  'customMsg':customMessageController.text.trim(),
+                  'msgType':type=='normal'?'default':type
+                },
+              );
+            }
+          } else if (state is TokenExpired<AddToCartResponseModel, ResponseModel>) {
+            EasyLoading.dismiss();
+            showNotification(context, message: "Token Expired");
+          } else if (state is ApiFailure<AddToCartResponseModel, ResponseModel>) {
+            EasyLoading.dismiss();
+            showNotification(context, message: state.error.message.toString());
+          }
+        },
+        child: BlocBuilder<TreeDetailBloc,
+            ApiState<SingleTreeSpeciesResponse, ResponseModel>>(
+          builder: (context, state) {
+            if (state is ApiLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is ApiSuccess<SingleTreeSpeciesResponse, ResponseModel>) {
+              final treeDetail = state.data;
+              price = double.parse(treeDetail.data.servicePricing!.plantingPrice);
+        
+              return Stack(
+                children: [
+                  // Background Image
+                  Positioned.fill(
+                    child: Image.network(
+                      treeDetail.data.image ??
+                          'https://media.istockphoto.com/id/1407017283/photo/neem-leaves-and-fruits-neem-seeds-with-leaf-neem-tree-medicinal-herbs-plant-neem-known-as.jpg?s=1024x1024&w=is&k=20&c=DFaSRRjm-3mmwolJ4vfEwAmcAfrzZBG2J_fSS4Dy7Wc=',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+        
+                  // Dark Overlay
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.8),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+        
+                  // Main Content
+                  SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: () => AppRoute.pop(context),
+                            child: Icon(Icons.arrow_back, color: AppColor.white),
+                          ),
+                          SizedBox(height: 20.h),
+                          Text(
+                            treeDetail.data.treeName,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            treeDetail.data.shortDescription,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Divider(color: Colors.white),
+                          SizedBox(height: 16),
+        
+                          // Cost per Tree Section
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Cost per tree – ${(price * quantity).toStringAsFixed(2)}",
+                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.remove, color: Colors.white),
+                                    onPressed: decrementQuantity,
+                                  ),
+                                  Text(
+                                    "$quantity",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.add, color: Colors.white),
+                                    onPressed: incrementQuantity,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+        
+                          // Geo-tagging Toggle
+                          SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Geo – tagging", style: TextStyle(color: Colors.white, fontSize: 18)),
+                              Switch(
+                                value: geoTagging,
+                                onChanged: (value) {
+                                  // Currently disabled per your comment
+                                  // setState(() => geoTagging = value);
+                                },
+                                activeColor: Colors.white,
+                              ),
+                            ],
+                          ),
+        
+                          // Maintenance Toggle
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Maintenance – ₹${treeDetail.data.servicePricing!.maintenancePrice}",
+                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              ),
+                              Switch(
+                                value: maintenance,
+                                onChanged: (value) => setState(() => maintenance = value),
+                                activeColor: Colors.white,
+                              ),
+                            ],
+                          ),
+        
+                          // Monitoring Toggle
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Monitoring – ₹${treeDetail.data.servicePricing!.monitoringPrice}",
+                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              ),
+                              Switch(
+                                value: monitoring,
+                                onChanged: (value) => setState(() => monitoring = value),
+                                activeColor: Colors.white,
+                              ),
+                            ],
+                          ),
+        
+                          // Monitoring Mode Options (if enabled)
+                          if (monitoring)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Select Monitoring Type",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      _buildMonitoringOption(
+                                        label: "Manual",
+                                        value: "manual",
+                                        isSelected: monitoringMode == "manual",
+                                        onTap: () => setState(() => monitoringMode = "manual"),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildMonitoringOption(
+                                        label: "Satellite",
+                                        value: "satellite",
+                                        isSelected: monitoringMode == "satellite",
+                                        onTap: () => setState(() => monitoringMode = "satellite"),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+        
+                          // ✨ Custom Message Field (Birthday/Anniversary only)
+                          if (showCustomMessageField)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              child: TextField(
+                                controller: customMessageController,
+                                maxLines: 3,
+                                maxLength: 200,
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                                decoration: InputDecoration(
+                                  hintText: 'Write a personal message (e.g., Happy Birthday!)',
+                                  hintStyle: const TextStyle(color: Colors.white54, fontSize: 16),
+                                  filled: false,
+                                  contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4.0),
+                                  isDense: true,
+                                  enabledBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white30, width: 1.2),
+                                  ),
+                                  focusedBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white, width: 1.5),
+                                  ),
+                                  counterText: '',
+                                ),
+                              ),
+                            ),
+        
+                          Spacer(),
+        
+                          // ✅ "Add other Tree species" – HIDDEN in gifting flow
+                          if (!showCustomMessageField)
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFF6F2E8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  navigateTo = 'another';
+                                  final userId = await pref.getString(Keys.id);
+                                  final cartItem = CartRequestDetail(
+                                    isMaintenance: maintenance,
+                                    isMonitoring: monitoring,
+                                    cartItemRequest: CartItemRequest(
+                                      user: userId,
+                                      projectArea: widget.areaId,
+                                      serviceType: ServiceIds.plantationId!,
+                                      isGeotagOnly: geoTagging,
+                                      parentService: null,
+                                      quantity: quantity,
+                                      monitoringMode: monitoring ? monitoringMode : null,
+                                      treeSpecies: treeDetail.data.id,
+                                      status: "pending",
+                                      unitPrice: treeDetail.data.servicePricing!.plantingPrice,
+                                    ),
+                                  );
+                                  debugLog(jsonEncode(cartItem.cartItemRequest.toJson()), name: 'Cart item');
+                                  cartBloc.add(ApiAdd(cartItem));
+                                },
+                                child: Text(
+                                  'Add other Tree species',
+                                  style: AppFonts.regular.copyWith(color: const Color(0xFFD2C7A6)),
+                                ),
+                              ),
+                            ),
+        
+                          SizedBox(height: 15.h),
+        
+                          // ✅ "Add to cart" – ALWAYS VISIBLE
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF004D40),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                              ),
+                              onPressed: () async {
+                                navigateTo = 'cart';
+                                final userId = await pref.getString(Keys.id);
+                                String? customMessage = showCustomMessageField
+                                    ? customMessageController.text.trim().isNotEmpty
+                                    ? customMessageController.text.trim()
+                                    : null
+                                    : null;
+        
+                                final cartItem = CartRequestDetail(
+                                  isMaintenance: maintenance,
+                                  isMonitoring: monitoring,
+                                  cartItemRequest: CartItemRequest(
+                                    user: userId,
+                                    projectArea: widget.areaId,
+                                    serviceType: ServiceIds.plantationId!,
+                                    isGeotagOnly: geoTagging,
+                                    parentService: null,
+                                    quantity: quantity,
+                                    monitoringMode: monitoring ? monitoringMode : null,
+                                    treeSpecies: treeDetail.data.id,
+                                    status: "pending",
+                                    unitPrice: treeDetail.data.servicePricing!.plantingPrice, // Make sure your model supports this
+                                  ),
+                                );
+                                debugLog(cartItem.cartItemRequest.toJson().toString(), name: 'Cart item');
+                                cartBloc.add(ApiAdd(cartItem));
+                              },
+                              child: Text('Add to cart', style: AppFonts.regular),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+),
+    );
+  }
+
+  Widget _buildMonitoringOption({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.grey.shade700,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.grey.shade500,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
 /*
   backgroundColor: const Color(0xFFF6F2E8),
                     foregroundColor: const Color(0xFFD2C7A6),

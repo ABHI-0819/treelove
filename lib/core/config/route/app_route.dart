@@ -13,8 +13,10 @@ import 'package:treelove/features/customer/retail/tree-species/tree_species_list
 import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
 import 'package:treelove/features/vendor/home/screens/project_detail_screen.dart';
 import '../../../common/screens/notification_screen.dart';
+import '../../../common/screens/privacy_policy_screen.dart';
 import '../../../common/screens/satellite_history_screen.dart';
 import '../../../common/screens/satellite_monitoring_result_screen.dart';
+import '../../../common/screens/terms_conditions_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
 import '../../../features/authentication/screens/user_type_screen.dart';
 import '../../../features/customer/b2b/home/screens/main_screen.dart';
@@ -23,15 +25,20 @@ import '../../../features/customer/b2b/projects/screens/project_detail_screen.da
 import '../../../features/customer/retail/FAQ/faq_screen.dart';
 import '../../../features/customer/retail/grievance/screens/grievance_list_screen.dart';
 import '../../../features/customer/retail/grievance/screens/raise_grievance_screen.dart';
+import '../../../features/customer/retail/home/screens/area_selection_screen.dart';
 import '../../../features/customer/retail/home/screens/home_screen.dart';
 import '../../../features/customer/retail/home/screens/location_selection_screen.dart';
+import '../../../features/customer/retail/maintenance/planted_tree_map_screen.dart';
+import '../../../features/customer/retail/maintenance/select_maintenance_location.dart';
 import '../../../features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
 import '../../../features/customer/retail/my-trees/screens/tree_monitoring_history.dart';
 import '../../../features/customer/retail/order/congratulations_screen.dart';
 import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
 import '../../../features/customer/retail/profile/screen/account_screen.dart';
+import '../../../features/customer/retail/profile/screen/profile_screen.dart';
 import '../../../features/customer/retail/project/screens/project_template_screen.dart';
+import '../../../features/customer/retail/settings/setting_screen.dart';
 import '../../../features/fieldworker/home/screens/main_screen.dart';
 import '../../../features/fieldworker/activity/screens/project_action_screen.dart';
 import '../../../features/fieldworker/home/screens/maintenance_activity_screen.dart';
@@ -67,6 +74,8 @@ class AppRoute{
         return MaterialPageRoute(builder: (_) => CreateAccountScreen());
       case '/forgot-password':
         return MaterialPageRoute(builder: (_) => ForgotPasswordScreen());
+      case '/settings':
+        return MaterialPageRoute(builder: (_) => SettingsScreen());
       case '/otp-verification':
         return MaterialPageRoute(builder: (_) => OtpVerificationScreen());
       case '/new-password':
@@ -80,17 +89,42 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> MapScreen(
           projectId: argument!['projectId'],
         ));
+      case '/area-selection':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> AreaSelectionScreen(
+          projectId: argument!['projectId'],
+          treeCount: argument['treeCount'],
+        ));
       case '/notification':
         return MaterialPageRoute(builder: (_)=>NotificationsScreen());
+      case '/retail-profile':
+        return MaterialPageRoute(builder: (_)=>RetailProfileScreen());
+      case '/privacy-policy':
+        return MaterialPageRoute(builder: (_)=>PrivacyPolicyScreen());
+      case '/terms-conditions':
+        return MaterialPageRoute(builder: (_)=>TermsConditionsScreen());
       case '/satellite-history':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> SatelliteHistoryScreen(
           plantationId: argument!['plantationId'],
         ));
+      case '/SelectMonitoringScreen' :
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> SelectMonitoringScreen(
+          inquiryType: argument!['inquiryType'],
+        ));
+      case '/planted-trees-map':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> PlantedTreeMapScreen(
+          inquiryType: argument!['inquiryType'],
+        ));
       case '/tree-species-list':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(builder: (_)=> TreeSpeciesList(
-            areaId :argument!['areaId']
+            areaId :argument!['areaId'],
+            treeCount: argument['treeCount'],
+          latitude: argument['latitude'],
+          longitude: argument['longitude'],
         ));
       case '/satellite':
         Map? argument = settings.arguments as Map?;
@@ -144,6 +178,9 @@ class AppRoute{
         return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails(
             id :argument!['id'],
           areaId: argument['areaId'],
+          treeCount: argument['treeCount'],
+          latitude: argument['latitude'],
+          longitude: argument['longitude'],
         ));
 
       ///TODO : Field Worker Mobile API
@@ -189,7 +226,11 @@ class AppRoute{
         ));
 
       case '/CartScreen':
-        return MaterialPageRoute(builder: (_)=> CartScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(builder: (_)=> CartScreen(
+          msgType: argument!['msgType'],
+          customMsg: argument['customMsg'],
+        ));
 
         ///TODO : vendor  Mobile API
       case '/vendor-home-screen':

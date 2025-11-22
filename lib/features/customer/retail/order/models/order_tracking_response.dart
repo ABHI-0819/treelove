@@ -39,11 +39,13 @@ class OrderTrackingResponse {
 class OrderTrackingData {
   final String orderId;
   final String currentStatus;
+  final String ? orderNumber;
   final List<TimelineItem> timeline;
 
   OrderTrackingData({
     required this.orderId,
     required this.currentStatus,
+    this.orderNumber,
     required this.timeline,
   });
 
@@ -51,6 +53,7 @@ class OrderTrackingData {
       OrderTrackingData(
         orderId: json["order_id"],
         currentStatus: json["current_status"],
+        orderNumber: json["order_number"],
         timeline: List<TimelineItem>.from(
             json["timeline"].map((x) => TimelineItem.fromJson(x))),
       );
@@ -58,6 +61,7 @@ class OrderTrackingData {
   Map<String, dynamic> toJson() => {
     "order_id": orderId,
     "current_status": currentStatus,
+    "order_number":orderNumber,
     "timeline": List<dynamic>.from(timeline.map((x) => x.toJson())),
   };
 }

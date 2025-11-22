@@ -17,7 +17,8 @@ class NotificationRepository{
     final token = await pref.getString(Keys.accessToken);
     ApiResult result=  await api.getApiConnection<NotificationResponse>(
       BaseNetwork.notificationsListUrl, // assuming endpoint like /monitor/{id}/
-      BaseNetwork.getHeaderWithToken(token),
+      BaseNetwork.getJsonHeaders(),
+      // BaseNetwork.getHeaderWithToken(token),
       notificationResponseFromJson, // JSON deserializer
     );
     return result;

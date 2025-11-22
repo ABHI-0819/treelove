@@ -173,11 +173,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
                   showNotification(
                       context, message: state.error.message.toString());
-                } else
+                }/* else
                 if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
                   AppRoute.pushReplacement(
                       context, SignInScreen.route, arguments: {});
                 }
+                */
               },
               child: BlocBuilder<ProjectListBloc,
                   ApiState<ProjectListResponse, ResponseModel>>(

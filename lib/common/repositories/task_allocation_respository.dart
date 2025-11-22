@@ -16,7 +16,8 @@ class TaskAllocationRepository {
     final token = await pref.getString(Keys.accessToken);
     return await api.apiConnectionMultipart<TaskAllocationResponseModel>(
       BaseNetwork.taskAllocationUrl,         // ✅ API endpoint
-      BaseNetwork.getHeaderWithToken(token),                // ✅ headers
+      // BaseNetwork.getHeaderWithToken(token),                // ✅ headers
+      BaseNetwork.getMultipartHeaders(),
       'post',                                      // ✅ method
       taskAllocationResponseModelFromJson,         // ✅ response parser
       fields: request.toJson(),                      // ✅ request body

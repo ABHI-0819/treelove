@@ -16,10 +16,12 @@ import 'package:treelove/features/customer/retail/order/order_list_screen.dart';
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../core/config/constants/enum/notification_enum.dart';
+import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/network/api_connection.dart';
 import '../../../../core/storage/preference_keys.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
+import '../home/screens/main_screen.dart';
 import '../order/models/order_place_request.dart';
 import '../order/models/order_place_response.dart';
 import 'bloc/cart_item_bloc.dart';
@@ -27,8 +29,9 @@ import 'model/cart_item_list_model.dart';
 
 class CartScreen extends StatefulWidget {
   static const route = "/CartScreen";
-
-  const CartScreen({super.key});
+  final String  msgType;
+  final String customMsg;
+  const CartScreen({super.key,this.msgType='',this.customMsg=''});
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -109,7 +112,7 @@ class _CartScreenState extends State<CartScreen> {
     double grandTotal =
         itemTotalCost + gstAmount + locationCharge + platformFee;
 
-    return grandTotal;
+    return double.parse(grandTotal.toStringAsFixed(2));
   }
 
   void handlePaymentErrorResponse(PaymentFailureResponse response) {
@@ -266,7 +269,13 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.close),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          AppRoute.pushAndRemoveUntil(context,RetailMainScreen.route,arguments: {});
+                        },
+                      ),
+                      // const Icon(Icons.close),
                     ],
                   ),
                 ),
@@ -279,162 +288,249 @@ class _CartScreenState extends State<CartScreen> {
                   } else if (state
                       is ApiSuccess<CartItemListResponse, ResponseModel>) {
                     CartItemListResponse cartList = state.data;
-                    for (int i = 0; i < cartList.data.length; i++) {
-                      cartItems.add(CartItem(
-                        title: cartList.data[i].treeName,
-                        price: cartList.data[i].totalPrice,
-                        quantity: cartList.data[i].quantity,
-                        maintenancePrice: cartList.data[i].unitPrice,
-                      ));
-                    }
-                    return Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Thankyou for making\nthe world greener',
-                              style: TextStyle(
-                                fontSize: 26,
-                                height: 1.4,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'Serif',
+                    if(cartList.data.isNotEmpty){
+                      for (int i = 0; i < cartList.data.length; i++) {
+                        cartItems.add(CartItem(
+                          title: cartList.data[i].treeName,
+                          price: cartList.data[i].totalPrice,
+                          quantity: cartList.data[i].quantity,
+                          maintenancePrice: cartList.data[i].unitPrice,
+                        ));
+                      }
+                      return Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Thankyou for making\nthe world greener',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Serif',
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 32),
+                              const SizedBox(height: 32),
 
-                            // Cart Items
-                            ...List.generate(
-                              cartList.data.length,
-                              (index) => _buildCartItem(CartItem(
-                                title: cartList.data[index].treeName,
-                                price: cartList.data[index].unitPrice,
-                                quantity: cartList.data[index].quantity,
-                                maintenancePrice:
-                                    cartList.data[index].unitPrice,
-                              )),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Bill Summary
-                            const Text(
-                              'Bill summary',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                              // Cart Items
+                              ...List.generate(
+                                cartList.data.length,
+                                    (index) => _buildCartItem(CartItem(
+                                  title: cartList.data[index].treeName,
+                                  price: cartList.data[index].unitPrice,
+                                  quantity: cartList.data[index].quantity,
+                                  maintenancePrice:
+                                  cartList.data[index].unitPrice,
+                                )),
                               ),
-                            ),
-                            const SizedBox(height: 16),
 
-                            _buildCostRow('Item total', '₹',
-                                cartList.getTotalCartPrice()),
-                            _buildCostRow('Gst', '%', 18),
-                            _buildCostRow('Treelov location Charges', '₹', 200),
-                            _buildCostRow('Platform fee', '₹', 100),
+                              const SizedBox(height: 24),
 
-                            const Divider(height: 32),
-                            _buildCostRow(
-                                'Grand total',
-                                '₹',
-                                getGrandTotal(
-                                    cartList.getTotalCartPrice(), 18, 200, 100),
-                                isBold: true),
-                          ],
+                              // Bill Summary
+                              const Text(
+                                'Bill summary',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              _buildCostRow('Item total', '₹',
+                                  cartList.getTotalCartPrice()),
+                              _buildCostRow('Gst', '%', 18),
+                              _buildCostRow('Treelov location Charges', '₹', 200),
+                              _buildCostRow('Platform fee', '₹', 100),
+
+                              const Divider(height: 32),
+                              _buildCostRow(
+                                  'Grand total',
+                                  '₹',
+                                  getGrandTotal(
+                                      cartList.getTotalCartPrice(), 18, 200, 100),
+                                  isBold: true),
+
+                              // Pay Now Button
+                              BlocListener<OrderPlaceBloc,
+                                  ApiState<OrderPlacedResponse, ResponseModel>>(
+                                listener: (context, state) {
+                                  if (state is ApiLoading<OrderPlacedResponse, ResponseModel>) {
+                                    EasyLoading.show();
+                                  } else if (state is ApiSuccess<OrderPlacedResponse, ResponseModel>) {
+
+                                    EasyLoading.dismiss();
+                                    OrderPlacedResponse  placedData = state.data;
+                                    final contributionUrl =  placedData.data.publicTreeContributionUrl;
+                                    showNotification(context,
+                                        message: state.data.message.toString(),
+                                        type: Not.success);
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: CongratulationsScreen.route,
+                                        arguments: {
+                                          'shareLink':contributionUrl
+                                        });
+                                  } else if (state
+                                  is TokenExpired<OrderPlacedResponse, ResponseModel>) {
+                                    EasyLoading.dismiss();
+                                    AppRoute.pushReplacement(context, SignInScreen.route,
+                                        arguments: {});
+                                  } else if (state
+                                  is ApiFailure<OrderPlacedResponse, ResponseModel>) {
+                                    EasyLoading.dismiss();
+                                    showNotification(context,
+                                        message: state.error.message.toString(),
+                                        type: Not.failed);
+                                  }
+                                },
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        final userId = await pref.getString(Keys.id);
+                                        final order = OrderPlaceRequest(
+                                          userId: userId,
+                                          treeMessageType:widget.msgType,
+                                          treeCustomMessage:widget.customMsg,
+                                        );
+                                        orderPlaceBloc.add(ApiAdd(order));
+                                        /*
+                                                      var options = {
+                                                        'key': 'your_razorpay_key', // Replace with your actual key
+                                                        ///amount must be required
+                                                        // 'amount': getGrandTotal(),
+                                                        'name': 'TREELOVE',
+                                                        'description': 'Plantation',
+                                                        'retry': {'enabled': true, 'max_count': 1},
+                                                        'send_sms_hash': true,
+                                                      };
+                                                      razorpay.open(options);
+
+                                                       */
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF00473E),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(40),
+                                        ),
+                                        // minimumSize:  Size.fromHeight(56),
+                                      ),
+                                      child: const Text(
+                                        'Pay now',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }else{
+                      return EmptyCartWithCard();
+                    }
+
                   } else {
-                    return Text(
-                      'No item found',
-                      style: TextStyle(
-                        fontSize: 26,
-                        height: 1.4,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Serif',
-                      ),
-                    );
+                    return EmptyCartWithCard();
                   }
                 }),
 
-                // Pay Now Button
-                BlocListener<OrderPlaceBloc,
-                    ApiState<OrderPlacedResponse, ResponseModel>>(
-                  listener: (context, state) {
-                    if (state is ApiLoading<OrderPlacedResponse, ResponseModel>) {
-                      EasyLoading.show();
-                    } else if (state is ApiSuccess<OrderPlacedResponse, ResponseModel>) {
-
-                      EasyLoading.dismiss();
-                      OrderPlacedResponse  placedData = state.data;
-                        final contributionUrl =  placedData.data.publicTreeContributionUrl;
-                      showNotification(context,
-                          message: state.data.message.toString(),
-                          type: Not.success);
-                      AppRoute.goToNextPage(
-                          context: context,
-                          screen: CongratulationsScreen.route,
-                          arguments: {
-                            'shareLink':contributionUrl
-                          });
-                    } else if (state
-                        is TokenExpired<OrderPlacedResponse, ResponseModel>) {
-                      EasyLoading.dismiss();
-                      AppRoute.pushReplacement(context, SignInScreen.route,
-                          arguments: {});
-                    } else if (state
-                        is ApiFailure<OrderPlacedResponse, ResponseModel>) {
-                      EasyLoading.dismiss();
-                      showNotification(context,
-                          message: state.error.message.toString(),
-                          type: Not.failed);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final userId = await pref.getString(Keys.id);
-                        final order = OrderPlaceRequest(
-                          userId: userId,
-                        );
-                        orderPlaceBloc.add(ApiAdd(order));
-                        /*
-                    var options = {
-                      'key': 'your_razorpay_key', // Replace with your actual key
-                      ///amount must be required
-                      // 'amount': getGrandTotal(),
-                      'name': 'TREELOVE',
-                      'description': 'Plantation',
-                      'retry': {'enabled': true, 'max_count': 1},
-                      'send_sms_hash': true,
-                    };
-                    razorpay.open(options);
-
-                     */
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00473E),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        // minimumSize:  Size.fromHeight(56),
-                      ),
-                      child: const Text(
-                        'Pay now',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
               ],
             ),
           ),
         ));
+  }
+}
+
+
+
+
+class EmptyCartWithCard extends StatelessWidget {
+  final VoidCallback? onStartShopping;
+
+  const EmptyCartWithCard({
+    Key? key,
+    this.onStartShopping,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            children: [
+              // Animated Icon Stack
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background Circle
+                  Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      color: AppColor.accent.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+
+                  // Middle Circle
+                  Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: AppColor.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+
+                  // Cart Icon
+                  const Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 70,
+                    color: AppColor.primary,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Title
+              const Text(
+                'No Items in Cart',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColor.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Subtitle
+              Text(
+                'Your cart is waiting to be filled\nwith amazing trees',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColor.textSecondary,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

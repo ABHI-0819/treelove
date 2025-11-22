@@ -26,17 +26,17 @@ class CartBloc extends Bloc<ApiEvent, ApiState<AddToCartResponseModel, ResponseM
     try {
       final result = await repository.addItemToCart(fields: event.data);
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response));
           break;
-        case ApiStatus.refreshTokenExpired:
-          emit(TokenExpired(result.response)); // 🚀 go to SignIn
-          break;
-        case ApiStatus.unAuthorized:
-          emit(ApiFailure(ResponseModel(
-            message: "Unauthorized access. Please login again.",
-          )));
-          break;
+        // case ApiStatus.refreshTokenExpired:
+        //   emit(TokenExpired(result.response)); // 🚀 go to SignIn
+        //   break;
+        // case ApiStatus.unAuthorized:
+        //   emit(ApiFailure(ResponseModel(
+        //     message: "Unauthorized access. Please login again.",
+        //   )));
+        //   break;
         case ApiStatus.failed:
           emit(ApiFailure(result.response));
         default:
