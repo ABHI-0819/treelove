@@ -390,6 +390,8 @@ class _CartScreenState extends State<CartScreen> {
                                     padding: const EdgeInsets.all(20.0),
                                     child: ElevatedButton(
                                       onPressed: () async {
+                                        /// fixed this after the testing
+                                        /*
                                         final userId = await pref.getString(Keys.id);
                                         final order = OrderPlaceRequest(
                                           userId: userId,
@@ -397,19 +399,20 @@ class _CartScreenState extends State<CartScreen> {
                                           treeCustomMessage:widget.customMsg,
                                         );
                                         orderPlaceBloc.add(ApiAdd(order));
-                                        /*
+
+                                         */
                                                       var options = {
-                                                        'key': 'your_razorpay_key', // Replace with your actual key
+                                                        'key': 'rzp_live_RkQVukSjsAqPVe', // Replace with your actual key
                                                         ///amount must be required
-                                                        // 'amount': getGrandTotal(),
-                                                        'name': 'TREELOVE',
+                                                        'amount': 10,
+                                                        'name': 'TreeLov',
                                                         'description': 'Plantation',
-                                                        'retry': {'enabled': true, 'max_count': 1},
+                                                        'retry': {'enabled': true, 'max_count': 2},
                                                         'send_sms_hash': true,
                                                       };
                                                       razorpay.open(options);
 
-                                                       */
+
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(0xFF00473E),

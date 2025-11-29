@@ -22,18 +22,18 @@
     </array>
 
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs location access to fetch your current location.</string>
+    <string>TreeLov uses your location to tag tree positions accurately and show them on the map while using the app.</string>
 
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs location access to fetch your current location.</string>
+    <string>TreeLov requires background location access to maintain accurate tree tagging and location-based services even when the app is not active.</string>
 
     <!-- Camera access -->
     <key>NSCameraUsageDescription</key>
-    <string>This app requires camera access to take photos.</string>
+    <string>TreeLov uses your camera to capture photos for tree tagging and verification.</string>
 
     <!-- Notifications -->
     <key>NSUserNotificationUsageDescription</key>
-    <string>This app needs notification access to alert you about updates and messages.</string>
+    <string>TreeLov sends notifications to keep you updated about tasks, reminders, and important updates</string>
 
 
 	<key>CFBundleIdentifier</key>
