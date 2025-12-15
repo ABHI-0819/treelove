@@ -13,15 +13,15 @@ class BaseNetwork {
   }
 
   //202.189.224.222:9071 Internal Server
-  static const String _BASE_URL_Release = "http://43.205.169.130/";
-  static const String _BASE_URL_Debug = "http://43.205.169.130/";
+  static const String _BASE_URL_Release = "https://api.treelov.com/";
+  static const String _BASE_URL_Debug = "https://api.treelov.com/";
   static const String _BASE_URL = kDebugMode ? _BASE_URL_Debug : _BASE_URL_Release;
 
 
   static const String FailedMessage = 'Connection Failed, Please try Again';
   static const String NetworkError= 'Oh no! Something went wrong';
-  static const String BASE_Image_URL ="http://43.205.169.130/";
-  static const String BASE_Share_URL = 'http://43.205.169.130';
+  static const String BASE_Image_URL ="https://api.treelov.com/";
+  static const String BASE_Share_URL = 'https://api.treelov.com/';
 
   static const String loginURL = "${_BASE_URL}api/v1/auth/login/";
   static const String loginOAuthURL = "${_BASE_URL}api/v1/auth/oidc/login/";

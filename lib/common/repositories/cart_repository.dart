@@ -1,21 +1,20 @@
-
-import 'dart:convert';
-
+import 'package:treelove/common/models/response.mode.dart';
 import 'package:treelove/core/network/api_connection.dart';
-import 'package:treelove/core/utils/logger.dart';
-
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
 import '../../features/customer/retail/cart/model/cart_item_list_model.dart';
 import '../../features/customer/retail/cart/model/cart_item_model.dart';
+import '../../features/customer/retail/cart/model/cart_item_update_request_model.dart';
 import '../../features/customer/retail/cart/model/cart_request_model.dart';
 
 class CartRepository{
   final ApiConnection ? api;
   CartRepository({this.api});
   final pref = SecurePreference();
+
+
   Future<ApiResult> addItemToCart({
     required CartRequestDetail fields,
 
@@ -41,7 +40,6 @@ class CartRepository{
 //getAllCartItems
 
   Future<ApiResult> getAllCartItems({required String status}) async {
-    final token = await pref.getString(Keys.accessToken);
     final url = api!.generateUrl(
         baseUrl: BaseNetwork.allCartItemsUrl, status: status);
     ApiResult result = await api!.getApiConnection<CartItemListResponse>(
@@ -51,5 +49,40 @@ class CartRepository{
     );
     return result;
   }
+
+
+  // remove cart itme 
+   Future<ApiResult> removeCartItme({required String cartId}) async {
+   final url = "${BaseNetwork.cartItemsURL}$cartId/";
+    ApiResult result = await api!.deleteApiConnection<ResponseModel>(
+      url,
+      BaseNetwork.getHeaderForLogin(), // use token if required
+      responseModelFromJson,
+    );
+    return result;
+  }
+
+Future<ApiResult> updateCartItem({
+  // required String cartId,
+  // required int quantity,
+  required CartItemUpdateRequestModel request,
+}) async {
+  final url = "${BaseNetwork.cartItemsURL}${request.cartId}/update-cart-item/";
+
+  // Create a Map for form fields
+  final fields = {
+    'quantity': request.quanity.toString(),
+  };
+
+  // Use multipart POST (same as addItemToCart)
+  ApiResult result = await api!.apiConnectionMultipart<ResponseModel>(
+    url,
+    BaseNetwork.getMultipartHeaders(),
+    'patch',
+    responseModelFromJson,
+    fields: fields,
+  );
+  return result;
+}
 }
 

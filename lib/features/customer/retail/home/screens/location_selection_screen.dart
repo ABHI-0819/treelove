@@ -505,6 +505,7 @@ class _MapScreenState extends State<MapScreen> {
                               ),
                               const SizedBox(width: 20),
                               ElevatedButton.icon(
+
                                 onPressed: () {
                                   // await OrderItemMapManager().clear();
                                   if(insideAreaId!=null){
@@ -539,18 +540,21 @@ class _MapScreenState extends State<MapScreen> {
                                   }
                                 },
                                 icon: const Icon(Icons.eco, color: Colors.black87),
-                                label: const Text(
+                                label:  Text(
                                   'Plant here',
-                                  style: TextStyle(color: Colors.black87, fontSize: 16),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF0EAD6),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
+                                  style: AppFonts.caption.copyWith(
+                                      fontWeight: FontWeight.bold,
                                   ),
-                                  padding:  EdgeInsets.symmetric(horizontal: 16.w,vertical: 10),
-                                  elevation: 5,
+                                  
                                 ),
+                                 style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFF0EAD6),
+                                     shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
+                                        ),
+                                    fixedSize: Size(140.w, 45), // same height as _TreeCounter
+                                    elevation: 2,
+                                  ),
                               ),
                             ],
                           ),
@@ -884,25 +888,28 @@ class _TreeCounterState extends State<_TreeCounter> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: 55,
-      padding:  EdgeInsets.symmetric(horizontal: 16.w),
+      height: 45,
+      padding:  EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
           color: const Color(0xFF0F4C3B),
           borderRadius: BorderRadius.all(Radius.circular(25))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center, 
         spacing: 4.w,
         children: [
           Text('Selected',
-              style: AppFonts.body.copyWith(
+              style: AppFonts.caption.copyWith(
                   fontWeight: FontWeight.bold, color: AppColor.white)),
           IconButton(
+            iconSize: 20,
               onPressed: _decrement,
               icon: Icon(Icons.remove, color: Colors.white)),
           Text("$count",
-              style: AppFonts.body.copyWith(
+              style: AppFonts.caption.copyWith(
                   fontWeight: FontWeight.bold, color: AppColor.white)),
           IconButton(
+                iconSize: 20,
               onPressed: _increment,
               icon: Icon(Icons.add, color: Colors.white)),
         ],

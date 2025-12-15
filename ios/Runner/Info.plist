@@ -20,12 +20,15 @@
         </array>
       </dict>
     </array>
-
+	  <!-- Location access -->
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>TreeLov uses your location to tag tree positions accurately and show them on the map while using the app.</string>
 
     <key>NSLocationAlwaysUsageDescription</key>
     <string>TreeLov requires background location access to maintain accurate tree tagging and location-based services even when the app is not active.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>TreeLov uses your location to accurately tag trees, monitor plantations, and provide location-based services even when the app is running in the background.</string>
 
     <!-- Camera access -->
     <key>NSCameraUsageDescription</key>
@@ -49,7 +52,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

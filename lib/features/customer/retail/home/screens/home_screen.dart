@@ -2723,51 +2723,24 @@ class _CustomerSatisfactionWidgetState extends State<CustomerSatisfactionWidget>
               ),
             ],
           ),
-          SizedBox(height: 30.h),
           SizedBox(
-            height: 250.h,
-            child: PageView.builder(
+              height: 10.h,
+          ),
+          SizedBox(
+            height: 200.h,
+            child: ListView.builder(
               controller: _pageController,
               itemCount: _customerPages.length,
+              scrollDirection: Axis.horizontal,
               itemBuilder: (context, pageIndex) {
                 final pageCustomers = _customerPages[pageIndex];
-                return Row(
-                  children: [
-                    Expanded(
-                      child: CustomerCard(
-                        imagePath: pageCustomers[0]['image']!,
-                        name: pageCustomers[0]['name']!,
-                        age: pageCustomers[0]['age']!,
-                        location: pageCustomers[0]['location']!,
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: CustomerCard(
+                return CustomerCard(
                         imagePath: pageCustomers[1]['image']!,
                         name: pageCustomers[1]['name']!,
                         age: pageCustomers[1]['age']!,
                         location: pageCustomers[1]['location']!,
-                      ),
-                    ),
-                  ],
-                );
+                      );
               },
-            ),
-          ),
-          SizedBox(height: 30.h),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _customerPages.length,
-                    (index) => Dot(
-                  color: _currentPage == index
-                      ? const Color(0xFF115D41)
-                      : const Color(0xFFF5F2E9),
-                  width: _currentPage == index ? 24.w : 12.w,
-                ),
-              ),
             ),
           ),
         ],
@@ -2817,7 +2790,9 @@ class CustomerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(2),
+      width: 150,
+      margin: EdgeInsets.symmetric(vertical: 4.h,horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
@@ -2837,7 +2812,7 @@ class CustomerCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8.r),
             child: Image.network(
               imagePath,
-              height: 180.h,
+              height: 140.h,
               width: double.infinity,
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
@@ -2850,11 +2825,17 @@ class CustomerCard extends StatelessWidget {
             ),
           ),
           SizedBox(height: 8.h),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            '$age, $location',
-            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+              '$age, $location',
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey)
+            ),
+          )
         ],
       ),
     );

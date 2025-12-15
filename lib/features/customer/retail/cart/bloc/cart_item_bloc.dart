@@ -8,6 +8,7 @@ import '../../../../../common/repositories/cart_repository.dart';
 import '../../../../../core/network/base_network_status.dart';
 import '../model/cart_item_list_model.dart';
 import '../model/cart_item_model.dart';
+import '../model/cart_item_update_request_model.dart';
 import '../model/cart_request_model.dart';
 
 class CartBloc extends Bloc<ApiEvent, ApiState<AddToCartResponseModel, ResponseModel>> {
@@ -92,31 +93,77 @@ class CartItemListBloc extends Bloc<ApiEvent, ApiState<CartItemListResponse, Res
 
 }
 
-/*
-  Future<void> _onGetCartItems(
-      ApiListFetch<CartItemListResponse> event,
-      Emitter<ApiState<CartItemListResponse, ResponseModel>> emit,
-      ) async {
+class CartUpdateBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> {
+  final CartRepository repository;
+
+  CartUpdateBloc(this.repository) : super(ApiInitial()) {
+    on<ApiUpdate<CartItemUpdateRequestModel>>(_onUpdateCartItem);
+  }
+
+  Future<void> _onUpdateCartItem(
+    ApiUpdate<CartItemUpdateRequestModel> event,
+    Emitter<ApiState<ResponseModel, ResponseModel>> emit,
+  ) async {
     emit(ApiLoading());
 
     try {
-      final result = await repository.getAllCartItems(cartSessionId: event.id);
+      final result =
+          await repository.updateCartItem(request: event.data);
+
       switch (result.status) {
         case ApiStatus.success:
           emit(ApiSuccess(result.response));
           break;
-        case ApiStatus.unAuthorized:
+
+        case ApiStatus.refreshTokenExpired:
           emit(TokenExpired(result.response));
           break;
-        case ApiStatus.failed:
-          emit(ApiFailure(result.response));
+
         default:
           emit(ApiFailure(result.response));
       }
-    } catch (e, stackTrace) {
-      debugLog(e.toString(), name: "Error fetching cart items", stackTrace: stackTrace);
+    } catch (e, st) {
+      debugLog(e.toString(),
+          name: "UpdateCartItemError", stackTrace: st);
       emit(ApiFailure(ResponseModel(message: 'Something went wrong')));
     }
   }
+}
 
-   */
+class CartRemoveBloc
+    extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> {
+  final CartRepository repository;
+
+  CartRemoveBloc(this.repository) : super(ApiInitial()) {
+    on<ApiDelete>(_onRemoveCartItem);
+  }
+
+  Future<void> _onRemoveCartItem(
+    ApiDelete event,
+    Emitter<ApiState<ResponseModel, ResponseModel>> emit,
+  ) async {
+    emit(ApiLoading());
+
+    try {
+      final result =
+          await repository.removeCartItme(cartId: event.id.toString());
+
+      switch (result.status) {
+        case ApiStatus.success:
+          emit(ApiDeleteSuccess(result.response));
+          break;
+
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response));
+          break;
+
+        default:
+          emit(ApiFailure(result.response));
+      }
+    } catch (e, st) {
+      debugLog(e.toString(),
+          name: "RemoveCartItemError", stackTrace: st);
+      emit(ApiFailure(ResponseModel(message: 'Something went wrong')));
+    }
+  }
+}

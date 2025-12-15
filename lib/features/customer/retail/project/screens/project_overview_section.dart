@@ -72,16 +72,16 @@ class _ProjectOverviewSectionState extends State<ProjectOverviewSection> {
               }
               // ✅ Fixed: Using ListView for horizontal scrolling with proper spacing
               return SizedBox(
-                height: 200.h,
+                height: 180.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  // padding: const EdgeInsets.symmetric(horizontal: 10),
                   itemCount: projectData.data.length,
                   separatorBuilder: (context, index) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return SizedBox(
                       height: 160.h,
-                      width: MediaQuery.of(context).size.width * 0.45, // 45% of screen width
+                      width: MediaQuery.of(context).size.width * 0.4, // 45% of screen width
                       child: ProjectCategoryCard(
                         imageUrl: projectData.data[index].image.toString(),
                         title: projectData.data[index].name,
@@ -155,7 +155,7 @@ class ProjectCategoryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),
@@ -222,7 +222,7 @@ class ProjectCategoryCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
