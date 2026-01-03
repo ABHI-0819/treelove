@@ -7,6 +7,7 @@ import '../../core/services/notification_service.dart';
 import '../../core/storage/preference_keys.dart';
 import '../../core/storage/secure_storage.dart';
 import '../../core/utils/logger.dart';
+import '../../features/authentication/models/login.request.model.dart';
 import '../../features/authentication/models/login.response.model.dart';
 import '../models/response.mode.dart';
 
@@ -15,11 +16,13 @@ class LoginRepository{
   LoginRepository({this.api});
 
   final pref = SecurePreference();
-  Future<ApiResult> login({String? email, String? phone,String ? password, String ? deviceId}) async {
-    final Map<String, dynamic> fields = {
-      "email": email,
-      "password": password,
-    };
+  Future<ApiResult> login(LoginRequestModel request) async {
+  final Map<String, dynamic> fields = {
+    if (request.email != null) "email": request.email,
+    if (request.phone != null) "phone": request.phone,
+    "password": request.password,
+    "device_id": request.deviceId,
+  };
     ApiResult result = await api!.apiConnectionMultipart<LoginResponseModel>(
       BaseNetwork.loginURL,
       BaseNetwork.getMultipartHeaders(),

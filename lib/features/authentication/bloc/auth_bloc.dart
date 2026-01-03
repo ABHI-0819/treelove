@@ -24,10 +24,9 @@ class AuthBloc extends Bloc<ApiEvent, ApiState<LoginResponseModel,ResponseModel>
   ) async {
     emit( ApiLoading());
 
-    final result = await repository.login(
-      email: event.data.email,
-      password: event.data.password,
-    );
+    final result = await repository.login(event.data);
+
+     debugLog("Login result status: ${result.status}", name: "AuthBloc");
 
     switch (result.status) {
       case ApiStatus.success:
