@@ -1,9 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/bloc/api_state.dart';
-
-import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../core/network/base_network_status.dart';
 import '../../core/utils/logger.dart';
 import '../models/notifications_response_model.dart';

@@ -15,6 +15,8 @@ class Keys {
   static const String isUserVerified = 'is_user_verified';
   static const String isActive = 'is_active';
   static const String lastLogin = 'last_login';
+  static const String firstName = 'first_name';
+  static const String lastName = 'last_name';
 
   // Token Info
   static const String accessToken = 'access_token';

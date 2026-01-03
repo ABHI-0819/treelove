@@ -38,6 +38,8 @@ class LoginRepository{
       securePref.setString(Keys.groupName, obj.data.user.groupName);
       securePref.setString(Keys.profileId, obj.data.user.profile!.id);
       securePref.setString(Keys.name, obj.data.user.profile!.fullName);
+      securePref.setString(Keys.firstName, obj.data.user.profile!.firstName);
+      securePref.setString(Keys.lastName, obj.data.user.profile!.lastName);
       securePref.setBool(Keys.isActive, obj.data.user.isActive);
       securePref.setString(Keys.accessToken,obj.data.tokens.access);
       securePref.setString(Keys.refreshToken,obj.data.tokens.refresh);

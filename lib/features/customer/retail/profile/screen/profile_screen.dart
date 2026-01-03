@@ -29,6 +29,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../../../../core/config/themes/app_color.dart';
+import '../../../../../core/storage/preference_keys.dart';
+import '../../../../../core/storage/secure_storage.dart';
 
 class RetailProfileScreen extends StatefulWidget {
   static const route = '/retail-profile';
@@ -58,17 +60,25 @@ class _RetailProfileScreenState extends State<RetailProfileScreen> {
     _loadProfileData();
   }
 
-  void _loadProfileData() {
-    // Load your API data here
-    setState(() {
-      _firstNameController.text = "Ankit";
-      _lastNameController.text = "Sharma";
-      _bioController.text = "Make the world green.";
-      _websiteController.text = "";
-      _profilePicture = "http://43.205.169.130/media/user/profile_pics/man.png";
-      _dateOfBirth = DateTime(2000, 6, 19);
-    });
-  }
+ Future<void> _loadProfileData() async {
+  final prefs = SecurePreference();
+
+  final firstName = await prefs.getString(Keys.firstName); // e.g. "Ankit"
+
+  final lastName = await prefs.getString(Keys.lastName); // e.g. "Sharma"
+
+  if (!mounted) return;
+
+  setState(() {
+    _firstNameController.text = firstName;
+    _lastNameController.text = lastName;
+    _bioController.text = "Make the world green.";
+    _websiteController.text = "";
+    _profilePicture =
+        "http://43.205.169.130/media/user/profile_pics/man.png";
+    _dateOfBirth = DateTime(2000, 6, 19);
+  });
+}
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();

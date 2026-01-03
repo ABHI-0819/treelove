@@ -25,12 +25,12 @@ class RegisterBloc extends Bloc<ApiEvent, ApiState<ResponseModel,ResponseModel>>
     );
 
     switch (result.status) {
-      case ApiStatus.success:
+      case ApiStatus.success || ApiStatus.created:
         emit(ApiSuccess(result.response));
         // Background FCM token sync
         break;
-      case ApiStatus.unAuthorized:
-        emit( TokenExpired(result.response));
+      case ApiStatus.failed:
+        emit(ApiFailure(result.response));
         break;
       default:
         ResponseModel data = result.response;
