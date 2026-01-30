@@ -37,9 +37,9 @@ import '../../../features/customer/retail/my-trees/screens/tree_monitoring_histo
 import '../../../features/customer/retail/order/congratulations_screen.dart';
 import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
-import '../../../features/customer/retail/payment/screen/payment_Initiated.dart';
-import '../../../features/customer/retail/payment/screen/payment_failed.dart';
-import '../../../features/customer/retail/payment/screen/payment_success.dart';
+import '../../../features/customer/retail/payment/screen/payment_failed_screen.dart';
+import '../../../features/customer/retail/payment/screen/payment_initiated_screen.dart';
+import '../../../features/customer/retail/payment/screen/payment_success_screen.dart';
 import '../../../features/customer/retail/profile/screen/profile_screen.dart';
 import '../../../features/customer/retail/project/screens/project_template_screen.dart';
 import '../../../features/customer/retail/settings/setting_screen.dart';

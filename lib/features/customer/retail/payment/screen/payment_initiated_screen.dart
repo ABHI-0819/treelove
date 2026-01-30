@@ -9,8 +9,8 @@ import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
 import '../model/razorpay_order_data.dart';
-import 'payment_failed.dart';
-import 'payment_success.dart';
+import 'payment_failed_screen.dart';
+import 'payment_success_screen.dart';
 
 class PaymentInitiatedScreen extends StatefulWidget {
   static const route = '/payment-initiated';
