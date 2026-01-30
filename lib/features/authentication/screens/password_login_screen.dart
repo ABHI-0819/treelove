@@ -67,8 +67,10 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
     }
 
     final deviceId = await DeviceIdentifier.getDeviceId();
-    final String? email = widget.type == InputType.email ? widget.username : null;
-    final String? phone = widget.type == InputType.phone ? widget.username : null;
+    final String? email =
+        widget.type == InputType.email ? widget.username : null;
+    final String? phone =
+        widget.type == InputType.phone ? widget.username : null;
 
     if (email == null && phone == null) {
       showNotification(
@@ -115,7 +117,7 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
           screen: OrganizationMainScreen.route,
           arguments: {},
         );
-      // Handle b2b_user navigation
+        // Handle b2b_user navigation
         break;
       case 'vendor':
         AppRoute.goToNextPage(
@@ -123,7 +125,7 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
           screen: VendorMainScreen.route,
           arguments: {},
         );
-      // Handle vendor navigation
+        // Handle vendor navigation
         break;
       default:
         showNotification(
@@ -143,19 +145,26 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: BlocListener<AuthBloc, ApiState<LoginResponseModel,ResponseModel>>(
+            child: BlocListener<AuthBloc,
+                ApiState<LoginResponseModel, ResponseModel>>(
               listener: (context, state) {
                 _isSubmitting.value = false;
-                EasyLoading.dismiss();
+
                 if (state is ApiSuccess<LoginResponseModel, ResponseModel>) {
+                  EasyLoading.dismiss();
                   _handleLoginSuccess(state.data);
-                } else if (state is ApiFailure<LoginResponseModel, ResponseModel>) {
+                } else if (state
+                    is ApiFailure<LoginResponseModel, ResponseModel>) {
+                  EasyLoading.dismiss();
                   showNotification(
                     context,
-                    message: state.error.message.toString(), // Or customize based on ResponseModel structure
+                    message:
+                        '${state.error.message}:${state.error.data}', // Or customize based on ResponseModel structure
                     type: Not.failed,
                   );
-                } else if (state is TokenExpired<LoginResponseModel, ResponseModel>) {
+                } else if (state
+                    is TokenExpired<LoginResponseModel, ResponseModel>) {
+                  EasyLoading.dismiss();
                   showNotification(
                     context,
                     message: state.error.message.toString(),
@@ -183,7 +192,6 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
       ),
     );
   }
-
 
   Widget _buildTopNav() {
     return Row(
@@ -292,5 +300,3 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
     );
   }
 }
-
-

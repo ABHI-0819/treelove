@@ -15,6 +15,7 @@ import '../models/register_request_model.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'registration_otp_screen.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   static const route = '/create-account';
@@ -74,26 +75,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         return;
       }
 
-      // if (!_emailVerified) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text('Please verify your email address'),
-      //       backgroundColor: Colors.orange,
-      //     ),
-      //   );
-      //   return;
-      // }
-
-      if (!_phoneVerified) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please verify your phone number'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
-
       // ✅ Dispatch registration event to bloc
       final request = _buildRegistrationRequest();
       registerBloc.add(ApiAdd<RegistrationRequest>(request));
@@ -102,15 +83,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   /// Builds complete request from all UI controllers
   RegistrationRequest _buildRegistrationRequest() {
-    final String oauthProvider = _emailController.text.trim().isNotEmpty ? 'email' : 'phone';
+    final String oauthProvider =
+        _emailController.text.trim().isNotEmpty ? 'email' : 'phone';
     final phoneNumber = _phoneController.text.trim();
-    final cleanedPhone = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
+    final cleanedPhone =
+        phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
 
     // Profile without addresses (since address section removed)
     final profile = Profile(
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      legalName: _selectedUserType == 'Organization' ? _legalNameController.text.trim() : null,
+      legalName: _selectedUserType == 'Organization'
+          ? _legalNameController.text.trim()
+          : null,
       bio: null,
       dateOfBirth: null,
       website: null,
@@ -118,13 +103,17 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
 
     return RegistrationRequest(
-      email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
+      email: _emailController.text.trim().isEmpty
+          ? null
+          : _emailController.text.trim(),
       phone: phoneNumber.isEmpty ? null : cleanedPhone,
       countryCode: _selectedCountryCode,
       oauthProvider: oauthProvider,
       password: _passwordController.text,
       confirmPassword: _passwordController.text,
-      group: _selectedUserType == 'Organization' ? 'b78f60fa-80a2-4346-8226-29e80ade040f' : '03edfa34-3232-4fdf-85f9-a9d8d8270581',
+      group: _selectedUserType == 'Organization'
+          ? 'b78f60fa-80a2-4346-8226-29e80ade040f'
+          : '03edfa34-3232-4fdf-85f9-a9d8d8270581',
       profile: profile,
       profilePicture: null,
     );
@@ -169,12 +158,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   Widget _buildOTPDialog(String type, Function(String) onVerify) {
-    final List<TextEditingController> otpControllers = List.generate(6, (_) => TextEditingController());
+    final List<TextEditingController> otpControllers =
+        List.generate(6, (_) => TextEditingController());
     final List<FocusNode> otpFocusNodes = List.generate(6, (_) => FocusNode());
 
     return AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 5),
-        contentPadding: const EdgeInsets.all(20),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 5),
+      contentPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
         'Verify $type',
@@ -208,10 +198,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    height: 1.2, 
+                    height: 1.2,
                   ),
                   decoration: InputDecoration(
-                     isDense: true, // ✅ reduces default padding
+                    isDense: true, // ✅ reduces default padding
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 10, // ✅ key fix
                       horizontal: 0,
@@ -219,7 +209,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     counterText: '',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.grey, width: 1.5),
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 1.5),
                     ),
                     filled: true,
                     fillColor: Colors.grey.shade50,
@@ -279,7 +270,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF00473C),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
           child: const Text('Verify', style: TextStyle(color: Colors.white)),
@@ -306,22 +298,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       child: BlocListener<RegisterBloc, ApiState<ResponseModel, ResponseModel>>(
         listener: (context, state) {
           if (state is ApiSuccess<ResponseModel, ResponseModel>) {
+            AppRoute.pushReplacement(context, RegistrationOtpScreen.route,
+                arguments: {
+                  'phone': _phoneController.text.trim(),
+                  'email': _emailController.text.trim(),
+                });
             // Navigate to success screen or login
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Account created successfully!'),
+            //     backgroundColor: Colors.green,
+            //   ),
+            // );
             // Navigate after delay to show success message
-            Future.delayed(const Duration(seconds: 1), () {
-             AppRoute.goToNextPage(context: context, screen: SignInScreen.route, arguments: {});
-            });
+            // Future.delayed(const Duration(seconds: 1), () {
+            //   AppRoute.goToNextPage(
+            //       context: context, screen: SignInScreen.route, arguments: {});
+            // });
           } else if (state is ApiFailure<ResponseModel, ResponseModel>) {
             //  Show error message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.error.message ?? 'Registration failed'),
+                content: Text('${state.error.message}:${state.error.data}' ??
+                    'Registration failed'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -334,7 +333,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             );
           }
         },
-        child: BlocBuilder<RegisterBloc, ApiState<ResponseModel, ResponseModel>>(
+        child:
+            BlocBuilder<RegisterBloc, ApiState<ResponseModel, ResponseModel>>(
           builder: (context, state) {
             final isLoading = state is ApiLoading;
 
@@ -433,9 +433,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               value: _agreedToTerms,
                               onChanged: isLoading
                                   ? null
-                                  : (val) => setState(() => _agreedToTerms = val ?? false),
+                                  : (val) => setState(
+                                      () => _agreedToTerms = val ?? false),
                               checkColor: const Color(0xFF00473C),
-                              fillColor: MaterialStateProperty.resolveWith((states) {
+                              fillColor:
+                                  MaterialStateProperty.resolveWith((states) {
                                 if (states.contains(MaterialState.selected)) {
                                   return Colors.white;
                                 }
@@ -452,7 +454,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               padding: EdgeInsets.only(top: 12),
                               child: Text.rich(
                                 TextSpan(
-                                  text: 'By checking this box, I agree to TreeLov\'s ',
+                                  text:
+                                      'By checking this box, I agree to TreeLov\'s ',
                                   style: TextStyle(fontSize: 13),
                                   children: [
                                     TextSpan(
@@ -494,21 +497,24 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                         child: isLoading
                             ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
                             : Text(
-                          'Create Account',
-                          style: TextStyle(
-                            color: _agreedToTerms ? Colors.white : Colors.grey.shade600,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                                'Create Account',
+                                style: TextStyle(
+                                  color: _agreedToTerms
+                                      ? Colors.white
+                                      : Colors.grey.shade600,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -537,14 +543,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   Widget _buildTextField(
-      TextEditingController controller,
-      String label, {
-        Widget? suffix,
-        TextInputType? keyboardType,
-        List<TextInputFormatter>? inputFormatters,
-        String? Function(String?)? validator,
-        bool enabled = true,
-      }) {
+    TextEditingController controller,
+    String label, {
+    Widget? suffix,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    bool enabled = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
@@ -571,31 +577,33 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  Widget _buildVerifyButton(String type, bool isVerified, VoidCallback onPressed) {
+  Widget _buildVerifyButton(
+      String type, bool isVerified, VoidCallback onPressed) {
     return Container(
       padding: const EdgeInsets.only(right: 4),
       child: isVerified
           ? Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.check_circle, color: Colors.green, size: 20),
-          SizedBox(width: 4),
-          Text('Verified', style: TextStyle(color: Colors.green, fontSize: 12)),
-        ],
-      )
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                SizedBox(width: 4),
+                Text('Verified',
+                    style: TextStyle(color: Colors.green, fontSize: 12)),
+              ],
+            )
           : TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-        ),
-        child: const Text(
-          "Verify",
-          style: TextStyle(
-            color: Color(0xFF00473C),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+              onPressed: onPressed,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: const Text(
+                "Verify",
+                style: TextStyle(
+                  color: Color(0xFF00473C),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
     );
   }
 
@@ -608,8 +616,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         decoration: InputDecoration(
           labelText: 'Create password',
           suffixIcon: IconButton(
-            icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-            onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+            icon: Icon(
+                _isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+            onPressed: () =>
+                setState(() => _isPasswordVisible = !_isPasswordVisible),
           ),
           border: const UnderlineInputBorder(),
           enabledBorder: const UnderlineInputBorder(
@@ -650,7 +660,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               items: _countryCodes.map((country) {
                 return DropdownMenuItem<String>(
                   value: country['code'],
-                  child: Text(country['code']!, style: const TextStyle(fontSize: 14)),
+                  child: Text(country['code']!,
+                      style: const TextStyle(fontSize: 14)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -666,7 +677,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 labelText: 'Phone number',
-                suffixIcon: _buildVerifyButton('Phone', _phoneVerified, _verifyPhone),
+                // suffixIcon:
+                //     _buildVerifyButton('Phone', _phoneVerified, _verifyPhone),
                 border: const UnderlineInputBorder(),
                 enabledBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey),
@@ -710,7 +722,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         },
         decoration: const InputDecoration(
           labelText: 'Account type',
-          helperText: 'Select Individual for personal use or Organization for business',
+          helperText:
+              'Select Individual for personal use or Organization for business',
           helperStyle: TextStyle(fontSize: 11),
           border: UnderlineInputBorder(),
         ),

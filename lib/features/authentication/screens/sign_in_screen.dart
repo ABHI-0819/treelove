@@ -81,7 +81,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-               TextField(
+              TextField(
                 controller: username,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
@@ -199,13 +199,14 @@ class _SignInScreenState extends State<SignInScreen> {
 
     if (inputType == InputType.email || inputType == InputType.phone) {
       AppRoute.goToNextPage(
-        context: context, screen: PasswordLoginScreen.route,
+        context: context,
+        screen: PasswordLoginScreen.route,
         arguments: {
           'username': input,
           'type': inputType,
         },
       );
-    }else {
+    } else {
       showNotification(context,
           message: 'Please enter your correct email or phone ',
           type: Not.warning);
@@ -216,6 +217,12 @@ class _SignInScreenState extends State<SignInScreen> {
     final googleUser = await authService.signInWithGoogle();
 
     if (googleUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('User cancelled or sign-in failed.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       debugLog('User cancelled or sign-in failed.');
       return;
     }
@@ -223,15 +230,16 @@ class _SignInScreenState extends State<SignInScreen> {
     preference.set(Keys.oauthTokenId, googleUser.idToken);
     preference.set(Keys.name, googleUser.displayName);
 
-    if(googleUser.isNewUser){
-      AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
-    }else {
+    if (googleUser.isNewUser) {
+      AppRoute.goToNextPage(
+          context: context,
+          screen: UserTypeSelectionScreen.route,
+          arguments: {});
+    } else {
       // Existing user: fetch profile
 
       // final userProfile = await apiService.getUserProfile(); // returns {user_type: "individual", ...}
-        final userProfile= {
-          "user_type":"individudal"
-        };
+      final userProfile = {"user_type": "individudal"};
       if (userProfile == null) {
         debugLog('Failed to fetch user profile');
         showNotification(context, message: 'Failed to load user profile');
@@ -254,17 +262,16 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       } else {
         debugLog('Unknown user type: $userType');
-        AppRoute.goToNextPage(context: context, screen: UserTypeSelectionScreen.route, arguments: {});
+        AppRoute.goToNextPage(
+            context: context,
+            screen: UserTypeSelectionScreen.route,
+            arguments: {});
         // showNotification(context,type: Not.failed, message: 'Unknown user type');
       }
     }
     // Proceed with your app logic here.
   }
 }
-
-
-
-
 
 ///
 /// Android Debug Key

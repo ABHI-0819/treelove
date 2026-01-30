@@ -25,6 +25,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import '../utils/logger.dart';
+
 /// Model to hold the signed-in user's info and tokens.
 class GoogleUser {
   final String uid;
@@ -33,17 +35,16 @@ class GoogleUser {
   final String? photoURL;
   final String? accessToken;
   final String? idToken;
-  final bool  isNewUser;
+  final bool isNewUser;
 
-  GoogleUser({
-    required this.uid,
-    this.displayName,
-    this.email,
-    this.photoURL,
-    this.accessToken,
-    this.idToken,
-    required this.isNewUser
-  });
+  GoogleUser(
+      {required this.uid,
+      this.displayName,
+      this.email,
+      this.photoURL,
+      this.accessToken,
+      this.idToken,
+      required this.isNewUser});
 }
 
 class AuthService {
@@ -74,16 +75,19 @@ class AuthService {
         return null;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       final User? user = userCredential.user;
-      final bool isNewUser = userCredential.additionalUserInfo!.isNewUser ?? false;
+      final bool isNewUser =
+          userCredential.additionalUserInfo!.isNewUser ?? false;
 
       if (user == null) {
         // Sign-in failed, no user returned.
@@ -91,18 +95,16 @@ class AuthService {
       }
 
       return GoogleUser(
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-        isNewUser: isNewUser
-      );
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+          isNewUser: isNewUser);
     } catch (e, stackTrace) {
       // Log errors for monitoring, or send to your error tracking system
-      print('Error during Google sign-in: $e');
-      print(stackTrace);
+      debugLog('Error during Google sign-in: $e', stackTrace: stackTrace);
       return null;
     }
   }

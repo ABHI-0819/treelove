@@ -30,6 +30,14 @@ class BaseNetwork {
   static const String logoutURL = "${_BASE_URL}api/v1/auth/logout/";
   static const String servicesURL = "${_BASE_URL}api/v1/projects/service-types/";
 
+  /// Otp URLs
+  static const String sendOtpURL = "${_BASE_URL}api/v1/auth/otp/send/";
+  static const String verifyOtpURL = "${_BASE_URL}api/v1/auth/phone/verify/";
+
+  //tending topic and testimonials
+  static const String trendingTopicURL = "${_BASE_URL}api/v1/engagement/bloglinks/bloglinks/";
+  static const String testimonialsURL = "${_BASE_URL}api/v1/content/testimonials/";
+
   static const String projectListURL = "${_BASE_URL}api/v1/projects/projects/";
   static const String projectDashboardURL = "${_BASE_URL}api/v1/projects/vendor-dashboard/";
   static const String projectAreaURL =  "${_BASE_URL}api/v1/projects/project-areas/";
@@ -46,8 +54,13 @@ class BaseNetwork {
   static const String grievanceCreateURL = "${_BASE_URL}api/v1/grievance/";
   static const String grievanceCategoriesURL = "${_BASE_URL}api/v1/grievance/grievance-categories/";
   ///orders/order-items
-  static const String paymentURL ="${_BASE_URL}api/v1/payments/payments/";
+
   static const String inquiryUrl = "${_BASE_URL}api/v1/inquiries/";
+
+  /// payments Url :
+  static const String paymentURL ="${_BASE_URL}api/v1/payments/payments/";
+  static const String verifyPaymentUrl = "${_BASE_URL}api/v1/payments/payments/verify/";
+  static const String capturePaymentUrl = "${_BASE_URL}api/v1/payments/payments/capture/";
 
 
   //TODO: Fieldworker URL :

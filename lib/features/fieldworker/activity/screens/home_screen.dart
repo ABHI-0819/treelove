@@ -43,11 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.white,
-
       body: BlocProvider(
         create: (context) => projectAreaBloc,
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 15.h),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,14 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: BlocBuilder<ProjectAreaBloc,
                       ApiState<ProjectAreasResponse, ResponseModel>>(
                     builder: (context, state) {
-                      if(state is ApiLoading){
+                      if (state is ApiLoading) {
                         return Center(child: CircularProgressIndicator());
-                      } else  if (state is ApiSuccess<ProjectAreasResponse, ResponseModel>) {
+                      } else if (state
+                          is ApiSuccess<ProjectAreasResponse, ResponseModel>) {
                         ProjectAreasResponse areaList = state.data;
                         return Expanded(
                           child: ListView.builder(
                             // controller: _scrollController,
-                            itemCount: areaList.data.length, // Number of projects
+                            itemCount:
+                                areaList.data.length, // Number of projects
                             itemBuilder: (context, index) {
                               return InkWell(
                                 onTap: () {
@@ -92,20 +93,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                       context: context,
                                       screen: ProjectActionScreen.route,
                                       arguments: {
-                                        'projectId':areaList.data[index].projectId,
-                                        'projectAreaId':areaList.data[index].id
+                                        'projectId':
+                                            areaList.data[index].projectId,
+                                        'projectAreaId': areaList.data[index].id
                                       });
                                 },
                                 child: ProjectAreaCard(
-                                  title: areaList.data[index].name,
-                                  subtitle: areaList.data[index].type,
-                                  location:
-                                      areaList.data[index].locationDescription,
-                                  taskCount: areaList.data[index].capacity,
-                                  latitude: areaList.data[index].centroid.latitude,
-                                  longitude: areaList.data[index].centroid.longitude,
-                                  todayTasks: areaList.data[index].todayTasks
-                                ),
+                                    title: areaList.data[index].name,
+                                    subtitle: areaList.data[index].type,
+                                    location: areaList
+                                        .data[index].locationDescription,
+                                    taskCount: areaList.data[index].capacity,
+                                    latitude:
+                                        areaList.data[index].centroid.latitude,
+                                    longitude:
+                                        areaList.data[index].centroid.longitude,
+                                    todayTasks:
+                                        areaList.data[index].todayTasks),
                               );
                             },
                           ),
@@ -129,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 /*
 class ProjectAreaCard extends StatelessWidget {
   final String title;
@@ -325,16 +330,15 @@ class ProjectAreaCard extends StatelessWidget {
   final double longitude;
   final List<TodayTask> todayTasks;
 
-  const ProjectAreaCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.location,
-    required this.taskCount,
-    required this.latitude,
-    required this.longitude,
-    required this.todayTasks
-  });
+  const ProjectAreaCard(
+      {super.key,
+      required this.title,
+      required this.subtitle,
+      required this.location,
+      required this.taskCount,
+      required this.latitude,
+      required this.longitude,
+      required this.todayTasks});
 
   @override
   Widget build(BuildContext context) {
@@ -512,7 +516,8 @@ class ProjectAreaCard extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: _getServiceTypeColor(task.serviceType).withOpacity(0.1),
+                  color:
+                      _getServiceTypeColor(task.serviceType).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -555,16 +560,16 @@ class ProjectAreaCard extends StatelessWidget {
                   color: isCompleted
                       ? const Color(0xFF4CAF50)
                       : task.completedToday > 0
-                      ? const Color(0xFFFF9800)
-                      : Colors.grey[400],
+                          ? const Color(0xFFFF9800)
+                          : Colors.grey[400],
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   isCompleted
                       ? "Done"
                       : task.completedToday > 0
-                      ? "In Progress"
-                      : "Pending",
+                          ? "In Progress"
+                          : "Pending",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -587,7 +592,8 @@ class ProjectAreaCard extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 // Calculate progress width with minimum 2px for visibility
-                double progressWidth = constraints.maxWidth * progress.clamp(0.0, 1.0);
+                double progressWidth =
+                    constraints.maxWidth * progress.clamp(0.0, 1.0);
                 if (task.completedToday > 0 && progressWidth < 2) {
                   progressWidth = 2; // Minimum visible width
                 }
@@ -602,8 +608,8 @@ class ProjectAreaCard extends StatelessWidget {
                           color: isCompleted
                               ? const Color(0xFF4CAF50)
                               : task.completedToday > 0
-                              ? const Color(0xFFFF9800)
-                              : const Color(0xFF6B7280),
+                                  ? const Color(0xFFFF9800)
+                                  : const Color(0xFF6B7280),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -612,7 +618,6 @@ class ProjectAreaCard extends StatelessWidget {
               },
             ),
           ),
-
         ],
       ),
     );
@@ -620,9 +625,12 @@ class ProjectAreaCard extends StatelessWidget {
 
   /// 🔹 SUMMARY ROW
   Widget _buildSummaryRow() {
-    final totalExpected = todayTasks.fold<int>(0, (sum, task) => sum + task.expectedToday);
-    final totalCompleted = todayTasks.fold<int>(0, (sum, task) => sum + task.completedToday);
-    final overallProgress = totalExpected > 0 ? (totalCompleted / totalExpected) : 0.0;
+    final totalExpected =
+        todayTasks.fold<int>(0, (sum, task) => sum + task.expectedToday);
+    final totalCompleted =
+        todayTasks.fold<int>(0, (sum, task) => sum + task.completedToday);
+    final overallProgress =
+        totalExpected > 0 ? (totalCompleted / totalExpected) : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -678,8 +686,8 @@ class ProjectAreaCard extends StatelessWidget {
                     overallProgress >= 1.0
                         ? const Color(0xFF4CAF50)
                         : overallProgress > 0
-                        ? const Color(0xFFFF9800)
-                        : Colors.grey[400]!,
+                            ? const Color(0xFFFF9800)
+                            : Colors.grey[400]!,
                   ),
                 ),
                 Center(
@@ -739,9 +747,11 @@ class ProjectAreaCard extends StatelessWidget {
     String googleMapsUrl;
 
     if (lat != null && lng != null) {
-      googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=$lat,$lng";
+      googleMapsUrl =
+          "https://www.google.com/maps/search/?api=1&query=$lat,$lng";
     } else if (query != null) {
-      googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}";
+      googleMapsUrl =
+          "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}";
     } else {
       throw "Either lat/lng or query is required!";
     }
@@ -755,8 +765,3 @@ class ProjectAreaCard extends StatelessWidget {
     }
   }
 }
-
-
-
-
-

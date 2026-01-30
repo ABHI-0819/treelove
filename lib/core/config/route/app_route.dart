@@ -17,6 +17,8 @@ import '../../../common/screens/privacy_policy_screen.dart';
 import '../../../common/screens/satellite_history_screen.dart';
 import '../../../common/screens/satellite_monitoring_result_screen.dart';
 import '../../../common/screens/terms_conditions_screen.dart';
+import '../../../features/authentication/screens/registration_otp_screen.dart';
+import '../../../features/authentication/screens/registration_success_screen.dart';
 import '../../../features/authentication/screens/sign_in_screen.dart';
 import '../../../features/authentication/screens/user_type_screen.dart';
 import '../../../features/customer/b2b/home/screens/main_screen.dart';
@@ -35,7 +37,9 @@ import '../../../features/customer/retail/my-trees/screens/tree_monitoring_histo
 import '../../../features/customer/retail/order/congratulations_screen.dart';
 import '../../../features/customer/retail/order/order_list_screen.dart';
 import '../../../features/customer/retail/order/order_tracker_screen.dart';
-import '../../../features/customer/retail/profile/screen/account_screen.dart';
+import '../../../features/customer/retail/payment/screen/payment_Initiated.dart';
+import '../../../features/customer/retail/payment/screen/payment_failed.dart';
+import '../../../features/customer/retail/payment/screen/payment_success.dart';
 import '../../../features/customer/retail/profile/screen/profile_screen.dart';
 import '../../../features/customer/retail/project/screens/project_template_screen.dart';
 import '../../../features/customer/retail/settings/setting_screen.dart';
@@ -47,7 +51,6 @@ import '../../../features/fieldworker/home/screens/select_tree_species.dart';
 import '../../../features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
 import '../../../features/fieldworker/home/screens/tree_monitor_list_screen.dart';
 import '../../../features/fieldworker/home/screens/tree_plantation_screen.dart';
-import '../../../features/fieldworker/profile/screen/profile_screen.dart';
 import '../../../features/vendor/Staff/new_staff_screen.dart';
 import '../../../features/vendor/home/screens/main-screen.dart';
 import '../../../features/vendor/home/screens/map_screen.dart';
@@ -55,21 +58,29 @@ import '../../../features/vendor/task/screens/task_allocation_screen.dart';
 import '../../widgets/image_viewe.dart';
 import '../../widgets/screen_404.dart';
 
-class AppRoute{
-  Route onGenerateRoute(RouteSettings settings){
-    switch(settings.name){
+class AppRoute {
+  Route onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => WelcomeScreen());
       case '/sign-in':
         return MaterialPageRoute(builder: (_) => SignInScreen());
+      case '/registration-otp':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => RegistrationOtpScreen(
+                  phone: argument!['phone'],
+                  email: argument['email'],
+                ));
+      case '/registration-success':
+        return MaterialPageRoute(builder: (_) => RegistrationSuccessScreen());
       case '/user-type':
         return MaterialPageRoute(builder: (_) => UserTypeSelectionScreen());
       case '/login-password':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_) => PasswordLoginScreen(
-              username: argument!['username'],
-              type :argument['type']
-        ));
+        return MaterialPageRoute(
+            builder: (_) => PasswordLoginScreen(
+                username: argument!['username'], type: argument['type']));
       case '/create-account':
         return MaterialPageRoute(builder: (_) => CreateAccountScreen());
       case '/forgot-password':
@@ -83,238 +94,286 @@ class AppRoute{
       case '/retail-main':
         return MaterialPageRoute(builder: (_) => RetailMainScreen());
       case '/retail-home-screen':
-        return MaterialPageRoute(builder: (_)=> HomeScreen());
+        return MaterialPageRoute(builder: (_) => HomeScreen());
       case '/plant-by-location':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> MapScreen(
-          projectId: argument!['projectId'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => MapScreen(
+                  projectId: argument!['projectId'],
+                ));
       case '/area-selection':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> AreaSelectionScreen(
-          projectId: argument!['projectId'],
-          treeCount: argument['treeCount'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => AreaSelectionScreen(
+                  projectId: argument!['projectId'],
+                  treeCount: argument['treeCount'],
+                ));
       case '/notification':
-        return MaterialPageRoute(builder: (_)=>NotificationsScreen());
+        return MaterialPageRoute(builder: (_) => NotificationsScreen());
       case '/retail-profile':
-        return MaterialPageRoute(builder: (_)=>RetailProfileScreen());
+        return MaterialPageRoute(builder: (_) => RetailProfileScreen());
       case '/privacy-policy':
-        return MaterialPageRoute(builder: (_)=>PrivacyPolicyScreen());
+        return MaterialPageRoute(builder: (_) => PrivacyPolicyScreen());
       case '/terms-conditions':
-        return MaterialPageRoute(builder: (_)=>TermsConditionsScreen());
+        return MaterialPageRoute(builder: (_) => TermsConditionsScreen());
       case '/satellite-history':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> SatelliteHistoryScreen(
-          plantationId: argument!['plantationId'],
-        ));
-      case '/SelectMonitoringScreen' :
+        return MaterialPageRoute(
+            builder: (_) => SatelliteHistoryScreen(
+                  plantationId: argument!['plantationId'],
+                ));
+      case '/SelectMonitoringScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> SelectMonitoringScreen(
-          inquiryType: argument!['inquiryType'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => SelectMonitoringScreen(
+                  inquiryType: argument!['inquiryType'],
+                ));
       case '/planted-trees-map':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> PlantedTreeMapScreen(
-          inquiryType: argument!['inquiryType'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => PlantedTreeMapScreen(
+                  inquiryType: argument!['inquiryType'],
+                ));
       case '/tree-species-list':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> TreeSpeciesList(
-            areaId :argument!['areaId'],
-            treeCount: argument['treeCount'],
-          latitude: argument['latitude'],
-          longitude: argument['longitude'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => TreeSpeciesList(
+                  areaId: argument!['areaId'],
+                  treeCount: argument['treeCount'],
+                  latitude: argument['latitude'],
+                  longitude: argument['longitude'],
+                ));
       case '/satellite':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> SatelliteMonitoringResultScreen(
-            monitorId :argument!['monitorId']
-        ));
+        return MaterialPageRoute(
+            builder: (_) => SatelliteMonitoringResultScreen(
+                monitorId: argument!['monitorId']));
       case '/faq-section':
-        return MaterialPageRoute(builder: (_)=> FaqScreen());
+        return MaterialPageRoute(builder: (_) => FaqScreen());
       case '/invite-friend':
-        return MaterialPageRoute(builder: (_)=> InviteAndEarnScreen());
+        return MaterialPageRoute(builder: (_) => InviteAndEarnScreen());
       case '/my-trees':
-        return MaterialPageRoute(builder: (_)=> MyTreeScreen());
-      case'/grievance':
-        return MaterialPageRoute(builder: (_)=> GrievanceListScreen());
+        return MaterialPageRoute(builder: (_) => MyTreeScreen());
+      case '/grievance':
+        return MaterialPageRoute(builder: (_) => GrievanceListScreen());
       case '/raise-grievance':
-        return MaterialPageRoute(builder: (_)=> RaiseGrievanceScreen());
+        return MaterialPageRoute(builder: (_) => RaiseGrievanceScreen());
       case '/project-template':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> ProjectTemplateScreen(
-          title: argument!['title'],
-            category:argument['category'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => ProjectTemplateScreen(
+                  title: argument!['title'],
+                  category: argument['category'],
+                ));
+      case '/payment-initiated':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => PaymentInitiatedScreen(
+                  amount: argument!['amount'],
+                  orderId: argument['orderId'],
+                  msgType: argument['msgType'] ?? '',
+                  customMsg: argument['customMsg'] ?? '',
+                ));
+      case '/payment-success':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => PaymentSuccessScreen(
+                  msgType: argument!['msgType'] ?? '',
+                  customMsg: argument['customMsg'] ?? '',
+                ));
+      case '/payment-failed':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => PaymentFailedScreen(
+                  amount: argument!['amount'],
+                  errorMessage: argument['errorMessage'],
+                ));
       case '/congratulations':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> CongratulationsScreen(
-            shareLink: argument!['shareLink'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => CongratulationsScreen(
+                  shareLink: argument!['shareLink'],
+                ));
       // case '/orders':
       //   return MaterialPageRoute(builder: (_)=> MyTreeScreen());
-      case '/order-list' :
-        return MaterialPageRoute(builder: (_)=> OrderListScreen());
+      case '/order-list':
+        return MaterialPageRoute(builder: (_) => OrderListScreen());
       case '/order-tracker':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> OrderTrackerScreen(
-          orderId :argument!['orderId'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => OrderTrackerScreen(
+                  orderId: argument!['orderId'],
+                ));
       case '/tree-maintenance-history':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> TreeMaintenanceHistoryScreen(
-            treeId: argument!['treeId'],
-          //orderId :argument!['orderId'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => TreeMaintenanceHistoryScreen(
+                  treeId: argument!['treeId'],
+                  //orderId :argument!['orderId'],
+                ));
       case '/tree-monitoring-history':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> TreeMonitoringHistoryScreen(
-          treeId: argument!['treeId'],
-          //orderId :argument!['orderId'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => TreeMonitoringHistoryScreen(
+                  treeId: argument!['treeId'],
+                  //orderId :argument!['orderId'],
+                ));
       case '/tree-species-details':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> TreeSpeciesDetails(
-            id :argument!['id'],
-          areaId: argument['areaId'],
-          treeCount: argument['treeCount'],
-          latitude: argument['latitude'],
-          longitude: argument['longitude'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => TreeSpeciesDetails(
+                  id: argument!['id'],
+                  areaId: argument['areaId'],
+                  treeCount: argument['treeCount'],
+                  latitude: argument['latitude'],
+                  longitude: argument['longitude'],
+                ));
 
       ///TODO : Field Worker Mobile API
       case '/fieldworker-main-screen':
-        return MaterialPageRoute(builder: (_)=> FieldWorkerMainScreen());
+        return MaterialPageRoute(builder: (_) => FieldWorkerMainScreen());
       case '/ProjectActionScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> ProjectActionScreen(
-          projectId: argument!['projectId'],
-          projectAreaId: argument['projectAreaId'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => ProjectActionScreen(
+                  projectId: argument!['projectId'],
+                  projectAreaId: argument['projectAreaId'],
+                ));
       case '/PlantTreeScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> PlantTreeScreen(
-          serviceType:argument!['serviceType'],
-          serviceId: argument['serviceId'],
-            projectAreaId:argument['projectAreaId']
-        ));
+        return MaterialPageRoute(
+            builder: (_) => PlantTreeScreen(
+                serviceType: argument!['serviceType'],
+                serviceId: argument['serviceId'],
+                projectAreaId: argument['projectAreaId']));
       case '/select-species-plantation':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> SelectTreeTypeScreen(
-          serviceType: argument!['serviceType'] ,
-          projectAreaId:argument['projectAreaId'] ,
-        ));
+        return MaterialPageRoute(
+            builder: (_) => SelectTreeTypeScreen(
+                  serviceType: argument!['serviceType'],
+                  projectAreaId: argument['projectAreaId'],
+                ));
       case '/tree-maintenance-list':
-        Map ? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=>TreeMaintenanceListScreen(
-          serviceId: argument!['serviceId'] ,
-        ));
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => TreeMaintenanceListScreen(
+                  serviceId: argument!['serviceId'],
+                ));
       case '/maintenance-activity':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=>MaintenanceActivityScreen(
-          plantationId: argument!['plantationId'],
-          serviceId: argument['serviceId'] ,
-        ));
+        return MaterialPageRoute(
+            builder: (_) => MaintenanceActivityScreen(
+                  plantationId: argument!['plantationId'],
+                  serviceId: argument['serviceId'],
+                ));
       case '/tree-monitor-list':
-        return MaterialPageRoute(builder: (_)=>TreeMonitorListScreen());
+        return MaterialPageRoute(builder: (_) => TreeMonitorListScreen());
       case '/monitor-activity':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=>MonitorActivityScreen(
-          plantationId: argument!['plantationId'],
-          serviceId: argument['serviceId'] ,
-        ));
+        return MaterialPageRoute(
+            builder: (_) => MonitorActivityScreen(
+                  plantationId: argument!['plantationId'],
+                  serviceId: argument['serviceId'],
+                ));
 
       case '/CartScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> CartScreen(
-          msgType: argument!['msgType'],
-          customMsg: argument['customMsg'],
-        ));
+        return MaterialPageRoute(
+            builder: (_) => CartScreen(
+                  msgType: argument!['msgType'],
+                  customMsg: argument['customMsg'],
+                ));
 
-        ///TODO : vendor  Mobile API
+      ///TODO : vendor  Mobile API
       case '/vendor-home-screen':
-        return MaterialPageRoute(builder: (_)=> VendorMainScreen());
+        return MaterialPageRoute(builder: (_) => VendorMainScreen());
       case '/project-detail-screen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> ProjectDetailScreen(
-            projectId :argument!['projectId']
-        ));
+        return MaterialPageRoute(
+            builder: (_) =>
+                ProjectDetailScreen(projectId: argument!['projectId']));
       case '/addNewStaff':
-        return MaterialPageRoute(builder: (_)=> AddNewStaffScreen());
+        return MaterialPageRoute(builder: (_) => AddNewStaffScreen());
       case '/TaskAllocationScreen':
-        Map ? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> TaskAllocationScreen(
-            projectAreaId: argument!['projectAreaId'],
-            serviceSummary: argument['serviceSummary'],
-        ));
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => TaskAllocationScreen(
+                  projectAreaId: argument!['projectAreaId'],
+                  serviceSummary: argument['serviceSummary'],
+                ));
       case '/VendorMapScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=>VendorMapScreen(
-            areaId :argument!['areaId']
-        ));
+        return MaterialPageRoute(
+            builder: (_) => VendorMapScreen(areaId: argument!['areaId']));
 
-
-    ///TODO : Organization Mobile API
+      ///TODO : Organization Mobile API
       case '/organization-main-screen':
-        return MaterialPageRoute(builder: (_)=> OrganizationMainScreen());
+        return MaterialPageRoute(builder: (_) => OrganizationMainScreen());
 
       case '/b2b-project-detail':
-        Map ? argument = settings.arguments as Map?;
-        return MaterialPageRoute(builder: (_)=> ProjectB2BDetailsScreen(
-            projectId :argument!['projectId']
-        ));
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) =>
+                ProjectB2BDetailsScreen(projectId: argument!['projectId']));
 
       case '/b2b-map':
-        return MaterialPageRoute(builder: (_)=> B2bMapScreen(
-        ));
+        return MaterialPageRoute(builder: (_) => B2bMapScreen());
 
       case '/image-viewer':
-        Map ? argument = settings.arguments as Map ?;
-        return MaterialPageRoute(builder: (_)=>FullScreenImageViewer(
-          imagePath: argument!['imagePath'],
-          heroTag: argument['heroTag'],
-        ));
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => FullScreenImageViewer(
+                  imagePath: argument!['imagePath'],
+                  heroTag: argument['heroTag'],
+                ));
       default:
-        return  MaterialPageRoute(builder: (_) => const Screen404(
-          title: "404",
-          message: "'This is a Dead End'",
-        ));
+        return MaterialPageRoute(
+            builder: (_) => const Screen404(
+                  title: "404",
+                  message: "'This is a Dead End'",
+                ));
     }
   }
 
-  static void goToNextPage({ required BuildContext context,  required String screen, required Map arguments}) {
-    Navigator.pushNamed(context, screen,arguments: arguments);
+  static void goToNextPage(
+      {required BuildContext context,
+      required String screen,
+      required Map arguments}) {
+    Navigator.pushNamed(context, screen, arguments: arguments);
   }
 
   static void pop(BuildContext context) {
-    Navigator.canPop(context) ? Navigator.of(context).pop() : _showErrorCantGoBack(context);
+    Navigator.canPop(context)
+        ? Navigator.of(context).pop()
+        : _showErrorCantGoBack(context);
   }
 
-  static void  pushReplacement(BuildContext context, String routeName, { required Map arguments, screen}) {
+  static void pushReplacement(BuildContext context, String routeName,
+      {required Map arguments, screen}) {
     Navigator.pushReplacementNamed(context, routeName, arguments: arguments);
   }
 
-
-  static void popUntil(BuildContext context,String routeName,{required Map arguments}){
+  static void popUntil(BuildContext context, String routeName,
+      {required Map arguments}) {
     Navigator.of(context).popUntil(ModalRoute.withName(routeName));
   }
 
-  static void pushAndRemoveUntil(BuildContext context, String routeName, {required Map arguments}) {
+  static void pushAndRemoveUntil(BuildContext context, String routeName,
+      {required Map arguments}) {
     Navigator.pushNamedAndRemoveUntil(
       context,
       routeName,
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
       arguments: arguments,
     );
   }
 
   static void pushAndRemoveUntilNamed(
-      BuildContext context,
-      String routeToPush,
-      String untilRouteName, {
-        Map<String, dynamic>? arguments,
-      }) {
+    BuildContext context,
+    String routeToPush,
+    String untilRouteName, {
+    Map<String, dynamic>? arguments,
+  }) {
     Navigator.pushNamedAndRemoveUntil(
       context,
       routeToPush,

@@ -21,420 +21,12 @@ import '../../../authentication/screens/sign_in_screen.dart';
 import '../home/screens/main_screen.dart';
 import '../order/models/order_place_request.dart';
 import '../order/models/order_place_response.dart';
+import '../payment/screen/payment_Initiated.dart';
 import 'bloc/cart_item_bloc.dart';
 import 'model/cart_item_list_model.dart';
 import 'model/cart_item_update_request_model.dart';
 
 import 'package:shimmer/shimmer.dart';
-/*
-class CartItem {
-  String cartId;
-  String title;
-  double price;
-  int quantity;
-  double maintenancePrice;
-
-  CartItem({
-    required this.cartId,
-    required this.title,
-    required this.price,
-    required this.quantity,
-    required this.maintenancePrice,
-  });
-}
-
-class CartScreen extends StatefulWidget {
-  static const route = "/CartScreen";
-  final String msgType;
-  final String customMsg;
-
-  const CartScreen({
-    super.key,
-    this.msgType = '',
-    this.customMsg = '',
-  });
-
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  late Razorpay razorpay;
-
-  final pref = SecurePreference();
-
-  late CartItemListBloc cartItemListBloc;
-  late CartRemoveBloc cartRemoveBloc;
-  late CartUpdateBloc cartUpdateBloc;
-  late OrderPlaceBloc orderPlaceBloc;
-
-  bool _isProcessingOrder = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final cartRepo = CartRepository(api: ApiConnection());
-
-    cartItemListBloc = CartItemListBloc(cartRepo);
-    cartRemoveBloc = CartRemoveBloc(cartRepo);
-    cartUpdateBloc = CartUpdateBloc(cartRepo);
-    orderPlaceBloc =OrderPlaceBloc(OrderRepository(api: ApiConnection()));
-
-    cartItemListBloc.add(ApiListFetch());
-
-    razorpay = Razorpay();
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
-    razorpay.on(
-        Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
-    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
-        handleExternalWalletSelected);
-  }
-
-  @override
-  void dispose() {
-    razorpay.clear();
-    super.dispose();
-  }
-
-  // ----------------- PAYMENT HANDLERS -----------------
-
-  void handlePaymentErrorResponse(PaymentFailureResponse response) {
-    showNotification(context,
-        message: response.message ?? "Payment failed",
-        type: Not.failed);
-  }
-
-  void handlePaymentSuccessResponse(
-      PaymentSuccessResponse response) async {
-    if (_isProcessingOrder) return;
-    _isProcessingOrder = true;
-
-    EasyLoading.show(status: 'Processing your order...');
-
-    final userId = await pref.getString(Keys.id);
-
-    orderPlaceBloc.add(
-      ApiAdd(
-        OrderPlaceRequest(
-          userId: userId,
-          treeMessageType: widget.msgType,
-          treeCustomMessage: widget.customMsg,
-        ),
-      ),
-    );
-  }
-
-  void handleExternalWalletSelected(
-      ExternalWalletResponse response) {
-    showNotification(context,
-        message: 'Processing with ${response.walletName}',
-        type: Not.success);
-  }
-
-  // ----------------- UI HELPERS -----------------
-
-  Widget _buildCartItem(CartItem item) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(item.title,
-                  style: const TextStyle(fontSize: 16)),
-            ),
-
-            /// ➖ Quantity
-            IconButton(
-              icon: const Icon(Icons.remove),
-              onPressed: item.quantity > 1
-                  ? () {
-                      cartUpdateBloc.add(
-                            ApiUpdate(
-                              CartItemUpdateRequestModel(
-                                cartId: item.cartId,
-                                quanity: item.quantity - 1,
-                              ),
-                            ),
-                          );
-                    }
-                  : null,
-            ),
-
-            Text('${item.quantity}',
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-
-            /// ➕ Quantity
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                cartUpdateBloc.add(
-                      ApiUpdate(
-                        CartItemUpdateRequestModel(
-                          cartId: item.cartId,
-                          quanity: item.quantity + 1,
-                        ),
-                      ),
-                    );
-              },
-            ),
-
-            /// 🗑 Remove
-            IconButton(
-              icon: const Icon(Icons.delete_outline,
-                  color: Colors.red),
-              onPressed: () {
-                cartRemoveBloc.add(ApiDelete(item.cartId));
-              },
-            ),
-          ],
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '₹ ${(item.price * item.quantity).toStringAsFixed(2)}',
-            style: const TextStyle(
-                fontSize: 16, color: Color(0xFFB6A865)),
-          ),
-        ),
-        const Divider(height: 32),
-      ],
-    );
-  }
-
-  double _grandTotal(double total) {
-    final gst = total * 0.18;
-    return total + gst + 200 + 100;
-  }
-
-  // ----------------- BUILD -----------------
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFDF7),
-      body: MultiBlocProvider(
-        providers: [
-        BlocProvider(
-              create: (context) => cartItemListBloc,
-            ),
-            BlocProvider(
-              create: (context) => orderPlaceBloc,
-            ),
-            BlocProvider(create: (_) => cartRemoveBloc),
-            BlocProvider(create: (_) => cartUpdateBloc),
-        ],
-        child: MultiBlocListener(
-          listeners: [
-            /// Refresh cart after update
-            BlocListener<CartUpdateBloc,
-                ApiState<ResponseModel, ResponseModel>>(
-              listener: (_, state) {
-                if (state is ApiSuccess) {
-                  cartItemListBloc.add(ApiListFetch());
-                }
-              },
-            ),
-
-            /// Refresh cart after delete
-            BlocListener<CartRemoveBloc,
-                ApiState<ResponseModel, ResponseModel>>(
-              listener: (_, state) {
-                if (state is ApiDeleteSuccess) {
-                  cartItemListBloc.add(ApiListFetch());
-                  showNotification(context,
-                      message: "Item removed",
-                      type: Not.success);
-                }
-              },
-            ),
-
-            /// Order place listener
-            BlocListener<OrderPlaceBloc,
-                ApiState<OrderPlacedResponse, ResponseModel>>(
-              listener: (_, state) {
-                if (state is ApiSuccess<OrderPlacedResponse, ResponseModel>) {
-                  EasyLoading.dismiss();
-                  _isProcessingOrder = false;
-
-                  AppRoute.goToNextPage(
-                    context: context,
-                    screen: CongratulationsScreen.route,
-                    arguments: {
-                      'shareLink':
-                          state.data.data.publicTreeContributionUrl
-                    },
-                  );
-                } else if (state is ApiFailure<OrderPlacedResponse, ResponseModel>) {
-                  EasyLoading.dismiss();
-                  _isProcessingOrder = false;
-                  showNotification(context,
-                      message: state.error.message ?? '',
-                      type: Not.failed);
-                }
-              },
-            ),
-          ],
-          child: SafeArea(
-            child: BlocBuilder<CartItemListBloc,
-                ApiState<CartItemListResponse, ResponseModel>>(
-              builder: (_, state) {
-                if (state is ApiLoading) {
-                  return const Center(
-                      child: CircularProgressIndicator());
-                }
-
-                if (state is ApiSuccess<CartItemListResponse,ResponseModel> && state.data.data.isNotEmpty) {
-                  final cart = state.data;
-
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Thank you for making\nthe world greener',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 32),
-
-                        ...cart.data.map(
-                          (e) => _buildCartItem(
-                            CartItem(
-                              cartId: e.id,
-                              title: e.treeName,
-                              price: e.unitPrice,
-                              quantity: e.quantity,
-                              maintenancePrice: e.unitPrice,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-                        Text('Grand Total: ₹ ${_grandTotal(cart.getTotalCartPrice()).toStringAsFixed(2)}',
-                            style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold)),
-
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            razorpay.open({
-                              'key': 'rzp_live_xxx',
-                              'amount':
-                                  (_grandTotal(cart.getTotalCartPrice()) *
-                                          100)
-                                      .toInt(),
-                              'name': 'TreeLov',
-                            });
-                          },
-                          child: const Text('Pay Now'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return const EmptyCartWithCard();
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-class EmptyCartWithCard extends StatelessWidget {
-  final VoidCallback? onStartShopping;
-
-  const EmptyCartWithCard({
-    Key? key,
-    this.onStartShopping,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            children: [
-              // Animated Icon Stack
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Background Circle
-                  Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: AppColor.accent.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-
-                  // Middle Circle
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      color: AppColor.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-
-                  // Cart Icon
-                  const Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 70,
-                    color: AppColor.primary,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Title
-              const Text(
-                'No Items in Cart',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColor.textPrimary,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Subtitle
-              Text(
-                'Your cart is waiting to be filled\nwith amazing trees',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColor.textSecondary,
-                  height: 1.6,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-*/
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 // ---- YOUR IMPORTS ----
 // import '...';
@@ -492,18 +84,14 @@ class _CartScreenState extends State<CartScreen> {
     cartItemListBloc = CartItemListBloc(cartRepo);
     cartRemoveBloc = CartRemoveBloc(cartRepo);
     cartUpdateBloc = CartUpdateBloc(cartRepo);
-    orderPlaceBloc =
-        OrderPlaceBloc(OrderRepository(api: ApiConnection()));
+    orderPlaceBloc = OrderPlaceBloc(OrderRepository(api: ApiConnection()));
 
     cartItemListBloc.add(ApiListFetch());
 
     razorpay = Razorpay();
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
-        handlePaymentErrorResponse);
-    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
-        handlePaymentSuccessResponse);
-    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
-        handleExternalWalletSelected);
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
   }
 
   @override
@@ -514,15 +102,12 @@ class _CartScreenState extends State<CartScreen> {
 
   // ---------------- PAYMENT ----------------
 
-  void handlePaymentErrorResponse(
-      PaymentFailureResponse response) {
+  void handlePaymentErrorResponse(PaymentFailureResponse response) {
     showNotification(context,
-        message: response.message ?? "Payment failed",
-        type: Not.failed);
+        message: response.message ?? "Payment failed", type: Not.failed);
   }
 
-  void handlePaymentSuccessResponse(
-      PaymentSuccessResponse response) async {
+  void handlePaymentSuccessResponse(PaymentSuccessResponse response) async {
     if (_isProcessingOrder) return;
     _isProcessingOrder = true;
 
@@ -541,88 +126,85 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-PreferredSizeWidget buildCartAppBar(BuildContext context) {
-  return PreferredSize(
-    preferredSize: const Size.fromHeight(72),
-    child: Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFFEFDF7),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(28),
+  PreferredSizeWidget buildCartAppBar(BuildContext context) {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(72),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFFEFDF7),
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(28),
+          ),
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        left: true,
-        right: true,
-        child: Row(
-          children: [
-            /// ← Back (optional)
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              color: Colors.black87,
-              onPressed: () {
-             AppRoute.pushReplacement(
-                      context, RetailMainScreen.route, arguments: {});
-              },
-            ),
-        
-            /// Title
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'Your Cart',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Planting a greener future 🌱',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        
-            /// ✕ Close
-            Container(
-              height: 38,
-              width: 38,
-              margin: EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.04),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.close_rounded),
+        child: SafeArea(
+          bottom: false,
+          left: true,
+          right: true,
+          child: Row(
+            children: [
+              /// ← Back (optional)
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
                 color: Colors.black87,
                 onPressed: () {
-                    AppRoute.pushReplacement(
-                      context, RetailMainScreen.route, arguments: {});
+                  AppRoute.pushReplacement(context, RetailMainScreen.route,
+                      arguments: {});
                 },
               ),
-            ),
-          ],
+
+              /// Title
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      'Your Cart',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Planting a greener future 🌱',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              /// ✕ Close
+              Container(
+                height: 38,
+                width: 38,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.04),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  color: Colors.black87,
+                  onPressed: () {
+                    AppRoute.pushReplacement(context, RetailMainScreen.route,
+                        arguments: {});
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-  void handleExternalWalletSelected(
-      ExternalWalletResponse response) {
+  void handleExternalWalletSelected(ExternalWalletResponse response) {
     showNotification(context,
-        message: 'Processing with ${response.walletName}',
-        type: Not.success);
+        message: 'Processing with ${response.walletName}', type: Not.success);
   }
 
   // ---------------- CART ITEM ----------------
@@ -642,18 +224,15 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                     child: Text(
                       item.title,
                       style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   ),
-
                   IconButton(
                     icon: const Icon(Icons.remove),
                     onPressed: isLoading || item.quantity <= 1
                         ? null
                         : () {
-                            setState(() =>
-                                _loadingCartId = item.cartId);
+                            setState(() => _loadingCartId = item.cartId);
                             cartUpdateBloc.add(
                               ApiUpdate(
                                 CartItemUpdateRequestModel(
@@ -664,21 +243,17 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                             );
                           },
                   ),
-
                   Text(
                     '${item.quantity}',
                     style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: isLoading
                         ? null
                         : () {
-                            setState(() =>
-                                _loadingCartId = item.cartId);
+                            setState(() => _loadingCartId = item.cartId);
                             cartUpdateBloc.add(
                               ApiUpdate(
                                 CartItemUpdateRequestModel(
@@ -689,22 +264,17 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                             );
                           },
                   ),
-
                   IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: Colors.red),
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
                     onPressed: isLoading
                         ? null
                         : () {
-                            setState(() =>
-                                _loadingCartId = item.cartId);
-                            cartRemoveBloc
-                                .add(ApiDelete(item.cartId));
+                            setState(() => _loadingCartId = item.cartId);
+                            cartRemoveBloc.add(ApiDelete(item.cartId));
                           },
                   ),
                 ],
               ),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
@@ -715,12 +285,10 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                       fontWeight: FontWeight.w600),
                 ),
               ),
-
               const Divider(height: 28),
             ],
           ),
         ),
-
         if (isLoading)
           const Positioned.fill(
             child: Center(
@@ -742,8 +310,7 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
     final gst = itemTotal * 0.18;
     const locationCharge = 200.0;
     const platformFee = 100.0;
-    final grandTotal =
-        itemTotal + gst + locationCharge + platformFee;
+    final grandTotal = itemTotal + gst + locationCharge + platformFee;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -763,25 +330,20 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
         children: [
           const Text(
             'Bill Summary',
-            style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-
           _billRow('Item Total', itemTotal),
           _billRow('GST (18%)', gst),
           _billRow('Location Charges', locationCharge),
           _billRow('Platform Fee', platformFee),
-
           const Divider(height: 32),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Grand Total',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
                 '₹ ${grandTotal.toStringAsFixed(2)}',
@@ -792,7 +354,6 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
               ),
             ],
           ),
-
           const SizedBox(height: 6),
           const Text(
             'Inclusive of all taxes & charges',
@@ -818,7 +379,7 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
 
   // ---------------- PAY BUTTON ----------------
 
-  Widget _buildPayNowButton(double amount) {
+  Widget _buildPayNowButton(String cartOrderId, double amount) {
     return Container(
       width: double.infinity,
       height: 56,
@@ -844,18 +405,28 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
           ),
         ),
         onPressed: () {
-          razorpay.open({
-            'key': 'rzp_live_RkQVukSjsAqPVe',
-            'amount': (amount * 100).toInt(),
-            'name': 'TreeLov',
-            'description': 'Plant trees, make impact 🌱',
-          });
+          Navigator.pushNamed(
+            context,
+            PaymentInitiatedScreen.route,
+            arguments: {
+              'amount': amount.toStringAsFixed(2),
+              'orderId': cartOrderId,
+              'msgType': widget.msgType,
+              'customMsg': widget.customMsg,
+               // backend-generated order id
+            },
+          );
+          // razorpay.open({
+          //   'key': 'rzp_live_RkQVufjsAqPVe',
+          //   'amount': (amount * 100).toInt(),
+          //   'name': 'TreeLov',
+          //   'description': 'Plant trees, make impact 🌱',
+          // });
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.lock_outline,
-                color: Colors.white, size: 18),
+            Icon(Icons.lock_outline, color: Colors.white, size: 18),
             SizedBox(width: 10),
             Text(
               'Pay Securely',
@@ -913,9 +484,8 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                   AppRoute.goToNextPage(
                     context: context,
                     screen: CongratulationsScreen.route,
-                      arguments: {
-                      'shareLink':
-                          state.data.data.publicTreeContributionUrl
+                    arguments: {
+                      'shareLink': state.data.data.publicTreeContributionUrl
                     },
                   );
                 }
@@ -927,8 +497,7 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                 ApiState<CartItemListResponse, ResponseModel>>(
               builder: (_, state) {
                 if (state is ApiLoading) {
-                  return const Center(
-                      child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (state is ApiSuccess<CartItemListResponse, ResponseModel> &&
@@ -936,7 +505,8 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                   final cart = state.data;
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -951,11 +521,11 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 24),
                         _buildBillSummary(cart),
                         const SizedBox(height: 24),
                         _buildPayNowButton(
+                          cart.data.first.id,
                           cart.getTotalCartPrice() * 1.18 + 300,
                         ),
                       ],
@@ -972,7 +542,6 @@ PreferredSizeWidget buildCartAppBar(BuildContext context) {
     );
   }
 }
-
 
 class EmptyCartWithCard extends StatelessWidget {
   final VoidCallback? onStartShopping;
