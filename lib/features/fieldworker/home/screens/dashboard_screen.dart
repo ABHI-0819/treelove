@@ -4,94 +4,152 @@ import 'package:treelove/core/config/route/app_route.dart';
 
 import '../../../../common/screens/notification_screen.dart';
 import '../../../../core/config/themes/app_color.dart';
-/*
-class AppColors {
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color black = Color(0xFF070707);
-
-  // Primary & Secondary
-  static const Color primary = Color(0xFF00473C); // Deep Forest Green
-  static const Color primaryDark = Color(0xFF002D26);
-  static const Color primaryLight = Color(0xFF1C665A);
-
-  static const Color secondary = Color(0xFF63B27F); // Muted leafy green
-  static const Color secondaryLight = Color(0xFF9DD9A5);
-  static const Color secondaryDark = Color(0xFF387A58);
-
-  // Backgrounds
-  static const Color background = Color(0xFFF8F4E3); // Soft Creamy Beige
-  static const Color scaffoldBackground = Color(0xFFF8F4E3);
-  static const Color cardBackground = Color(0xFFFFFFFF);
-}
-
- */
+import '../../../../core/config/themes/app_fonts.dart';
+import '../../../../core/storage/preference_keys.dart';
+import '../../../../core/storage/secure_storage.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  DashboardScreen({Key? key}) : super(key: key);
+
+  final pref = SecurePreference();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.scaffoldBackground.withOpacity(0.6),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(120.h),
-        child: Container(
-          height: 100.h,
-          padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0B5B4D), Color(0xFF0E6655)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+      backgroundColor: AppColor.white,
+      // backgroundColor: AppColor.scaffoldBackground.withValues(alpha: 0.60),
+      body: CustomScrollView(
+        slivers: [
+          // App Bar
+          SliverAppBar(
+            expandedHeight: 60.h,
+            pinned: true,
+            floating: false,
+            automaticallyImplyLeading: false,
+            backgroundColor: AppColor.primary.withValues(alpha: 0.60),
+            elevation: 0,
+            title: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  /// 👋 Greeting Section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      5.0.verticalSpace,
+                      Text(
+                        "Hello 👋",
+                        style: AppFonts.caption.copyWith(
+                          color: AppColor.white.withOpacity(0.85),
+                        ),
+                      ),
+                      FutureBuilder<String?>(
+                        future: pref.getString(Keys.name),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final name = snapshot.data ?? 'Field Worker';
+                            return Text(
+                              name,
+                              style: AppFonts.title.copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: AppColor.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
+
+                  /// 🔔 Notification Button
+                  InkWell(
+                    borderRadius: BorderRadius.circular(30),
+                    onTap: () {
+                      AppRoute.goToNextPage(
+                        context: context,
+                        screen: NotificationsScreen.route,
+                        arguments: {},
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications_none_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+
+                        /// Notification Dot
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Hello John 😊',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColor.primary,
+                      AppColor.primaryLight,
+                      AppColor.secondary.withOpacity(0.85),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.notifications, color: Colors.white),
-                onPressed: () {
-                  AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // App Bar
 
-
-            // Content
-            SliverPadding(
-              padding: const EdgeInsets.all(16.0),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Overall Summary Cards
-                  _buildSummarySection(),
-                  const SizedBox(height: 24),
-
-                  // This Week Progress
-                  _buildWeeklyProgressSection(),
-                  const SizedBox(height: 24),
-
-                  // Today's Tasks
-                  // _buildTodayTasksSection(),
-                ]),
+                /// Decorative shapes
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Content
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // Overall Summary Cards
+                _buildSummarySection(),
+                const SizedBox(height: 24),
+
+                // This Week Progress
+                _buildWeeklyProgressSection(),
+                const SizedBox(height: 24),
+
+                // Today's Tasks
+                // _buildTodayTasksSection(),
+              ]),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -100,11 +158,11 @@ class DashboardScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Overall Summary',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+          style: AppFonts.title.copyWith(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
             color: AppColor.primary,
           ),
         ),
@@ -218,11 +276,11 @@ class DashboardScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'This Week Progress',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+          style: AppFonts.title.copyWith(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
             color: AppColor.primary,
           ),
         ),
@@ -242,11 +300,14 @@ class DashboardScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildWeeklyProgressItem('Plantation', 18, Icons.eco, AppColor.secondary),
+              _buildWeeklyProgressItem(
+                  'Plantation', 18, Icons.eco, AppColor.secondary),
               const SizedBox(height: 16),
-              _buildWeeklyProgressItem('Maintenance', 0, Icons.build, AppColor.primaryLight),
+              _buildWeeklyProgressItem(
+                  'Maintenance', 0, Icons.build, AppColor.primaryLight),
               const SizedBox(height: 16),
-              _buildWeeklyProgressItem('Monitoring', 0, Icons.visibility, AppColor.secondaryDark),
+              _buildWeeklyProgressItem(
+                  'Monitoring', 0, Icons.visibility, AppColor.secondaryDark),
             ],
           ),
         ),
@@ -254,7 +315,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklyProgressItem(String type, int count, IconData icon, Color color) {
+  Widget _buildWeeklyProgressItem(
+      String type, int count, IconData icon, Color color) {
     return Row(
       children: [
         Container(
@@ -294,252 +356,6 @@ class DashboardScreen extends StatelessWidget {
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /*
-  Widget _buildTodayTasksSection() {
-    final todayTasks = [
-      {
-        "service_type": "Plantation",
-        "area": "Thane West",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 500,
-        "expected_today": 5,
-        "completed_today": 7,
-        "progress_percent": 140
-      },
-      {
-        "service_type": "Plantation",
-        "area": "Thane West",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 400,
-        "expected_today": 4,
-        "completed_today": 10,
-        "progress_percent": 250
-      },
-      {
-        "service_type": "Plantation",
-        "area": "Thane East",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 500,
-        "expected_today": 5,
-        "completed_today": 0,
-        "progress_percent": 0
-      },
-      {
-        "service_type": "Maintenance",
-        "area": "Thane West",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 400,
-        "expected_today": 4,
-        "completed_today": 0,
-        "progress_percent": 0
-      },
-      {
-        "service_type": "Monitoring",
-        "area": "Thane West",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 400,
-        "expected_today": 4,
-        "completed_today": 0,
-        "progress_percent": 0
-      },
-      {
-        "service_type": "Monitoring",
-        "area": "Thane West",
-        "start_date": "2025-07-24",
-        "end_date": "2025-10-24",
-        "total_trees": 800,
-        "expected_today": 8,
-        "completed_today": 0,
-        "progress_percent": 0
-      }
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Today\'s Tasks',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...todayTasks.map((task) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildTaskCard(task),
-        )).toList(),
-      ],
-    );
-  }
-
-   */
-
-  Widget _buildTaskCard(Map<String, dynamic> task) {
-    final serviceType = task['service_type'] as String;
-    final area = task['area'] as String;
-    final totalTrees = task['total_trees'] as int;
-    final expectedToday = task['expected_today'] as int;
-    final completedToday = task['completed_today'] as int;
-    final progressPercent = task['progress_percent'] as int;
-
-    IconData icon;
-    Color serviceColor;
-
-    switch (serviceType) {
-      case 'Plantation':
-        icon = Icons.eco;
-        serviceColor = AppColor.secondary;
-        break;
-      case 'Maintenance':
-        icon = Icons.build;
-        serviceColor = AppColor.primaryLight;
-        break;
-      case 'Monitoring':
-        icon = Icons.visibility;
-        serviceColor = AppColor.secondaryDark;
-        break;
-      default:
-        icon = Icons.work;
-        serviceColor = AppColor.primary;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColor.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        // border: Border.(
-        //   color: serviceColor,
-        //   width: 4,
-        // ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.primary.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: serviceColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: serviceColor, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      serviceType,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColor.black,
-                      ),
-                    ),
-                    Text(
-                      area,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColor.black.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: progressPercent > 100
-                      ? AppColor.secondary.withOpacity(0.1)
-                      : progressPercent > 0
-                      ? AppColor.primaryLight.withOpacity(0.1)
-                      : AppColor.black.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$progressPercent%',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: progressPercent > 100
-                        ? AppColor.secondary
-                        : progressPercent > 0
-                        ? AppColor.primaryLight
-                        : AppColor.black.withOpacity(0.6),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTaskMetric('Expected', expectedToday.toString()),
-              ),
-              Expanded(
-                child: _buildTaskMetric('Completed', completedToday.toString()),
-              ),
-              Expanded(
-                child: _buildTaskMetric('Total Trees', totalTrees.toString()),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: progressPercent / 100,
-            backgroundColor: AppColor.black.withOpacity(0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              progressPercent > 100 ? AppColor.secondary : serviceColor,
-            ),
-            minHeight: 6,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTaskMetric(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColor.black,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColor.black.withOpacity(0.6),
           ),
         ),
       ],

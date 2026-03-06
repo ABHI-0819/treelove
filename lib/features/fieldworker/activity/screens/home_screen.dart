@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else {
                         return const Center(
                           child: Text(
-                            "No staff found",
+                            "No Record found",
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                         );

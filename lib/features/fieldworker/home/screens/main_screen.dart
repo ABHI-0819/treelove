@@ -3,11 +3,13 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/themes/app_fonts.dart';
+import '../../../../core/widgets/app_exit_scope.dart';
 import '../../activity/screens/home_screen.dart';
 import '../../profile/screen/profile_screen.dart';
 import 'dashboard_screen.dart';
+
 class FieldWorkerMainScreen extends StatefulWidget {
-  static const route ="/fieldworker-main-screen";
+  static const route = "/fieldworker-main-screen";
   const FieldWorkerMainScreen({super.key});
 
   @override
@@ -33,24 +35,20 @@ class _FieldWorkerMainScreenState extends State<FieldWorkerMainScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final bottomBarPages = [
-      DashboardScreen(),
-      HomeScreen(),
-      ProfileScreen()
-    ];
-    return Scaffold(
-      body: buildPageView(bottomBarPages),
-      bottomNavigationBar: CustomFBottomNav(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+    final bottomBarPages = [DashboardScreen(), HomeScreen(), ProfileScreen()];
+    return AppExitScope(
+      child: Scaffold(
+        body: buildPageView(bottomBarPages),
+        bottomNavigationBar: CustomFBottomNav(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),
       ),
     );
   }
 }
-
 
 class CustomFBottomNav extends StatelessWidget {
   final int selectedIndex;
@@ -72,14 +70,28 @@ class CustomFBottomNav extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF004D40), // Dark green
       unselectedItemColor: const Color(0xFFC4B28E), // Muted gold
-      selectedLabelStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
+      selectedLabelStyle:
+          AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
       // const TextStyle(fontWeight: FontWeight.w600),
-      unselectedLabelStyle:  AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
+      unselectedLabelStyle:
+          AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
       // const TextStyle(fontWeight: FontWeight.w600),
       items: [
-        buildNavItem(index: 0, filledIcon: Images.homeFilledIcon, outlinedIcon: Images.homeIcon, label: 'Home'),
-        buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Activity'),
-        buildNavItem(index: 2, filledIcon: Images.accountFilledIcon, outlinedIcon: Images.accountIcon, label: 'Account'),
+        buildNavItem(
+            index: 0,
+            filledIcon: Images.homeFilledIcon,
+            outlinedIcon: Images.homeIcon,
+            label: 'Home'),
+        buildNavItem(
+            index: 1,
+            filledIcon: Images.projectFilledIcon,
+            outlinedIcon: Images.projectIcon,
+            label: 'Activity'),
+        buildNavItem(
+            index: 2,
+            filledIcon: Images.accountFilledIcon,
+            outlinedIcon: Images.accountIcon,
+            label: 'Account'),
       ],
     );
   }
@@ -99,5 +111,4 @@ class CustomFBottomNav extends StatelessWidget {
       label: label,
     );
   }
-
 }

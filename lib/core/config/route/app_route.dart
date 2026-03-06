@@ -75,7 +75,11 @@ class AppRoute {
       case '/registration-success':
         return MaterialPageRoute(builder: (_) => RegistrationSuccessScreen());
       case '/user-type':
-        return MaterialPageRoute(builder: (_) => UserTypeSelectionScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => UserTypeSelectionScreen(
+                  googleUser: argument!['googleUser'],
+                ));
       case '/login-password':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(
@@ -364,6 +368,20 @@ class AppRoute {
       context,
       routeName,
       (Route<dynamic> route) => false,
+      arguments: arguments,
+    );
+  }
+
+  /// Logout / Reset stack
+  static Future<T?> reset<T>(
+    BuildContext context,
+    String route, {
+    Object? arguments,
+  }) {
+    return Navigator.pushNamedAndRemoveUntil(
+      context,
+      route,
+      (route) => false,
       arguments: arguments,
     );
   }

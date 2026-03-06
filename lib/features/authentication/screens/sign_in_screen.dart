@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:treelove/common/repositories/login_repository.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/features/authentication/screens/create_account_screen.dart';
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
@@ -17,10 +19,15 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/storage/preference_keys.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/widgets/app_exit_scope.dart';
 import '../../../core/widgets/common_notification.dart';
 import '../../customer/b2b/home/screens/main_screen.dart';
 import '../../customer/retail/home/screens/main_screen.dart';
+import '../bloc/google_auth_bloc.dart';
+import '../bloc/google_auth_event.dart';
+import '../bloc/google_auth_state.dart';
 import '../bloc/register_bloc.dart';
+import '../models/google.login.response.model.dart';
 import '../models/register_request_model.dart';
 import 'user_type_screen.dart';
 
@@ -38,149 +45,187 @@ class _SignInScreenState extends State<SignInScreen> {
 
   SecurePreference preference = SecurePreference();
 
+  late GoogleAuthBloc googleAuthBloc;
+  GoogleLoginResponseModel? googleLoginResponse;
+
+  @override
+  void initState() {
+    googleAuthBloc = GoogleAuthBloc(LoginRepository(api: ApiConnection()));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEFEF7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Icon(Icons.arrow_back, size: 24),
-                  Icon(Icons.close, size: 24),
-                ],
-              ),
-              const SizedBox(height: 48),
-              Text(
-                'Your greens\ngetting closer',
-                style: AppFonts.headline.copyWith(
-                  fontSize: 32,
-                  height: 1.3,
-                  color: Colors.black87,
-                ),
-                // style: TextStyle(
-                //   fontSize: 32,
-                //   height: 1.3,
-                //   fontWeight: FontWeight.w500,
-                //   fontFamily: 'Georgia', // Use a serif font if available
-                //   color: Colors.black87,
-                // ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Sign in or create an account',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 48),
-              TextField(
-                controller: username,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: 'Email Address or Phone Number',
-                  hintStyle: TextStyle(
-                    color: Color(0xFFD6CBA8),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF004D40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+    return AppExitScope(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFEFEF7),
+        body: BlocProvider(
+          create: (context) => googleAuthBloc,
+          child: BlocListener<GoogleAuthBloc, GoogleAuthState>(
+            listener: (context, state) {
+              if (state is GoogleAuthLoading) {
+                EasyLoading.show();
+                // Show loading indicator if needed
+              } else if (state is GoogleAuthFailure) {
+                EasyLoading.dismiss();
+                showNotification(context,
+                    message: state.error.message ?? 'Login failed',
+                    type: Not.failed);
+              } else if (state is GoogleNovigateToUserTypeScreen) {
+                EasyLoading.dismiss();
+                AppRoute.goToNextPage(
+                    context: context,
+                    screen: UserTypeSelectionScreen.route,
+                    arguments: {
+                      'googleUser': state.googleServiceResponse,
+                    });
+              } else if (state is GoogleAuthNavigateToHomeScreen) {
+                EasyLoading.dismiss();
+                if (state.userType == 'individual') {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: RetailMainScreen.route,
+                    arguments: {'type': 'individual'},
+                  );
+                } else if (state.userType == 'organisation') {
+                  EasyLoading.dismiss();
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: OrganizationMainScreen.route,
+                    arguments: {'type': 'organisation'},
+                  );
+                }
+              }
+            },
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Icon(Icons.arrow_back, size: 24),
+                        Icon(Icons.close, size: 24),
+                      ],
                     ),
-                  ),
-                  onPressed: _next,
-                  child: Text('Continue', style: AppFonts.regular),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF8F4E4),
-                    foregroundColor: const Color(0xFFBDB290),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () {
-                    handleGoogleSignIn();
-                    // AuthService().signInWithGoogle();
-                  },
-                  icon: SvgPicture.asset(Images.googleIcon),
-                  label: const Text(
-                    'Login with Google',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFFBDB290),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              /*
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Forgot Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white, // Like your original
-                    decoration: TextDecoration.underline, // Optional: makes it more obviously tappable
-                  ),
-                ),
-              ),
-
-               */
-              const SizedBox(height: 64),
-              Center(
-                child: RichText(
-                  text: TextSpan(
-                    text: "Don’t have an account? ",
-                    style: TextStyle(color: Colors.black87),
-                    children: [
-                      TextSpan(
-                        text: "Sign up",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            AppRoute.goToNextPage(
-                                context: context,
-                                screen: CreateAccountScreen.route,
-                                arguments: {});
-                          },
+                    const SizedBox(height: 48),
+                    Text(
+                      'Your greens\ngetting closer',
+                      style: AppFonts.headline.copyWith(
+                        fontSize: 32,
+                        height: 1.3,
+                        color: Colors.black87,
                       ),
-                    ],
-                  ),
+                      // style: TextStyle(
+                      //   fontSize: 32,
+                      //   height: 1.3,
+                      //   fontWeight: FontWeight.w500,
+                      //   fontFamily: 'Georgia', // Use a serif font if available
+                      //   color: Colors.black87,
+                      // ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Sign in or create an account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    TextField(
+                      controller: username,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'Email Address or Phone Number',
+                        hintStyle: TextStyle(
+                          color: Color(0xFFD6CBA8),
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF004D40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                        ),
+                        onPressed: _next,
+                        child: Text('Continue', style: AppFonts.regular),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF8F4E4),
+                          foregroundColor: const Color(0xFFBDB290),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          googleAuthBloc.add(GoogleAuthStarted());
+                          // handleGoogleSignIn();
+                          // AuthService().signInWithGoogle();
+                        },
+                        icon: SvgPicture.asset(Images.googleIcon),
+                        label: const Text(
+                          'Login with Google',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFFBDB290),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const SizedBox(height: 64),
+                    Center(
+                      child: RichText(
+                        text: TextSpan(
+                          text: "Don’t have an account? ",
+                          style: TextStyle(color: Colors.black87),
+                          children: [
+                            TextSpan(
+                              text: "Sign up",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  AppRoute.goToNextPage(
+                                      context: context,
+                                      screen: CreateAccountScreen.route,
+                                      arguments: {});
+                                },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),

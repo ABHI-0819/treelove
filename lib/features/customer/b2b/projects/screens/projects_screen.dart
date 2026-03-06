@@ -4,6 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/common/repositories/project_repository.dart';
 import 'package:treelove/core/network/api_connection.dart';
+import 'package:treelove/core/widgets/project_list_shimmer.dart';
 import 'package:treelove/features/customer/b2b/projects/screens/project_detail_screen.dart';
 
 import '../../../../../common/bloc/api_event.dart';
@@ -36,7 +37,7 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
 
   @override
   void initState() {
-    projectListBloc = ProjectListBloc(ProjectRepository(api:ApiConnection()));
+    projectListBloc = ProjectListBloc(ProjectRepository(api: ApiConnection()));
     projectListBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
@@ -51,7 +52,7 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
   }
 
   void _loadNextPage() {
-    debugLog('${_currentPage++}',name: "checking scrolling");
+    debugLog('${_currentPage++}', name: "checking scrolling");
     _currentPage++;
     projectListBloc.add(ApiListFetch(page: _currentPage));
   }
@@ -60,7 +61,7 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar:AppBar(
+      appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0.5,
         automaticallyImplyLeading: false,
@@ -85,115 +86,118 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
           ],
         ),
       ),
-
       body: BlocProvider(
-  create: (context) => projectListBloc,
-  child: Column(
-        children: [
-          SizedBox(
-            height: 5.h,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                // Search Field
-                Expanded(
-                  child: TextField(
-                    style: const TextStyle(fontSize: 14),
-                    onSubmitted: (value){
-                      projectListBloc.add(ApiListFetch(search: value));
-                    },
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                      hintText: 'Search project',
-                      hintStyle: TextStyle(color: Colors.grey.shade600),
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFF1A5F3E), width: 1.5),
+        create: (context) => projectListBloc,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 5.h,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  // Search Field
+                  Expanded(
+                    child: TextField(
+                      style: const TextStyle(fontSize: 14),
+                      onSubmitted: (value) {
+                        projectListBloc.add(ApiListFetch(search: value));
+                      },
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 12),
+                        hintText: 'Search project',
+                        hintStyle: TextStyle(color: Colors.grey.shade600),
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF1A5F3E), width: 1.5),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          // Tabs
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.w,vertical: 5.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildTab('All', null),
-                _buildTab('Ongoing', 'Ongoing'),
-                _buildTab('Completed', 'Completed'),
-              ],
+            // Tabs
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 5.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildTab('All', null),
+                  _buildTab('Ongoing', 'Ongoing'),
+                  _buildTab('Completed', 'Completed'),
+                ],
+              ),
             ),
-          ),
-            /// TODO: list of projects
-          BlocListener<ProjectListBloc,
-              ApiState<ProjectListResponse, ResponseModel>>(
-            listener: (context, state) {
-              EasyLoading.dismiss();
-              if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
-                showNotification(
-                    context, message: state.error.message.toString());
-              } else
-              if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
-                AppRoute.pushReplacement(
-                    context, SignInScreen.route, arguments: {});
-              }
-            },
-            child: BlocBuilder<ProjectListBloc,
-                ApiState<ProjectListResponse, ResponseModel>>(
-              builder: (context, state) {
-                if(state is ApiLoading){
-                  return SafeArea(child: Center(child: CircularProgressIndicator()));
-                } else if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
-                  ProjectListResponse projectData = state.data;
 
-                  return Expanded(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: projectData.data.length, // Number of projects
-                      itemBuilder: (context, index) {
-                        return ProjectB2BCard(
-                          projectItem: projectData.data[index],
-                        );
-                      },
-                    ),
-                  );
-                } else {
-                  return const Center(
-                    child: Text(
-                      "No Project found",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  );
+            /// TODO: list of projects
+            BlocListener<ProjectListBloc,
+                ApiState<ProjectListResponse, ResponseModel>>(
+              listener: (context, state) {
+                EasyLoading.dismiss();
+                if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
+                  showNotification(context,
+                      message: state.error.message.toString());
+                } else if (state
+                    is TokenExpired<ProjectListResponse, ResponseModel>) {
+                  AppRoute.pushReplacement(context, SignInScreen.route,
+                      arguments: {});
                 }
               },
-            ),
-          ),
+              child: BlocBuilder<ProjectListBloc,
+                  ApiState<ProjectListResponse, ResponseModel>>(
+                builder: (context, state) {
+                  if (state is ApiLoading) {
+                    return const ProjectListShimmer();
+                  } else if (state
+                      is ApiSuccess<ProjectListResponse, ResponseModel>) {
+                    ProjectListResponse projectData = state.data;
 
-        ],
+                    return Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount:
+                            projectData.data.length, // Number of projects
+                        itemBuilder: (context, index) {
+                          return ProjectB2BCard(
+                            projectItem: projectData.data[index],
+                          );
+                        },
+                      ),
+                    );
+                  } else {
+                    return const Center(
+                      child: Text(
+                        "No Project found",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
-),
     );
   }
 
   // Reusable Tab Widget
-  Widget _buildTab(String label, String ? value) {
+  Widget _buildTab(String label, String? value) {
     bool isSelected = selectedTab == value;
     return GestureDetector(
       onTap: () {
@@ -204,18 +208,15 @@ class _B2BProjectScreenState extends State<B2BProjectScreen> {
       },
       child: Container(
         margin: EdgeInsets.only(right: 16),
-        child: Text(
-            label,
+        child: Text(label,
             style: AppFonts.body.copyWith(
               color: isSelected ? Color(0xFF1A5F3E) : Colors.grey[600],
               fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-            )
-        ),
+            )),
       ),
     );
   }
 }
-
 
 /*
       appBar:AppBar(

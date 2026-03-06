@@ -55,186 +55,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     super.dispose();
   }
 
-/*
-  Widget _buildHeader()  {
-    final email = await pref.getString(Keys.email);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey[200], // light grey background
-                child: Image.network(
-                  '',
-                  height: 30,
-                  width: 30,
-                  color: Colors.grey[800], // optional: darker icon for contrast
-                ),
-              ),
-
-              const SizedBox(width: 16.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Ankit sharma',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4.0),
-                    Row(
-                      children: [
-                        Icon(Icons.phone, size: 16, color: Colors.grey),
-                        SizedBox(width: 6.0),
-                        Text(
-                          'Not available',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4.0),
-                    Row(
-                      children: [
-                        Icon(Icons.email, size: 16, color: Colors.grey),
-                        SizedBox(width: 6.0),
-                        Text(
-                          ,
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.verified_rounded,
-                color: AppColor.primary,
-                size: 28,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
- */
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey[200],
-                child: Image.network(
-                  '',
-                  height: 30,
-                  width: 30,
-                  color: Colors.grey[800],
-                ),
-              ),
-              const SizedBox(width: 16.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FutureBuilder<String?>(
-                        future: pref.getString(Keys.name,defaultValue: 'Ankit Sharma'),
-                        builder: (context, snapshot) {
-                          final name = snapshot.data??'Ankit Sharma';
-                          return Text(
-                            name ,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          );
-                        }),
-                    const SizedBox(height: 4.0),
-                    FutureBuilder<String?>(
-                        future: pref.getString(Keys.phone),
-                        builder: (context, snapshot) {
-                          final phone = snapshot.data ?? 'Not available';
-                          return Row(
-                            children:  [
-                              Icon(Icons.phone, size: 16, color: Colors.grey),
-                              SizedBox(width: 6.0),
-                              Text(
-                                phone,
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                            ],
-                          );
-                        }),
-
-                    const SizedBox(height: 4.0),
-                    FutureBuilder<String?>(
-                        future: pref.getString(Keys.email,defaultValue: 'Not available'),
-                        builder: (context, snapshot) {
-                          final email = snapshot.data ??'Not available';
-                          return  Row(
-                            children: [
-                              const Icon(Icons.email, size: 16, color: Colors.grey),
-                              const SizedBox(width: 6.0),
-                              Text(
-                                email,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.verified_rounded,
-                color: AppColor.primary,
-                size: 28,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeaderCompact() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -256,8 +76,11 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
               onTap: () {
-                AppRoute.goToNextPage(context: context, screen: RetailProfileScreen.route, arguments: {});
-                 // Navigate to profile screen
+                AppRoute.goToNextPage(
+                    context: context,
+                    screen: RetailProfileScreen.route,
+                    arguments: {});
+                // Navigate to profile screen
               },
               child: Padding(
                 padding: const EdgeInsets.all(18),
@@ -317,7 +140,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           FutureBuilder<String?>(
-                            future: pref.getString(Keys.name, defaultValue: 'User'),
+                            future:
+                                pref.getString(Keys.name, defaultValue: 'User'),
                             builder: (context, snapshot) {
                               return Text(
                                 snapshot.data ?? 'User',
@@ -366,23 +190,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Color(0xFFFFFFF8),
       body: SingleChildScrollView(
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 20,
           children: [
-
-            // 🔰 Header
+            // Header
             _buildHeaderCompact(),
             // _buildHeader(),
-            // 👤 My Account Section
+            // My Account Section
             _buildSectionHeader('My Account'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -390,23 +210,53 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 padding: const EdgeInsets.all(12.0),
                 child: Wrap(
                   spacing: 15.w,
-                  runSpacing:15.h,
+                  runSpacing: 15.h,
                   children: [
-                    _buildButton(icon: Images.babyPlantIcon, label: 'My Plantation', onTap: () {
-                      AppRoute.goToNextPage(context: context, screen: MyTreeScreen.route, arguments: {});
-                    }),
-                    _buildButton(icon: Images.inviteIcon, label: 'Invite a Friend', onTap: () {
-                        AppRoute.goToNextPage(context: context, screen: InviteAndEarnScreen.route, arguments: {});
-                    }),
-                    _buildButton(icon: Images.grievanceIcon, label: 'Grievance', onTap: () {
-                      AppRoute.goToNextPage(context: context, screen: GrievanceListScreen.route, arguments: {});
-                    }),
-                    _buildButton(icon: Images.settingIcon, label: 'Settings', onTap: () {
-                      AppRoute.goToNextPage(context: context, screen: SettingsScreen.route, arguments: {});
-                    }),
-                    _buildButton(icon: Images.orderIcon, label: 'My Order', onTap: () {
-                      AppRoute.goToNextPage(context: context, screen: OrderListScreen.route, arguments: {});
-                    }),
+                    _buildButton(
+                        icon: Images.babyPlantIcon,
+                        label: 'My Plantation',
+                        onTap: () {
+                          AppRoute.goToNextPage(
+                              context: context,
+                              screen: MyTreeScreen.route,
+                              arguments: {});
+                        }),
+                    _buildButton(
+                        icon: Images.inviteIcon,
+                        label: 'Invite a Friend',
+                        onTap: () {
+                          AppRoute.goToNextPage(
+                              context: context,
+                              screen: InviteAndEarnScreen.route,
+                              arguments: {});
+                        }),
+                    _buildButton(
+                        icon: Images.grievanceIcon,
+                        label: 'Grievance',
+                        onTap: () {
+                          AppRoute.goToNextPage(
+                              context: context,
+                              screen: GrievanceListScreen.route,
+                              arguments: {});
+                        }),
+                    _buildButton(
+                        icon: Images.settingIcon,
+                        label: 'Settings',
+                        onTap: () {
+                          AppRoute.goToNextPage(
+                              context: context,
+                              screen: SettingsScreen.route,
+                              arguments: {});
+                        }),
+                    _buildButton(
+                        icon: Images.orderIcon,
+                        label: 'My Order',
+                        onTap: () {
+                          AppRoute.goToNextPage(
+                              context: context,
+                              screen: OrderListScreen.route,
+                              arguments: {});
+                        }),
                   ],
                 ),
               ),
@@ -461,15 +311,22 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             child: Column(
               children: [
                 _buildLinkRow('Terms of Service', () {
-                  AppRoute.goToNextPage(context: context, screen: TermsConditionsScreen.route, arguments: {});
+                  AppRoute.goToNextPage(
+                      context: context,
+                      screen: TermsConditionsScreen.route,
+                      arguments: {});
                 }),
                 _buildDivider(),
                 _buildLinkRow('Privacy Policy', () {
-                  AppRoute.goToNextPage(context: context, screen: PrivacyPolicyScreen.route, arguments: {});
+                  AppRoute.goToNextPage(
+                      context: context,
+                      screen: PrivacyPolicyScreen.route,
+                      arguments: {});
                 }),
                 _buildDivider(),
                 _buildLinkRow('FAQs', () {
-                  AppRoute.goToNextPage(context: context, screen: FaqScreen.route, arguments: {});
+                  AppRoute.goToNextPage(
+                      context: context, screen: FaqScreen.route, arguments: {});
                 }),
               ],
             ),
@@ -515,57 +372,57 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
   Widget _buildOtherOptionsSection() {
     return BlocProvider(
-  create: (context) => logoutBloc,
-  child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: BlocListener<LogoutBloc, ApiState<ResponseModel, ResponseModel>>(
-        listener: (context, state) {
-          EasyLoading.dismiss();
-          if (state is ApiSuccess) {
-            AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
-          } else if (state is ApiFailure) {
-            showNotification(context, message: "Logout failed");
-          }
-        },
-  child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Other Options',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
+      create: (context) => logoutBloc,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: BlocListener<LogoutBloc, ApiState<ResponseModel, ResponseModel>>(
+          listener: (context, state) {
+            EasyLoading.dismiss();
+            if (state is ApiSuccess) {
+              AppRoute.reset(context, SignInScreen.route, arguments: {});
+            } else if (state is ApiFailure) {
+              AppRoute.reset(context, SignInScreen.route, arguments: {});
+            }
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Other Options',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildOptionRow('Log Out', () {
-                  _showLogoutDialog(context);
-                }),
-                _buildDivider(),
-                _buildOptionRow('Version 1.x', () {}, showArrow: false),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildOptionRow('Log Out', () {
+                      _showLogoutDialog(context);
+                    }),
+                    _buildDivider(),
+                    _buildOptionRow('Version 1.x', () {}, showArrow: false),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-),
-    ),
-);
+    );
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -604,8 +461,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               ),
             ),
             TextButton(
-              onPressed: () async{
-                final refreshToken = await pref.getString(Keys.refreshToken) ?? '';
+              onPressed: () async {
+                final refreshToken =
+                    await pref.getString(Keys.refreshToken) ?? '';
                 if (refreshToken.isNotEmpty) {
                   EasyLoading.show();
                   logoutBloc.add(ApiDelete(refreshToken));
@@ -639,7 +497,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
   }
 
-  Widget _buildButton({required String icon, String? label, VoidCallback? onTap}) {
+  Widget _buildButton(
+      {required String icon, String? label, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -659,7 +518,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(icon, color: AppColor.primary, height: 35, width: 35),
+            SvgPicture.asset(icon,
+                color: AppColor.primary, height: 35, width: 35),
             const SizedBox(height: 8.0),
             Text(
               label ?? '',
@@ -677,7 +537,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   //  Option Row (Logout, Version, etc.)
-  Widget _buildOptionRow(String text, VoidCallback onTap, {bool showArrow = true}) {
+  Widget _buildOptionRow(String text, VoidCallback onTap,
+      {bool showArrow = true}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.zero,
@@ -702,5 +563,3 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     );
   }
 }
-
-

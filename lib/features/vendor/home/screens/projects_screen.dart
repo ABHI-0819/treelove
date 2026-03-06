@@ -11,14 +11,12 @@ import 'package:treelove/core/network/api_connection.dart';
 import 'package:treelove/core/utils/logger.dart';
 import 'package:treelove/features/vendor/home/bloc/project_bloc.dart';
 import '../../../../common/models/response.mode.dart';
-import '../../../../core/config/route/app_route.dart';
 import '../../../../core/widgets/common_notification.dart';
-import '../../../authentication/screens/sign_in_screen.dart';
+import '../../../../core/widgets/project_list_shimmer.dart';
 import '../models/project_list_model.dart';
 import 'home_screen.dart';
 
 class ProjectsScreen extends StatefulWidget {
-
   const ProjectsScreen({super.key});
 
   @override
@@ -26,8 +24,7 @@ class ProjectsScreen extends StatefulWidget {
 }
 
 class _ProjectsScreenState extends State<ProjectsScreen> {
-
-  String ? selectedTab ;
+  String? selectedTab;
 
   late ProjectListBloc projectListBloc;
 
@@ -52,12 +49,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   void _loadNextPage() {
-    debugLog('${_currentPage++}',name: "checking scrolling");
+    debugLog('${_currentPage++}', name: "checking scrolling");
     _currentPage++;
     projectListBloc.add(ApiListFetch(page: _currentPage));
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -91,20 +86,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           ],
         ),
       ),
-      /*
-      appBar:AppBar(
-      automaticallyImplyLeading: false, // disable default
-      backgroundColor: const Color(0xFF1A5F3E),
-      title: Text(
-        'Projects',
-        style: AppFonts.regular.copyWith(
-          color: AppColor.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-
-       */
       body: BlocProvider(
         create: (context) => projectListBloc,
         child: Column(
@@ -120,7 +101,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   Expanded(
                     child: TextField(
                       style: const TextStyle(fontSize: 14),
-                      onSubmitted: (value){
+                      onSubmitted: (value) {
                         projectListBloc.add(ApiListFetch(search: value));
                       },
                       decoration: InputDecoration(
@@ -141,8 +122,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Color(0xFF1A5F3E),
-                              width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFF1A5F3E), width: 1.5),
                         ),
                       ),
                     ),
@@ -171,9 +152,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               listener: (context, state) {
                 EasyLoading.dismiss();
                 if (state is ApiFailure<ProjectListResponse, ResponseModel>) {
-                  showNotification(
-                      context, message: state.error.message.toString());
-                }/* else
+                  showNotification(context,
+                      message: state.error.message.toString());
+                } /* else
                 if (state is TokenExpired<ProjectListResponse, ResponseModel>) {
                   AppRoute.pushReplacement(
                       context, SignInScreen.route, arguments: {});
@@ -183,15 +164,17 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               child: BlocBuilder<ProjectListBloc,
                   ApiState<ProjectListResponse, ResponseModel>>(
                 builder: (context, state) {
-                  if(state is ApiLoading){
-                    return SafeArea(child: Center(child: CircularProgressIndicator()));
-                  } else if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
+                  if (state is ApiLoading) {
+                    return const ProjectListShimmer();
+                  } else if (state
+                      is ApiSuccess<ProjectListResponse, ResponseModel>) {
                     ProjectListResponse projectData = state.data;
 
                     return Expanded(
                       child: ListView.builder(
                         controller: _scrollController,
-                        itemCount: projectData.data.length, // Number of projects
+                        itemCount:
+                            projectData.data.length, // Number of projects
                         itemBuilder: (context, index) {
                           return ProjectCard(
                             projectItem: projectData.data[index],
@@ -217,7 +200,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   // Reusable Tab Widget
-  Widget _buildTab(String label, String ? value) {
+  Widget _buildTab(String label, String? value) {
     bool isSelected = selectedTab == value;
     return GestureDetector(
       onTap: () {
@@ -228,276 +211,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       },
       child: Container(
         margin: EdgeInsets.only(right: 16),
-        child: Text(
-            label,
+        child: Text(label,
             style: AppFonts.body.copyWith(
               color: isSelected ? Color(0xFF1A5F3E) : Colors.grey[600],
               fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-            )
-        ),
-      ),
-    );
-  }
-
-}
-
-
-/*
-class ProjectsScreen extends StatefulWidget {
-  @override
-  _ProjectsScreenState createState() => _ProjectsScreenState();
-}
-
-class _ProjectsScreenState extends State<ProjectsScreen> {
-  // Selected tab state
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Projects'),
-        backgroundColor: Color(0xFF1A5F3E), // Dark green color
-      ),
-      body: Column(
-        children: [
-          // Search Bar and Filters
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      hintText: 'Search project',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white,
-                    onPrimary: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text('Filters'),
-                ),
-              ],
-            ),
-          ),
-
-          // Tabs
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _buildTab('All', 'All'),
-                _buildTab('Ongoing', 'Ongoing'),
-                _buildTab('Upcoming', 'Upcoming'),
-                _buildTab('Completed', 'Completed'),
-              ],
-            ),
-          ),
-
-          // Project Cards
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: 2, // Number of projects
-              itemBuilder: (context, index) {
-                return _buildProjectCard();
-              },
-            ),
-          ),
-        ],
-      ),
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work),
-            label: 'Projects',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2),
-            label: 'Tree inventory',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
-        currentIndex: 1, // 'Projects' tab is active
-        selectedItemColor: Color(0xFF1A5F3E),
-        unselectedItemColor: Colors.grey[600],
-        showUnselectedLabels: true,
-      ),
-    );
-  }
-
-  // Reusable Tab Widget
-  Widget _buildTab(String label, String value) {
-    bool isSelected = selectedTab == value;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedTab = value;
-        });
-      },
-      child: Container(
-        margin: EdgeInsets.only(right: 16),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Color(0xFF1A5F3E) : Colors.grey[600],
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Reusable Project Card Widget
-  Widget _buildProjectCard() {
-    return Card(
-      margin: EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Project Logo and Name
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/jio_logo.png'), // Replace with your logo path
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Thane Plantation Drive 2023',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Jio Platforms',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            // Divider
-            SizedBox(height: 16),
-
-            // Location and Due Date
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Thane, Mumbai',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Due: 31 Oct 2023',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-
-            // Tags
-            SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildTag('Plantation', Icons.eco),
-                _buildTag('Geo-tagging', Icons.location_on),
-                _buildTag('Maintenance', Icons.water_drop),
-                _buildTag('Monitoring', Icons.monitor),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Reusable Tag Widget
-  Widget _buildTag(String label, IconData icon) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.lightBlueAccent.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: Colors.lightBlueAccent,
-          ),
-          SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.lightBlueAccent,
-            ),
-          ),
-        ],
+            )),
       ),
     );
   }
 }
-
- */

@@ -93,6 +93,10 @@ class AuthService {
         // Sign-in failed, no user returned.
         return null;
       }
+      final String? firebaseIdToken = await user.getIdToken();
+
+      debugLog(user.toString(),
+          name: 'Google sign-in successful: userCredential');
 
       return GoogleUser(
           uid: user.uid,
@@ -100,7 +104,7 @@ class AuthService {
           email: user.email,
           photoURL: user.photoURL,
           accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
+          idToken: firebaseIdToken,
           isNewUser: isNewUser);
     } catch (e, stackTrace) {
       // Log errors for monitoring, or send to your error tracking system

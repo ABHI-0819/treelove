@@ -36,7 +36,8 @@ class SignInRepository{
       BaseNetwork.getMultipartHeaders(),
       'post',
       responseModelFromJson,
-      fields: request.toMultipart()
+      fields: request.toMultipart(),
+      isLogIn: true
     );
   }
 
@@ -51,7 +52,8 @@ class SignInRepository{
       BaseNetwork.getMultipartHeaders(),
       'post',
       responseModelFromJson,
-      fields: request.toMultipart()
+      fields: request.toMultipart(),
+      isLogIn: true
     );
   }
 }

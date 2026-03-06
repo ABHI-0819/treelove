@@ -21,6 +21,7 @@ import '../../../core/widgets/common_warning_popup.dart';
 import '../../authentication/screens/sign_in_screen.dart';
 import 'models/staff_response_model.dart';
 import 'new_staff_screen.dart';
+import 'staff_list_simmer.dart';
 
 class StaffListScreen extends StatefulWidget {
   const StaffListScreen({super.key});
@@ -45,7 +46,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
     super.initState();
   }
 
-  Future<void>  _refreshData()async{
+  Future<void> _refreshData() async {
     staffListBloc.add(ApiListFetch());
   }
 
@@ -136,36 +137,33 @@ class _StaffListScreenState extends State<StaffListScreen> {
                 // TODO: implement listener
               },
             ),
-
             BlocListener<StaffSuspendBloc,
                 ApiState<ResponseModel, ResponseModel>>(
               listener: (context, state) {
                 EasyLoading.dismiss();
-                 if(state is ApiSuccess<ResponseModel,ResponseModel>){
+                if (state is ApiSuccess<ResponseModel, ResponseModel>) {
                   showNotification(context,
                       message: state.data.message.toString());
                   staffListBloc.add(ApiListFetch());
-                }
-                else if (state is ApiFailure<ResponseModel, ResponseModel>) {
+                } else if (state is ApiFailure<ResponseModel, ResponseModel>) {
                   showNotification(context,
                       message: state.error.message.toString());
                 } else if (state
-                is TokenExpired<ResponseModel, ResponseModel>) {
+                    is TokenExpired<ResponseModel, ResponseModel>) {
                   AppRoute.pushReplacement(context, SignInScreen.route,
                       arguments: {});
                 }
                 // TODO: implement listener
               },
             )
-
           ],
           child: BlocBuilder<StaffListBloc,
               ApiState<StaffListResponseModel, ResponseModel>>(
             builder: (context, state) {
-              if(state is ApiLoading){
-                return Center(child: CircularProgressIndicator(),);
-              }
-              else if (state is ApiSuccess<StaffListResponseModel, ResponseModel>) {
+              if (state is ApiLoading) {
+                return const StaffListShimmer();
+              } else if (state
+                  is ApiSuccess<StaffListResponseModel, ResponseModel>) {
                 StaffListResponseModel staffList = state.data;
                 return Column(
                   spacing: 5.h,
@@ -179,32 +177,32 @@ class _StaffListScreenState extends State<StaffListScreen> {
                         fontStyle: FontStyle.italic,
                       ),
                     ),
-              Expanded(
-                child: CommonRefreshIndicator(
-                  onRefresh: _refreshData,
-                  isLoading: false,
-                  child: ListView.builder(
-                        itemCount: staffList.data!.length,
-                        itemBuilder: (context, index) {
-                          return ProfileCard(
-                            profileImg:
-                                staffList.data![index].profile!.profilePicture,
-                            name: staffList.data![index].profile!.fullName,
-                            title: 'staff',
-                            isActive:staffList.data![index].isActive ,
-                            onCall: () => _launchPhone(
-                                phoneNumber: staffList.data![index].phone!),
-                            avatarIcon: Icons.call,
-                            onSuspended: () {
-                              _showSuspendWarningPopup(
-                                  context: context,
-                                  userId: staffList.data![index].id);
-                            },
-                          );
-                        },
+                    Expanded(
+                      child: CommonRefreshIndicator(
+                        onRefresh: _refreshData,
+                        isLoading: false,
+                        child: ListView.builder(
+                          itemCount: staffList.data!.length,
+                          itemBuilder: (context, index) {
+                            return ProfileCard(
+                              profileImg: staffList
+                                  .data![index].profile!.profilePicture,
+                              name: staffList.data![index].profile!.fullName,
+                              title: 'staff',
+                              isActive: staffList.data![index].isActive,
+                              onCall: () => _launchPhone(
+                                  phoneNumber: staffList.data![index].phone!),
+                              avatarIcon: Icons.call,
+                              onSuspended: () {
+                                _showSuspendWarningPopup(
+                                    context: context,
+                                    userId: staffList.data![index].id);
+                              },
+                            );
+                          },
+                        ),
                       ),
-                ),
-              )
+                    )
                   ],
                 );
               } else {

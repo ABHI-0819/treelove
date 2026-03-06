@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "570898943557-dklfelbbeltr9imuh2bsgsnbqn47fgmv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.treelov.app",
+            "certificate_hash": "104c8d5b56349c0551544771500ee6f578c2f042"
+          }
+        },
+        {
           "client_id": "570898943557-ufelm8khr2b0gt00dl7st77p99v9gvnl.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -16,6 +16,7 @@ import '../../../common/repositories/staff_repository.dart';
 import '../../../core/config/route/app_route.dart';
 import '../../../core/config/themes/app_fonts.dart';
 import '../../../core/network/api_connection.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../core/widgets/common_notification.dart';
 import '../../../core/widgets/input_field.dart';
 import '../../authentication/screens/sign_in_screen.dart';
@@ -136,23 +137,30 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       //  Validate password match
-      if(firstNameController.text.isEmpty){
+      if (firstNameController.text.isEmpty) {
         showNotification(context, message: "First name is required");
-      }else if(lastNameController.text.isEmpty){
+      } else if (lastNameController.text.isEmpty) {
         showNotification(context, message: "Last name is required");
-      }else if(emailController.text.isEmpty && phoneController.text.isEmpty){
-        showNotification(context, message: "Either email or phone number is required");
-      } else if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+      } else if (emailController.text.isEmpty && phoneController.text.isEmpty) {
+        showNotification(context,
+            message: "Either email or phone number is required");
+      } else if (passwordController.text.trim() !=
+          confirmPasswordController.text.trim()) {
         showNotification(context, message: "Passwords do not match");
-      }else{
+      } else {
         // Create request model
         final staffRequest = AddStaffRequestModel(
           firstName: firstNameController.text.trim(),
           lastName: lastNameController.text.trim(),
-          email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-          phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
+          email: emailController.text.trim().isEmpty
+              ? null
+              : emailController.text.trim(),
+          phone: phoneController.text.trim().isEmpty
+              ? null
+              : phoneController.text.trim(),
           countryCode: _selectedCountryCode,
-          oauthProvider: "email", // or phone/google/facebook depending on your logic
+          oauthProvider:
+              "email", // or phone/google/facebook depending on your logic
           password: passwordController.text.trim(),
           profilePicture: _profileImage, // File
         );
@@ -163,7 +171,6 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -181,15 +188,17 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
       ),
       body: BlocProvider(
         create: (context) => staffBloc,
-        child: BlocListener<StaffBloc, ApiState<StaffResponseModel, ResponseModel>>(
+        child: BlocListener<StaffBloc,
+            ApiState<StaffResponseModel, ResponseModel>>(
           listener: (context, state) {
             EasyLoading.dismiss();
             if (state is ApiSuccess<StaffResponseModel, ResponseModel>) {
               showNotification(context, message: state.data.message);
             } else if (state is ApiFailure<StaffResponseModel, ResponseModel>) {
-              showNotification(context, message: state.error.message.toString());
+              showNotification(context, message: state.error.data.toString());
             } else if (state is TokenExpired<ResponseModel, ResponseModel>) {
-              AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
+              AppRoute.pushReplacement(context, SignInScreen.route,
+                  arguments: {});
             }
             // TODO: implement listener
           },
@@ -235,6 +244,7 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                             asterisk: "*",
                             labelText: 'First name',
                             hintText: 'Enter name',
+                            onValidator: AppValidators.name,
                             inputType: TextInputType.name,
                             maxline: 1,
                             inputFormatters: [
@@ -247,9 +257,10 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                           child: SecondaryInputField(
                             controller: lastNameController,
                             asterisk: "*",
-                            labelText: 'Name',
+                            labelText: 'Last name',
                             hintText: 'Last name',
                             inputType: TextInputType.name,
+                            onValidator: AppValidators.name,
                             maxline: 1,
                             inputFormatters: [
                               LengthLimitingTextInputFormatter(50)
@@ -262,6 +273,7 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                     controller: emailController,
                     labelText: 'Email',
                     hintText: 'Enter email',
+                    onValidator: AppValidators.email,
                     inputType: TextInputType.emailAddress,
                     asterisk: "*",
                     maxline: 1,
@@ -322,6 +334,7 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                           hintText: 'Enter phone number',
                           asterisk: "*",
                           inputType: TextInputType.phone,
+                          onValidator: AppValidators.phone,
                           maxline: 1,
                           inputFormatters: [
                             LengthLimitingTextInputFormatter(10),
@@ -352,6 +365,7 @@ class _AddNewStaffScreenState extends State<AddNewStaffScreen> {
                     hintText: 'Enter password',
                     asterisk: "*",
                     obscuringCharacter: '*',
+                    onValidator: AppValidators.mediumPassword,
                     isSecret: true,
                     inputType: TextInputType.visiblePassword,
                     maxline: 1,

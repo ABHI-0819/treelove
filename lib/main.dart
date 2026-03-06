@@ -35,7 +35,6 @@ void main() async {
   // 2. Initialize the manager (opens the box)
   await OrderItemMapManager().init();
 
-
   // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   // // Initialize push notification service
   // await FirebasePushService().initialize();
@@ -52,7 +51,6 @@ void main() async {
 //   debugLog(deviceId.toString(),name: "Device Id");
 // }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -63,12 +61,10 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       child: MaterialApp(
-        navigatorKey:navigatorKey,
-        title:'TreeLov',
-        builder: EasyLoading.init(
-
-        ),
-        debugShowCheckedModeBanner:false,
+        navigatorKey: navigatorKey,
+        title: 'TreeLov',
+        builder: EasyLoading.init(),
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
           useMaterial3: true,

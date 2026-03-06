@@ -98,31 +98,33 @@ class _PasswordLoginScreenState extends State<PasswordLoginScreen> {
 
     switch (user.groupName) {
       case 'retail_user':
-        AppRoute.goToNextPage(
-          context: context,
-          screen: RetailMainScreen.route,
+        AppRoute.pushAndRemoveUntil(
+          context,
+          RetailMainScreen.route,
           arguments: {},
         );
         break;
       case 'fieldworker':
-        AppRoute.goToNextPage(
-          context: context,
-          screen: FieldWorkerMainScreen.route,
+        AppRoute.pushAndRemoveUntil(
+          context,
+          FieldWorkerMainScreen.route,
           arguments: {},
         );
         break;
+
       case 'b2b_user':
-        AppRoute.goToNextPage(
-          context: context,
-          screen: OrganizationMainScreen.route,
+        AppRoute.pushAndRemoveUntil(
+          context,
+          OrganizationMainScreen.route,
           arguments: {},
         );
+
         // Handle b2b_user navigation
         break;
       case 'vendor':
-        AppRoute.goToNextPage(
-          context: context,
-          screen: VendorMainScreen.route,
+        AppRoute.pushAndRemoveUntil(
+          context,
+          VendorMainScreen.route,
           arguments: {},
         );
         // Handle vendor navigation

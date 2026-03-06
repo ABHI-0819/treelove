@@ -62,6 +62,10 @@ class BaseNetwork {
   static const String verifyPaymentUrl = "${_BASE_URL}api/v1/payments/payments/verify/";
   static const String capturePaymentUrl = "${_BASE_URL}api/v1/payments/payments/capture/";
 
+  // Profile URLs
+  static const String profileURL = "${_BASE_URL}api/v1/user/me/profile/";
+
+
 
   //TODO: Fieldworker URL :
   static const String plantationListURL = "${_BASE_URL}api/v1/survey/plantation/";

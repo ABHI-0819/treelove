@@ -5,6 +5,7 @@ import 'package:treelove/features/customer/b2b/projects/screens/projects_screen.
 
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_fonts.dart';
+import '../../../../../core/widgets/app_exit_scope.dart';
 import '../../account/screens/account_screen.dart';
 import '../../projects/screens/project_detail_screen.dart';
 
@@ -46,16 +47,17 @@ class _OrganizationMainScreenState extends State<OrganizationMainScreen> {
       // index 2
     ];
 
-    return Scaffold(
-      body: buildPageView(bottomBarPages),
-      bottomNavigationBar: CustomOrgBottomNav(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+    return AppExitScope(
+      child: Scaffold(
+        body: buildPageView(bottomBarPages),
+        bottomNavigationBar: CustomOrgBottomNav(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),
       ),
     );
   }
 }
-
 
 class CustomOrgBottomNav extends StatelessWidget {
   final int selectedIndex;
@@ -77,12 +79,26 @@ class CustomOrgBottomNav extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF004D40),
       unselectedItemColor: const Color(0xFFC4B28E),
-      selectedLabelStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
-      unselectedLabelStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
+      selectedLabelStyle:
+          AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
+      unselectedLabelStyle:
+          AppFonts.caption.copyWith(fontWeight: FontWeight.w600),
       items: [
-        buildNavItem(index: 0, filledIcon: Images.dashboardFilledIcon, outlinedIcon: Images.dashboardIcon, label: 'Dashboard'),
-        buildNavItem(index: 1, filledIcon: Images.projectFilledIcon, outlinedIcon: Images.projectIcon, label: 'Projects'),
-        buildNavItem(index: 2, filledIcon: Images.accountFilledIcon, outlinedIcon: Images.accountIcon, label: 'Account'),
+        buildNavItem(
+            index: 0,
+            filledIcon: Images.dashboardFilledIcon,
+            outlinedIcon: Images.dashboardIcon,
+            label: 'Dashboard'),
+        buildNavItem(
+            index: 1,
+            filledIcon: Images.projectFilledIcon,
+            outlinedIcon: Images.projectIcon,
+            label: 'Projects'),
+        buildNavItem(
+            index: 2,
+            filledIcon: Images.accountFilledIcon,
+            outlinedIcon: Images.accountIcon,
+            label: 'Account'),
       ],
     );
   }

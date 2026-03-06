@@ -1740,6 +1740,59 @@ class ApiConnection {
     );
   }
 
+  /// 📌 Multipart PATCH request (with optional file upload)
+Future<ApiResult> patchApiConnectionMultipart<T>(
+  String url,
+  Map<String, String> header,
+  T Function(String) parser, {
+  Map<String, dynamic> fields = const {},
+  String fileKey = 'file',
+  List<File> files = const [],
+}) async {
+  debugLog("PATCH (Multipart): $url", name: "API Request");
+  debugLog("Fields: $fields", name: "API Request");
+  debugLog("Files count: ${files.length}", name: "API Request");
+
+  return _handleRequest<T>(
+    (token) async {
+      final headers = Map<String, String>.from(header);
+
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final request =
+          http.MultipartRequest('PATCH', Uri.parse(url));
+
+      request.headers.addAll(headers);
+
+      // Add fields
+      fields.forEach((key, value) {
+        if (value != null) {
+          request.fields[key] = value.toString();
+        }
+      });
+
+      // Add files
+      for (var file in files) {
+        final multipartFile = await http.MultipartFile.fromPath(
+          fileKey,
+          file.path,
+          filename:
+              'upload_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}',
+        );
+        request.files.add(multipartFile);
+      }
+
+      final streamedResponse =
+          await request.send().timeout(const Duration(seconds: 60));
+
+      return await http.Response.fromStream(streamedResponse);
+    },
+    parser,
+  );
+}
+
   /// 📌 Multipart request (POST/PUT with file uploads)
   Future<ApiResult> apiConnectionMultipart<T>(
       String url,
@@ -1754,7 +1807,6 @@ class ApiConnection {
     debugLog("$method (Multipart): $url", name: "API Request");
     debugLog("Fields: $fields", name: "API Request");
     debugLog("Files count: ${files.length}", name: "API Request");
-
     return _handleRequest<T>(
           (token) async {
         final headers = Map<String, String>.from(header);

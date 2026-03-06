@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:treelove/features/customer/retail/home/screens/home_screen.dart';
+import '../../../../../core/widgets/app_exit_scope.dart';
 import '../../../../../core/widgets/custom_bottom_nav.dart';
 import '../../FAQ/inquery_screen.dart';
 import '../../profile/screen/account_screen.dart';
@@ -40,11 +41,13 @@ class _RetailMainScreenState extends State<RetailMainScreen> {
       InquiryScreen(),
       MyAccountScreen(),
     ];
-    return Scaffold(
-      body: buildPageView(bottomBarPages),
-      bottomNavigationBar: CustomBottomNav(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+    return AppExitScope(
+      child: Scaffold(
+        body: buildPageView(bottomBarPages),
+        bottomNavigationBar: CustomBottomNav(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),
       ),
     );
   }

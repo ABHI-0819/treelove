@@ -25,12 +25,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'dart:io';
-
+import 'package:intl/intl.dart';
+import '../../../../../common/bloc/api_event.dart';
+import '../../../../../common/bloc/api_state.dart';
+import '../../../../../common/bloc/profile_bloc.dart';
+import '../../../../../common/models/profile_response_model.dart';
+import '../../../../../common/models/response.mode.dart';
+import '../../../../../common/models/update_profile_request_model.dart';
+import '../../../../../common/repositories/profile_repository.dart';
 import '../../../../../core/config/themes/app_color.dart';
+import '../../../../../core/network/api_connection.dart';
 import '../../../../../core/storage/preference_keys.dart';
 import '../../../../../core/storage/secure_storage.dart';
+import '../../../../../core/widgets/common_notification.dart';
+import '../../../../vendor/profile/screens/profile_shimmer.dart';
 
 class RetailProfileScreen extends StatefulWidget {
   static const route = '/retail-profile';
@@ -42,119 +56,56 @@ class RetailProfileScreen extends StatefulWidget {
 }
 
 class _RetailProfileScreenState extends State<RetailProfileScreen> {
-  // Controllers
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _bioController = TextEditingController();
-  final _websiteController = TextEditingController();
+  final pref = SecurePreference();
+  bool notificationEnabled = true;
 
-  // Variables
-  String? _profilePicture;
-  DateTime? _dateOfBirth;
   File? _newProfileImage;
-  bool _isLoading = false;
+  final ImagePicker _picker = ImagePicker();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProfileData();
-  }
-
- Future<void> _loadProfileData() async {
-  final prefs = SecurePreference();
-
-  final firstName = await prefs.getString(Keys.firstName); // e.g. "Ankit"
-
-  final lastName = await prefs.getString(Keys.lastName); // e.g. "Sharma"
-
-  if (!mounted) return;
-
-  setState(() {
-    _firstNameController.text = firstName;
-    _lastNameController.text = lastName;
-    _bioController.text = "Make the world green.";
-    _websiteController.text = "";
-    _profilePicture =
-        "http://43.205.169.130/media/user/profile_pics/man.png";
-    _dateOfBirth = DateTime(2000, 6, 19);
-  });
-}
-
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
+  Future<void> _pickImage(ProfileData profile) async {
+    final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1024,
       maxHeight: 1024,
       imageQuality: 85,
     );
 
-    if (image != null) {
+    if (pickedFile != null) {
       setState(() {
-        _newProfileImage = File(image.path);
+        _newProfileImage = File(pickedFile.path);
       });
-    }
-  }
 
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _dateOfBirth ?? DateTime.now(),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColor.primary,
-              onPrimary: AppColor.white,
-              surface: AppColor.white,
-            ),
+      // Send image via your UpdateProfileRequest
+      profileBloc.add(
+        ApiUpdate(
+          UpdateProfileRequest(
+            media: [_newProfileImage!], // Use your media list
           ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _dateOfBirth) {
-      setState(() {
-        _dateOfBirth = picked;
-      });
-    }
-  }
-
-  Future<void> _updateProfile() async {
-    setState(() => _isLoading = true);
-
-    // Your PATCH API call here
-    // Example:
-    // final response = await apiService.updateProfile({
-    //   'first_name': _firstNameController.text,
-    //   'last_name': _lastNameController.text,
-    //   'bio': _bioController.text,
-    //   'website': _websiteController.text,
-    //   'date_of_birth': _dateOfBirth?.toIso8601String(),
-    //   'profile_picture': _newProfileImage,
-    // });
-
-    await Future.delayed(const Duration(seconds: 1)); // Simulated delay
-
-    setState(() => _isLoading = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: AppColor.success,
         ),
       );
     }
   }
 
-  Widget _buildHeader() {
+  late ProfileBloc profileBloc;
+
+  @override
+  void initState() {
+    profileBloc = ProfileBloc(ProfileRepository(api: ApiConnection()));
+    profileBloc.add(ApiFetch());
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    profileBloc.close();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  Widget _buildAppBar() {
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Row(
           children: [
             GestureDetector(
@@ -202,88 +153,338 @@ class _RetailProfileScreenState extends State<RetailProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.scaffoldBackground,
-      /*
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppColor.primary,
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
-            color: AppColor.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: _buildAppBar(),
+      ),
+      body: BlocProvider<ProfileBloc>(
+        create: (context) => profileBloc,
+        child: BlocListener<ProfileBloc,
+            ApiState<ProfileResponseModel, ResponseModel>>(
+          listener: (context, state) async {
+            if (state is ApiSuccess<ProfileResponseModel, ResponseModel>) {
+              final profile = state.data.data!;
+              await pref.setString(Keys.firstName, profile.firstName);
+              await pref.setString(Keys.lastName, profile.lastName);
+              await pref.setString(Keys.name, profile.fullName);
+            }
+
+            if (state is ApiFailure<ProfileResponseModel, ResponseModel>) {
+              showNotification(
+                context,
+                message: state.error.data ??
+                    state.error.message ??
+                    "Failed to update profile",
+              );
+            }
+          },
+          child: SafeArea(
+            child: BlocBuilder<ProfileBloc,
+                ApiState<ProfileResponseModel, ResponseModel>>(
+              builder: (context, state) {
+                if (state is ApiLoading) {
+                  return const ProfileShimmer();
+                }
+
+                if (state is ApiSuccess<ProfileResponseModel, ResponseModel>) {
+                  final ProfileData profile = state.data.data!;
+                  notificationEnabled = profile.receiveNotifications;
+
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _buildHeader(context, profile),
+                      const SizedBox(height: 24),
+
+                      // Personal Information Section
+                      _buildSectionCard(
+                        title: "Personal Information",
+                        children: [
+                          _profileTile(context, "First Name", profile.firstName,
+                              "first_name"),
+                          _divider(),
+                          _profileTile(context, "Last Name", profile.lastName,
+                              "last_name"),
+                          _divider(),
+                          _profileTile(context, "Date of Birth",
+                              profile.formattedDateOfBirth, "date_of_birth",
+                              isDate: true),
+                          _divider(),
+                          FutureBuilder<String?>(
+                            future: _getContact(Keys.phone),
+                            builder: (context, snapshot) {
+                              final value = snapshot.data ?? "Not set";
+                              return _profileTile(
+                                  context, "Phone", value, "phone",
+                                  isEditable: false);
+                            },
+                          ),
+                          _divider(),
+                          FutureBuilder<String?>(
+                            future: _getContact(Keys.email),
+                            builder: (context, snapshot) {
+                              final value = snapshot.data ?? "Not set";
+                              return _profileTile(
+                                  context, "Email", value, "email",
+                                  isEditable: false);
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // About Section
+                      _buildSectionCard(
+                        title: "About",
+                        children: [
+                          _profileTile(context, "Bio", profile.bio, "bio"),
+                          _divider(),
+                          _profileTile(
+                            context,
+                            "Website",
+                            profile.website,
+                            "website",
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return const SizedBox();
+              },
+            ),
           ),
         ),
-        centerTitle: true,
       ),
-      
-       */
-      body: SingleChildScrollView(
-        child: Column(
+    );
+  }
+
+  void _pickDate(
+      BuildContext context, String field, String currentValue) async {
+    // Parse current value safely
+    DateTime initialDate = DateTime.now();
+    if (currentValue.isNotEmpty) {
+      try {
+        // Try parsing "19 Feb 2025" format if already displayed
+        final parts = currentValue.split(' ');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = _monthIndex(parts[1]);
+          final year = int.parse(parts[2]);
+          initialDate = DateTime(year, month, day);
+        } else {
+          // fallback to ISO parse
+          initialDate = DateTime.tryParse(currentValue) ?? DateTime.now();
+        }
+      } catch (_) {}
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now().subtract(const Duration(days: 1)),
+    );
+
+    if (picked != null) {
+      // UI display format: 19 Feb 2025
+      final formatted =
+          "${picked.day} ${_monthName(picked.month)} ${picked.year}";
+
+      // Backend format: yyyyMMdd
+      final backendDate = DateFormat('yyyy-MM-dd').format(picked);
+      // Update via Bloc
+      profileBloc.add(
+        ApiUpdate(
+          UpdateProfileRequest(
+            dateOfBirth: backendDate,
+          ),
+        ),
+      );
+
+      // Update UI immediately
+      setState(() {});
+    }
+  }
+
+  /// Helper to get month short name for UI
+  String _monthName(int month) {
+    const months = [
+      '', // placeholder for 0 index
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[month];
+  }
+
+  /// Helper to convert month short name to index
+  int _monthIndex(String shortName) {
+    const months = [
+      '', // placeholder
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months.indexOf(shortName);
+  }
+
+  Widget _buildHeader(BuildContext context, ProfileData profile) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
           children: [
-            _buildHeader(),
-            // Header Section with Profile Picture
-            _buildHeaderSection(),
-
-            const SizedBox(height: 24),
-
-            // Form Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('Personal Information'),
-                  const SizedBox(height: 16),
-
-                  _buildInputCard(
-                    label: 'First Name',
-                    controller: _firstNameController,
-                    icon: Icons.person_outline,
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  _buildInputCard(
-                    label: 'Last Name',
-                    controller: _lastNameController,
-                    icon: Icons.person_outline,
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  _buildDateCard(),
-
-                  const SizedBox(height: 24),
-
-                  _buildSectionTitle('About'),
-                  const SizedBox(height: 16),
-
-                  _buildInputCard(
-                    label: 'Bio',
-                    controller: _bioController,
-                    icon: Icons.edit_note,
-                    maxLines: 3,
-                    hint: 'Tell us about yourself...',
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  _buildInputCard(
-                    label: 'Website',
-                    controller: _websiteController,
-                    icon: Icons.link,
-                    hint: 'www.example.com',
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Update Button
-                  _buildUpdateButton(),
-
-                  const SizedBox(height: 40),
-                ],
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: AppColor.secondaryLight,
+              backgroundImage: _newProfileImage != null
+                  ? FileImage(_newProfileImage!)
+                  : (profile.profilePicture != null
+                      ? NetworkImage(profile.profilePicture!)
+                      : null) as ImageProvider?,
+              child: (profile.profilePicture == null &&
+                      _newProfileImage == null)
+                  ? const Icon(Icons.person, size: 45, color: AppColor.white)
+                  : null,
+            ),
+            GestureDetector(
+              onTap: () => _pickImage(profile),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColor.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColor.white, width: 2),
+                ),
+                child: const Icon(Icons.camera_alt,
+                    color: AppColor.white, size: 20),
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          profile.fullName,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColor.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          "~ Individual ~",
+          style: TextStyle(
+            color: AppColor.primary,
+            fontSize: 12,
+          ),
+        )
+      ],
+    );
+  }
+
+  // Helper function to get phone/email
+  Future<String?> _getContact(String primaryKey) async {
+    final primary =
+        await pref.getString(primaryKey, defaultValue: "Not Available");
+    return primary;
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.cardBackground,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColor.primary,
+              )),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return const Divider(
+      color: AppColor.divider,
+      height: 1,
+    );
+  }
+
+  Widget _profileTile(
+    BuildContext context,
+    String title,
+    String value,
+    String field, {
+    bool isEditable = true,
+    bool isDate = false,
+  }) {
+    return InkWell(
+      onTap: isEditable
+          ? () {
+              if (isDate) {
+                _pickDate(context, field, value);
+              } else {
+                _openEditSheet(context, title, field, value);
+              }
+            }
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isEditable ? AppColor.textPrimary : AppColor.textMuted,
+              ),
+            ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 150,
+                  child: Text(
+                    value.isEmpty ? "Not set" : value,
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColor.textMuted,
+                    ),
+                  ),
+                ),
+                if (isEditable) ...[
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: AppColor.textMuted,
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -291,270 +492,232 @@ class _RetailProfileScreenState extends State<RetailProfileScreen> {
     );
   }
 
-  Widget _buildHeaderSection() {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        // color: AppColor.primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
+  void _openEditSheet(
+      BuildContext context, String title, String field, String currentValue) {
+    final controller = TextEditingController(text: currentValue);
 
-          // Profile Picture
-          Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColor.white,
-                    width: 4,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return AnimatedPadding(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            decoration: const BoxDecoration(
+              color: AppColor.cardBackground,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag Handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColor.divider,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Title
+                    Text(
+                      "Edit $title",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColor.textPrimary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    // Subtitle
+                    Text(
+                      "Update your $title information below.",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColor.textMuted,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Input Field
+                    TextField(
+                      controller: controller,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: InputDecoration(
+                        hintText: "Enter $title",
+                        filled: true,
+                        fillColor: AppColor.grey,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColor.border,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColor.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColor.primary),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Buttons Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColor.border),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                color: AppColor.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              final value = controller.text.trim();
+
+                              profileBloc.add(
+                                ApiUpdate(
+                                  UpdateProfileRequest(
+                                    firstName:
+                                        field == "first_name" ? value : null,
+                                    lastName:
+                                        field == "last_name" ? value : null,
+                                    bio: field == "bio" ? value : null,
+                                    legalName:
+                                        field == "legal_name" ? value : null,
+                                    website: field == "website" ? value : null,
+                                    panNumber:
+                                        field == "pan_number" ? value : null,
+                                    gstNumber:
+                                        field == "gst_number" ? value : null,
+                                  ),
+                                ),
+                              );
+
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              "Save Changes",
+                              style: TextStyle(color: AppColor.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppColor.grey,
-                  backgroundImage: _newProfileImage != null
-                      ? FileImage(_newProfileImage!)
-                      : (_profilePicture != null
-                      ? NetworkImage(_profilePicture!)
-                      : null) as ImageProvider?,
-                  child: _profilePicture == null && _newProfileImage == null
-                      ? const Icon(Icons.person, size: 60, color: AppColor.textMuted)
-                      : null,
-                ),
               ),
-
-              // Edit Icon
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColor.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColor.white,
-                        width: 3,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: AppColor.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Name
-          Text(
-            '${_firstNameController.text} ${_lastNameController.text}',
-            style: const TextStyle(
-              color: AppColor.primary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
             ),
           ),
-
-          const SizedBox(height: 30),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: AppColor.textPrimary,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-
-  Widget _buildInputCard({
-    required String label,
-    required TextEditingController controller,
+  Widget _actionTile({
     required IconData icon,
-    String? hint,
-    int maxLines = 1,
+    required Color color,
+    required String title,
+    VoidCallback? onTap,
+    bool? switchValue,
+    ValueChanged<bool>? onToggle,
   }) {
+    final bool isToggle = switchValue != null;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
+            color: color.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: AppColor.primary,
-              size: 22,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: controller,
-                maxLines: maxLines,
-                style: const TextStyle(
-                  color: AppColor.textPrimary,
-                  fontSize: 16,
-                ),
-                decoration: InputDecoration(
-                  labelText: label,
-                  hintText: hint,
-                  labelStyle: const TextStyle(
-                    color: AppColor.textSecondary,
-                    fontSize: 14,
-                  ),
-                  hintStyle: const TextStyle(
-                    color: AppColor.textMuted,
-                    fontSize: 14,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                ),
-              ),
-            ),
-          ],
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: color),
         ),
+        title: Text(
+          title,
+          style: AppFonts.subtitle.copyWith(
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
+        ),
+
+        /// 👇 Toggle OR Arrow
+        trailing: isToggle
+            ? Switch(
+                value: switchValue!,
+                activeColor: color,
+                onChanged: onToggle,
+              )
+            : Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: color.withOpacity(0.7),
+              ),
+
+        /// Disable tap for toggle tiles
+        onTap: isToggle ? null : onTap,
       ),
     );
-  }
-
-  Widget _buildDateCard() {
-    return GestureDetector(
-      onTap: _selectDate,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColor.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.cake_outlined,
-                color: AppColor.primary,
-                size: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Date of Birth',
-                      style: TextStyle(
-                        color: AppColor.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _dateOfBirth != null
-                          ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}'
-                          : 'Select date',
-                      style: const TextStyle(
-                        color: AppColor.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.calendar_today,
-                color: AppColor.textMuted,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUpdateButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _updateProfile,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.primary,
-          foregroundColor: AppColor.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          disabledBackgroundColor: AppColor.textMuted,
-        ),
-        child: _isLoading
-            ? const SizedBox(
-          height: 24,
-          width: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.5,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColor.white),
-          ),
-        )
-            : const Text(
-          'Update Profile',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _bioController.dispose();
-    _websiteController.dispose();
-    super.dispose();
   }
 }

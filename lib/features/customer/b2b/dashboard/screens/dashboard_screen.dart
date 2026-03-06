@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/screens/notification_screen.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/core/network/api_connection.dart';
 import 'package:treelove/features/customer/b2b/dashboard/bloc/dashboard_bloc.dart';
-import 'package:treelove/features/fieldworker/home/screens/dashboard_screen.dart';
 
 import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/dashboard_repository.dart';
-import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/route/app_route.dart';
+import '../../../../../core/storage/preference_keys.dart';
+import '../../../../../core/storage/secure_storage.dart';
 import '../../map/screens/b2b_map_screen.dart';
 import '../model/dashboard_response_model.dart';
 
@@ -32,6 +31,8 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
   late Animation<double> _fadeAnimation;
 
   late B2BDashboardBloc dashboardBloc;
+
+  final pref = SecurePreference();
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.scaffoldBackground,
+      backgroundColor: AppColor.white,
       body: BlocProvider<B2BDashboardBloc>(
         create: (context) => dashboardBloc,
         child: BlocBuilder<B2BDashboardBloc,
@@ -74,48 +75,107 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
             if (state is ApiLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state
-            is ApiSuccess<DashboardResponseModel, ResponseModel>) {
+                is ApiSuccess<DashboardResponseModel, ResponseModel>) {
               final DashboardResponseModel dashboard = state.data;
               return FadeTransition(
                 opacity: _fadeAnimation,
                 child: CustomScrollView(
                   slivers: [
                     SliverAppBar(
-                      expandedHeight: 75,
-                      floating: false,
+                      expandedHeight: 60.h,
                       pinned: true,
+                      floating: false,
                       automaticallyImplyLeading: false,
-                      // This removes the back button
-                      backgroundColor: Colors.transparent,
+                      backgroundColor: AppColor.primary.withValues(alpha: 0.60),
+                      elevation: 0,
                       title: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 0),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 4.w, vertical: 8.h),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Hello,Arman',
-                              style: AppFonts.title.copyWith(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            /// 👋 Greeting Section
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                5.0.verticalSpace,
+                                Text(
+                                  "Hello 👋",
+                                  style: AppFonts.caption.copyWith(
+                                    color: AppColor.white.withOpacity(0.85),
+                                  ),
+                                ),
+                                FutureBuilder<String?>(
+                                  future: pref.getString(Keys.name),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      final name =
+                                          snapshot.data ?? 'Field Worker';
+                                      return Text(
+                                        name,
+                                        style: AppFonts.title.copyWith(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColor.white,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ],
+                            ),
 
-                            ),
-                            // Profile Avatar
+                            /// 🔔 Notification Button
                             InkWell(
-                              onTap: (){
-                                AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
+                              borderRadius: BorderRadius.circular(30),
+                              onTap: () {
+                                AppRoute.goToNextPage(
+                                  context: context,
+                                  screen: NotificationsScreen.route,
+                                  arguments: {},
+                                );
                               },
-                              child: CircleAvatar(
-                                backgroundColor: AppColor.white.withOpacity(0.2),
-                                child: const Icon(
-                                    Icons.notifications, color: AppColor.white),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.18),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_none_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+
+                                  /// Notification Dot
+                                  Positioned(
+                                    right: 2,
+                                    top: 2,
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white, width: 1.5),
+                                      ),
+                                    ),
+                                  )
+                                ],
                               ),
-                            ),
+                            )
+                         
                           ],
                         ),
                       ),
                       flexibleSpace: FlexibleSpaceBar(
-                        // The background is kept here, but the title is now in the SliverAppBar itself
                         background: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -124,69 +184,36 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                               colors: [
                                 AppColor.primary,
                                 AppColor.primaryLight,
-                                AppColor.secondary.withOpacity(0.8),
+                                AppColor.secondary.withOpacity(0.85),
                               ],
                             ),
                           ),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                top: 20,
-                                right: -20,
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color: AppColor.white.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: -30,
-                                left: -30,
-                                child: Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: AppColor.secondary.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+
+                          /// Decorative shapes
                         ),
                       ),
-                      actions: null, // The actions property is no longer needed
                     ),
-
-                    // Content
                     SliverPadding(
                       padding: const EdgeInsets.all(20.0),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
                           // Investment Overview
                           mapOverView(),
-                          /*
-                          _buildInvestmentOverview(
-                              investment: dashboard.data.projectOverview
-                                  .totalInvestment.toString()),
-
-                           */
                           const SizedBox(height: 28),
-
                           // Project Stats
                           _buildProjectStats(
-                              totalProject: dashboard.data.projectOverview
-                                  .totalProjects.toString(),
-                              ongoingProject: dashboard.data.projectOverview
-                                  .ongoingProjects.toString(),
-                              upcomingProject: dashboard.data.projectOverview
-                                  .upcomingProjects.toString(),
-                              completedProject: dashboard.data.projectOverview
-                                  .completedProjects.toString()
-                          ),
+                              totalProject: dashboard
+                                  .data.projectOverview.totalProjects
+                                  .toString(),
+                              ongoingProject: dashboard
+                                  .data.projectOverview.ongoingProjects
+                                  .toString(),
+                              upcomingProject: dashboard
+                                  .data.projectOverview.upcomingProjects
+                                  .toString(),
+                              completedProject: dashboard
+                                  .data.projectOverview.completedProjects
+                                  .toString()),
                           const SizedBox(height: 28),
 
                           // Activity Summary
@@ -198,13 +225,12 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
 
                           // Service Progress
                           _buildServiceProgress(
-                              plantation: dashboard.data.progressByService
-                                  .plantation!,
-                              maintenance: dashboard.data.progressByService
-                                  .maintenance!,
-                              monitor: dashboard.data.progressByService
-                                  .monitoring!
-                          ),
+                              plantation:
+                                  dashboard.data.progressByService.plantation!,
+                              maintenance:
+                                  dashboard.data.progressByService.maintenance!,
+                              monitor:
+                                  dashboard.data.progressByService.monitoring!),
                           const SizedBox(height: 20),
                         ]),
                       ),
@@ -212,8 +238,8 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                   ],
                 ),
               );
-            } else
-            if (state is ApiFailure<DashboardResponseModel, ResponseModel>) {
+            } else if (state
+                is ApiFailure<DashboardResponseModel, ResponseModel>) {
               return Center(child: Text(state.error.message.toString()));
             }
             return const SizedBox.shrink();
@@ -224,115 +250,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
   }
 
   /*
-  Widget _buildInvestmentOverview({required String investment}) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColor.primary,
-            AppColor.primaryLight,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.primary.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColor.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.account_balance_wallet,
-                  color: AppColor.white,
-                  size: 24,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColor.secondary.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Active Investment',
-                  style: TextStyle(
-                    color: AppColor.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Total Investment',
-            style: TextStyle(
-              color: AppColor.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            investment,
-            style: TextStyle(
-              color: AppColor.white,
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  color: AppColor.black.withOpacity(0.2),
-                  offset: const Offset(0, 2),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up,
-                color: AppColor.secondaryLight,
-                size: 16,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'Growing your green impact',
-                style: TextStyle(
-                  color: AppColor.white.withOpacity(0.9),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-   */
-
-  Widget mapOverView(){
+  Widget mapOverView() {
     return Container(
       padding: EdgeInsets.all(10),
       child: Stack(
@@ -349,7 +267,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                 children: [
                   TileLayer(
                     urlTemplate:
-                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     tileProvider: NetworkTileProvider(
                       headers: {'User-Agent': 'TreelovApp/1.0'},
                     ),
@@ -367,14 +285,13 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(Icons.fullscreen,
-                    color: Colors.white, size: 20),
+                icon:
+                    const Icon(Icons.fullscreen, color: Colors.white, size: 20),
                 onPressed: () {
                   AppRoute.goToNextPage(
                     context: context,
                     screen: B2bMapScreen.route,
-                    arguments: {
-                    },
+                    arguments: {},
                   );
                 },
               ),
@@ -385,31 +302,145 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
     );
   }
 
-  Widget _buildProjectStats(
-      {required String totalProject, required String ongoingProject, required String completedProject, required String upcomingProject}) {
+  */
+  Widget mapOverView() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          children: [
+            /// 🌍 Map
+            SizedBox(
+              height: 180.h,
+              width: double.infinity,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialZoom: 12,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    tileProvider: NetworkTileProvider(
+                      headers: {'User-Agent': 'TreelovApp/1.0'},
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// 🌫️ Top gradient (better readability)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.25),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+
+            /// 📍 Title
+            Positioned(
+              left: 12,
+              top: 12,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  "Map Overview",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+            /// 🔍 Fullscreen Button
+            Positioned(
+              right: 10,
+              top: 10,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: () {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: B2bMapScreen.route,
+                    arguments: {},
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.45),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.fullscreen,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProjectStats({
+    required String totalProject,
+    required String ongoingProject,
+    required String completedProject,
+    required String upcomingProject,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        /// Title
         Text(
           'Project Overview',
           style: AppFonts.title.copyWith(
-            fontSize: 24,
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
             color: AppColor.primary,
           ),
         ),
-        const SizedBox(height: 16),
+
+        SizedBox(height: 16.h),
+
+        /// Stats Container
         Container(
-          padding: const EdgeInsets.all(20),
+          // padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: AppColor.cardBackground,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColor.primary.withOpacity(0.1),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Column(
             children: [
@@ -417,41 +448,41 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                 children: [
                   Expanded(
                     child: _buildProjectStatCard(
-                      'Total Projects',
-                      totalProject,
-                      Icons.folder_open,
-                      AppColor.primary,
+                      title: 'Total',
+                      value: totalProject,
+                      icon: Icons.folder_open,
+                      color: AppColor.primary,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: _buildProjectStatCard(
-                      'Ongoing',
-                      ongoingProject,
-                      Icons.play_circle_outline,
-                      AppColor.secondary,
+                      title: 'Ongoing',
+                      value: ongoingProject,
+                      icon: Icons.play_circle_outline,
+                      color: AppColor.secondary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   Expanded(
                     child: _buildProjectStatCard(
-                      'Completed',
-                      completedProject,
-                      Icons.check_circle_outline,
-                      AppColor.secondaryDark,
+                      title: 'Completed',
+                      value: completedProject,
+                      icon: Icons.check_circle_outline,
+                      color: AppColor.secondaryDark,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: _buildProjectStatCard(
-                      'Upcoming',
-                      upcomingProject,
-                      Icons.schedule,
-                      AppColor.primaryLight,
+                      title: 'Upcoming',
+                      value: upcomingProject,
+                      icon: Icons.schedule,
+                      color: AppColor.primaryLight,
                     ),
                   ),
                 ],
@@ -463,71 +494,90 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
     );
   }
 
-  Widget _buildProjectStatCard(String title, String value, IconData icon,
-      Color color) {
+  Widget _buildProjectStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.1),
-          width: 1,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          /*
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 12),
-
-           */
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          Container(
+            height: 34.h,
+            width: 34.w,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 18.sp,
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColor.black.withOpacity(0.6),
-              fontWeight: FontWeight.w500,
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActivitySection(
-      {required Map<String, dynamic> today, required Map<String,
-          dynamic> week}) {
+  Widget _buildActivitySection({
+    required Map<String, dynamic> today,
+    required Map<String, dynamic> week,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Activity Summary',
           style: AppFonts.title.copyWith(
-            fontSize: 24,
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
             color: AppColor.primary,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 10.h),
         Row(
           children: [
-            Expanded(
-              child: _buildActivityCard('Today', today),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildActivityCard('This Week', week),
-            ),
+            Expanded(child: _buildActivityCard('Today', today)),
+            SizedBox(width: 10.w),
+            Expanded(child: _buildActivityCard('Week', week)),
           ],
         ),
       ],
@@ -536,15 +586,18 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
 
   Widget _buildActivityCard(String period, Map<String, dynamic> activities) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.w,
+        vertical: 12.h,
+      ), // smaller padding
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: AppColor.primary.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColor.primary.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -553,44 +606,65 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
         children: [
           Text(
             period,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
               color: AppColor.primary,
             ),
           ),
-          const SizedBox(height: 16),
-          _buildActivityItem('Planted', activities['trees_planted']!, Icons.eco,
-              AppColor.secondary),
-          const SizedBox(height: 12),
-          _buildActivityItem('Maintained', activities['trees_maintained']!,
-              Icons.build, AppColor.primaryLight),
-          const SizedBox(height: 12),
-          _buildActivityItem('Monitored', activities['trees_monitored']!,
-              Icons.visibility, AppColor.secondaryDark),
+          SizedBox(height: 8.h),
+          _buildActivityItem(
+            'Planted',
+            activities['trees_planted'] ?? 0,
+            Icons.eco,
+            AppColor.secondary,
+          ),
+          SizedBox(height: 6.h),
+          _buildActivityItem(
+            'Maintained',
+            activities['trees_maintained'] ?? 0,
+            Icons.build,
+            AppColor.primaryLight,
+          ),
+          SizedBox(height: 6.h),
+          _buildActivityItem(
+            'Monitored',
+            activities['trees_monitored'] ?? 0,
+            Icons.visibility,
+            AppColor.secondaryDark,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildActivityItem(String type, int count, IconData icon,
-      Color color) {
+  Widget _buildActivityItem(
+    String type,
+    int count,
+    IconData icon,
+    Color color,
+  ) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          height: 26.h,
+          width: 26.w,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(6.r),
           ),
-          child: Icon(icon, color: color, size: 16),
+          child: Icon(
+            icon,
+            size: 14.sp,
+            color: color,
+          ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 8.w),
         Expanded(
           child: Text(
             type,
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               color: AppColor.black,
             ),
@@ -599,8 +673,8 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
         Text(
           count.toString(),
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
             color: color,
           ),
         ),
@@ -609,7 +683,9 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
   }
 
   Widget _buildServiceProgress(
-      {required ProgressByService plantation, required ProgressByService maintenance, required ProgressByService monitor}) {
+      {required ProgressByService plantation,
+      required ProgressByService maintenance,
+      required ProgressByService monitor}) {
     final services = {
       'Plantation': {
         'total_trees': plantation.totalTrees,
@@ -640,7 +716,8 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
         Text(
           'Service Progress',
           style: AppFonts.title.copyWith(
-            fontSize: 24,
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
             color: AppColor.primary,
           ),
         ),
@@ -662,26 +739,24 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
     );
   }
 
-  Widget _buildServiceProgressCard(String serviceName,
-      int totalTrees,
-      int completedTrees,
-      int completionPercent,
-      IconData icon,
-      Color color,) {
+  Widget _buildServiceProgressCard(
+    String serviceName,
+    int totalTrees,
+    int completedTrees,
+    int completionPercent,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border(
             left: BorderSide(
-              color: color,
-              width: 4,
-            )),
-        // border: Border.left(
-        //   color: color,
-        //   width: 4,
-        // ),
+          color: color,
+          width: 4,
+        )),
         boxShadow: [
           BoxShadow(
             color: AppColor.primary.withOpacity(0.08),
@@ -710,17 +785,16 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                   children: [
                     Text(
                       serviceName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColor.black,
+                      style: AppFonts.regular.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: AppColor.primary,
                       ),
                     ),
                     Text(
                       '$completedTrees of $totalTrees trees',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColor.black.withOpacity(0.6),
+                      style: AppFonts.caption.copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: AppColor.primary,
                       ),
                     ),
                   ],
@@ -743,92 +817,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
               ),
             ],
           ),
-          /*
-          const SizedBox(height: 20),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: completionPercent / 100,
-              backgroundColor: AppColor.black.withOpacity(0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 8,
-            ),
-          ),
-
-           */
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColor.primary, AppColor.primaryLight],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.eco,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
-            SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Project Dashboard',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'TreeLov Initiative',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.notifications,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

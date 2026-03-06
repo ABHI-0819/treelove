@@ -14,8 +14,11 @@ import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/project_repository.dart';
 import '../../../../core/network/api_connection.dart';
+import '../../../../core/storage/preference_keys.dart';
 import '../../../../core/widgets/common_notification.dart';
+import '../../../../core/widgets/project_list_shimmer.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
+import '../../../customer/retail/home/screens/home_screen.dart';
 import '../models/project_list_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,19 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
       body: BlocProvider<ProjectListBloc>.value(
         // Use .value since bloc is created in initState
         value: _projectListBloc,
-        child: SafeArea(
-           maintainBottomViewPadding : true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _HeaderSection(),
-              const _StatsSection(),
-              const SizedBox(height: 16),
-              // Expanded widget to take remaining vertical space for the project list
-              Expanded(
-                  child: _ProjectListSection(projectListBloc: _projectListBloc)),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Responsive vertical spacing
+            const _HeaderSection(),
+            const _StatsSection(),
+            10.h.verticalSpace,
+            // Expanded widget to take remaining vertical space for the project list
+            Expanded(
+                child: _ProjectListSection(projectListBloc: _projectListBloc)),
+          ],
         ),
       ),
     );
@@ -102,7 +103,7 @@ class _ProjectListSection extends StatelessWidget {
           ApiState<ProjectListResponse, ResponseModel>>(
         builder: (context, state) {
           if (state is ApiLoading<ProjectListResponse, ResponseModel>) {
-            return const Center(child: CircularProgressIndicator());
+            return const ProjectListShimmer();
           } else if (state is ApiSuccess<ProjectListResponse, ResponseModel>) {
             final projectData = state.data;
             final projects = projectData.data; // Get the list of projects
@@ -132,17 +133,16 @@ class _ProjectListSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 8.h),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: projects.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
-                        child: ProjectCard(projectItem: projects[index]),
-                      );
-                    },
-                  ),
+                ListView.builder(
+                  itemCount: projects.length,
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: ProjectCard(projectItem: projects[index]),
+                    );
+                  },
                 ),
               ],
             );
@@ -192,36 +192,73 @@ class _HeaderSection extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      padding: EdgeInsets.all(16.r), // Use ScreenUtil for responsive padding
+      padding: EdgeInsets.symmetric(
+          horizontal: 24.w,
+          vertical: 10.h), // Use ScreenUtil for responsive padding
       child: SafeArea(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Flexible(
-              // Use Flexible to prevent overflow
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hello Yash 🙂', // Consider making this dynamic based on user data
+            FutureBuilder<String?>(
+              future: preference.getString(Keys.name),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final name = snapshot.data ?? 'Vendor';
+                  return Text(
+                    'Hi, $name 👋',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
-                    overflow: TextOverflow.ellipsis, // Handle long names
-                  ),
-                ],
-              ),
-            ),
-            InkWell(
-              onTap: (){
-                AppRoute.goToNextPage(context: context, screen: NotificationsScreen.route, arguments: {});
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  );
+                }
+                return const SizedBox.shrink();
               },
-              child: Icon(
-                Icons.notifications,
-                color: Colors.white,
-                size: 24.r, // Responsive icon size
+            ),
+
+            /// 🔔 Notification Button
+            InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () {
+                AppRoute.goToNextPage(
+                  context: context,
+                  screen: NotificationsScreen.route,
+                  arguments: {},
+                );
+              },
+              child: Stack(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+
+                  /// Notification Dot
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  )
+                ],
               ),
             )
           ],
@@ -239,7 +276,7 @@ class _StatsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFF196D54),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 24.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: const [
@@ -287,7 +324,7 @@ class _StatBox extends StatelessWidget {
                 value,
                 style: AppFonts.regular.copyWith(
                   // Assuming AppFonts is defined
-                  fontSize: 32,
+                  fontSize: 32.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -307,7 +344,6 @@ class _StatBox extends StatelessWidget {
     );
   }
 }
-
 
 class ProjectCard extends StatelessWidget {
   final ProjectItem projectItem;

@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:treelove/features/authentication/models/google.login.request.model.dart';
+import 'package:treelove/features/authentication/models/google.login.response.model.dart';
+
 import '../../core/network/api_connection.dart';
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
@@ -11,31 +14,30 @@ import '../../features/authentication/models/login.request.model.dart';
 import '../../features/authentication/models/login.response.model.dart';
 import '../models/response.mode.dart';
 
-class LoginRepository{
+class LoginRepository {
   final ApiConnection? api;
   LoginRepository({this.api});
 
   final pref = SecurePreference();
   Future<ApiResult> login(LoginRequestModel request) async {
-  final Map<String, dynamic> fields = {
-    if (request.email != null) "email": request.email,
-    if (request.phone != null) "phone": request.phone,
-    "password": request.password,
-    "device_id": request.deviceId,
-  };
+    final Map<String, dynamic> fields = {
+      if (request.email != null) "email": request.email,
+      if (request.phone != null) "phone": request.phone,
+      "password": request.password,
+      "device_id": request.deviceId,
+    };
     ApiResult result = await api!.apiConnectionMultipart<LoginResponseModel>(
-      BaseNetwork.loginURL,
-      BaseNetwork.getMultipartHeaders(),
-      'post',
-      loginResponseModelFromJson,
-      fields: fields,
-      isLogIn: true
-    );
+        BaseNetwork.loginURL,
+        BaseNetwork.getMultipartHeaders(),
+        'post',
+        loginResponseModelFromJson,
+        fields: fields,
+        isLogIn: true);
     if (result.status == ApiStatus.success) {
       LoginResponseModel obj = result.response;
 
       final securePref = SecurePreference();
-      securePref.setString(Keys.phone,obj.data.user.phone??'');
+      securePref.setString(Keys.phone, obj.data.user.phone ?? '');
       securePref.setString(Keys.id, obj.data.user.id);
       securePref.setString(Keys.email, obj.data.user.email);
       securePref.setString(Keys.groupName, obj.data.user.groupName);
@@ -44,10 +46,12 @@ class LoginRepository{
       securePref.setString(Keys.firstName, obj.data.user.profile!.firstName);
       securePref.setString(Keys.lastName, obj.data.user.profile!.lastName);
       securePref.setBool(Keys.isActive, obj.data.user.isActive);
-      securePref.setString(Keys.accessToken,obj.data.tokens.access);
-      securePref.setString(Keys.refreshToken,obj.data.tokens.refresh);
-      securePref.setString(Keys.accessTokenExpires,obj.data.tokens.accessTokenExpires.toString());
-      securePref.setString(Keys.refreshTokenExpires,obj.data.tokens.refresh.toString());
+      securePref.setString(Keys.accessToken, obj.data.tokens.access);
+      securePref.setString(Keys.refreshToken, obj.data.tokens.refresh);
+      securePref.setString(Keys.accessTokenExpires,
+          obj.data.tokens.accessTokenExpires.toString());
+      securePref.setString(
+          Keys.refreshTokenExpires, obj.data.tokens.refresh.toString());
 
       // 🔹 Send FCM token after login automatically
       final accessToken = obj.data.tokens.access;
@@ -65,8 +69,28 @@ class LoginRepository{
     return result;
   }
 
-  Future<ApiResult> logout({required String refreshToken}) async {
+  Future<ApiResult> googleSignIn(GoogleLoginRequestModel request) async {
+    final Map<String, dynamic> fields = {
+      "email": request.email,
+      "name": request.name,
+      "oauth_uid": request.oauthUid,
+      "id_token": request.idToken,
+      // "firebase_claims": json.encode(request.additionalData),
+      "oauth_provider": request.provider,
+      "group": request.userTypeId,
+      if (request.deviceId != null) "device_id": request.deviceId,
+    };
+    ApiResult result = await api!.apiConnectionMultipart(
+      BaseNetwork.loginOAuthURL,
+      BaseNetwork.getHeaderForLogin(),
+      'post',
+      googleLoginResponseModelFromJson,
+      fields: fields,
+    );
+    return result;
+  }
 
+  Future<ApiResult> logout({required String refreshToken}) async {
     final token = await pref.getString(Keys.accessToken);
     final Map<String, dynamic> fields = {
       "refresh": refreshToken,
@@ -76,15 +100,15 @@ class LoginRepository{
       BaseNetwork.getJsonHeaders(),
       // BaseNetwork.getHeaderWithToken(token),
       'post',
-          (json) => ResponseModel.fromJson(jsonDecode(json)),
+      (json) => ResponseModel.fromJson(jsonDecode(json)),
       fields: fields,
     );
-    if (result.status == ApiStatus.noContent|| result.status == ApiStatus.resetContent) {
+    if (result.status == ApiStatus.noContent ||
+        result.status == ApiStatus.resetContent) {
       await pref.clear();
     }
     return result;
   }
-
 }
 
 /*
