@@ -128,6 +128,7 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
           } else if (state is ApiSuccess<PlantationResponseModel, ResponseModel>) {
             EasyLoading.dismiss();
             showNotification(type: Not.success,context, message: state.data.message);
+            Navigator.pop(context, "success");
             // AppRoute.pop(context);
           } else if (state is ApiFailure<PlantationResponseModel, ResponseModel>) {
             EasyLoading.dismiss();

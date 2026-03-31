@@ -1,3 +1,4 @@
+/*
 import 'dart:convert';
 
 // Helper methods for easy JSON string serialization/deserialization
@@ -67,4 +68,97 @@ class Activity {
     "timestamp": timestamp.toIso8601String(),
   };
 }
+*/
+import 'dart:convert';
 
+// Helper methods
+MaintenanceActivityResponseModel maintenanceActivityResponseModelFromJson(
+        String str) =>
+    MaintenanceActivityResponseModel.fromJson(json.decode(str));
+
+String maintenanceActivityResponseModelToJson(
+        MaintenanceActivityResponseModel data) =>
+    json.encode(data.toJson());
+
+class MaintenanceActivityResponseModel {
+  final String status;
+  final String message;
+  final List<Activity> data;
+
+  MaintenanceActivityResponseModel({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory MaintenanceActivityResponseModel.fromJson(
+      Map<String, dynamic>? json) {
+    if (json == null) {
+      return MaintenanceActivityResponseModel(
+        status: '',
+        message: '',
+        data: [],
+      );
+    }
+
+    return MaintenanceActivityResponseModel(
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      data:
+          (json['data'] as List?)?.map((e) => Activity.fromJson(e)).toList() ??
+              [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        "status": status,
+        "message": message,
+        "data": data.map((x) => x.toJson()).toList(),
+      };
+}
+
+class Activity {
+  final String id;
+  final String name;
+  final String description;
+  final String? icon;
+  final DateTime? timestamp;
+
+  Activity({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.icon,
+    this.timestamp,
+  });
+
+  factory Activity.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return Activity(
+        id: '',
+        name: '',
+        description: '',
+        icon: null,
+        timestamp: null,
+      );
+    }
+
+    return Activity(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      icon: json['icon']?.toString(),
+      timestamp: json['timestamp'] != null
+          ? DateTime.tryParse(json['timestamp'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "description": description,
+        "icon": icon,
+        "timestamp": timestamp?.toIso8601String(),
+      };
+}

@@ -15,7 +15,7 @@ import 'package:treelove/features/vendor/task/bloc/task_allocation_bloc.dart';
 import '../../../../common/bloc/api_event.dart';
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
-import '../../../../core/config/resource/service_ids.dart';
+import '../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../core/config/themes/app_color.dart';
 import '../../../../core/config/themes/app_fonts.dart';
 import '../../../../core/network/api_connection.dart';
@@ -111,10 +111,10 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
         listener: (context, state) {
           EasyLoading.dismiss();
           if (state is ApiSuccess<TaskAllocationResponseModel, ResponseModel>) {
-            showNotification(context, message: state.data.message);
+            showNotification(context, message: state.data.message, type: Not.success);
           } else if (state
               is ApiFailure<TaskAllocationResponseModel, ResponseModel>) {
-            showNotification(context, message: state.error.message.toString());
+            showNotification(context, message: state.error.message.toString(), type: Not.failed);
           } else if (state
               is TokenExpired<TaskAllocationResponseModel, ResponseModel>) {
             AppRoute.pushReplacement(context, SignInScreen.route,

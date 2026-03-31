@@ -400,6 +400,19 @@ class AppRoute {
     );
   }
 
+  /// Push a new route and wait for a result to be returned when the pushed route is popped.
+  static Future<T?> goToNextPageWithResult<T>({
+    required BuildContext context,
+    required String screen,
+    required Map arguments,
+  }) {
+    return Navigator.pushNamed<T>(
+      context,
+      screen,
+      arguments: arguments,
+    );
+  }
+
   static _showErrorCantGoBack(BuildContext context) {
     const SnackBar(
       content: Text(

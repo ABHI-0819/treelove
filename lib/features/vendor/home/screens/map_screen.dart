@@ -2495,7 +2495,7 @@ class _VendorMapScreenState extends State<VendorMapScreen>
 
   void _fetchTreeList() async {
     final vendorId = await pref.getString(Keys.id);
-    mapBloc.add(ApiListFetch());
+    mapBloc.add(ApiListFetch(areaId: widget.areaId, vendorId: vendorId));
   }
 
   void _toggleView(bool isMapView) {

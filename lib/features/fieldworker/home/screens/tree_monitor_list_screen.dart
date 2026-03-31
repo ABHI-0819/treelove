@@ -11,6 +11,7 @@ import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/planted.list.response.model.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/plantation_repository.dart';
+import '../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/route/app_route.dart';
 import '../../../../core/config/themes/app_color.dart';
@@ -32,24 +33,40 @@ class TreeMonitorListScreen extends StatefulWidget {
 class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
   final List<Map<String, dynamic>> _treeData = List.generate(
     4,
-        (index) => {
-      'id': '23be33fa-b2ef-4695-9c7a-d8c9bab8295${index.toString().padLeft(1, '0')}',
-      'name': ['Ain','Ain','Ain','Ain'][index % 5],
-      'scientificName': ['Terminalia elliptica','Terminalia elliptica','Terminalia elliptica','Terminalia elliptica'][index % 5],
+    (index) => {
+      'id':
+          '23be33fa-b2ef-4695-9c7a-d8c9bab8295${index.toString().padLeft(1, '0')}',
+      'name': ['Ain', 'Ain', 'Ain', 'Ain'][index % 5],
+      'scientificName': [
+        'Terminalia elliptica',
+        'Terminalia elliptica',
+        'Terminalia elliptica',
+        'Terminalia elliptica'
+      ][index % 5],
       'imageUrl': Images.sampleImg,
-      'healthStatus': ['Excellent', 'Good', 'Fair', 'Needs Attention', 'Critical'][index % 5],
-      'lastMonitored': ['Today', '2 days ago', '1 week ago', '2 weeks ago', '1 month ago'][index % 5],
+      'healthStatus': [
+        'Excellent',
+        'Good',
+        'Fair',
+        'Needs Attention',
+        'Critical'
+      ][index % 5],
+      'lastMonitored': [
+        'Today',
+        '2 days ago',
+        '1 week ago',
+        '2 weeks ago',
+        '1 month ago'
+      ][index % 5],
       'growthRate': ['Normal', 'Fast', 'Slow', 'Normal', 'Fast'][index % 5],
     },
   );
 
-  late MapBloc  mapBloc;
+  late MapBloc mapBloc;
 
   @override
   void initState() {
-    mapBloc = MapBloc(
-        PlantationRepository(api:  ApiConnection())
-    );
+    mapBloc = MapBloc(PlantationRepository(api: ApiConnection()));
     mapBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
@@ -65,128 +82,145 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFFE),
-      body: BlocProvider(
-  create: (context) => mapBloc,
-  child:  BlocConsumer<MapBloc, ApiState<PlantedListResponseModel, ResponseModel>>(
-    listener: (context, state) {
-      if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
-        AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
-      }
-    },
-    builder: (context, state) {
-      if (state is ApiLoading<PlantedListResponseModel, ResponseModel>) {
-        return const Center(child: CircularProgressIndicator());
-      }
+        backgroundColor: const Color(0xFFF8FFFE),
+        body: BlocProvider(
+            create: (context) => mapBloc,
+            child: BlocConsumer<MapBloc,
+                ApiState<PlantedListResponseModel, ResponseModel>>(
+              listener: (context, state) {
+                if (state
+                    is TokenExpired<PlantedListResponseModel, ResponseModel>) {
+                  AppRoute.pushReplacement(context, SignInScreen.route,
+                      arguments: {});
+                }
+              },
+              builder: (context, state) {
+                if (state
+                    is ApiLoading<PlantedListResponseModel, ResponseModel>) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-      if (state is ApiFailure<PlantedListResponseModel, ResponseModel>) {
-        return Center(
-          child: Text(
-            state.error.message ?? 'Something went wrong!',
-            style: const TextStyle(color: Colors.red),
-          ),
-        );
-      }
-
-      if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
-        final plantedTrees = state.data.data; //  real list of PlantedTreeModel
-
-
-        return  CustomScrollView(
-          slivers: [
-            // Sleek App Bar
-            SliverAppBar(
-              expandedHeight: 80,
-              floating: false,
-              pinned: true,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF00695C),
-                        Color(0xFF004D40),
-                      ],
+                if (state
+                    is ApiFailure<PlantedListResponseModel, ResponseModel>) {
+                  return Center(
+                    child: Text(
+                      state.error.message ?? 'Something went wrong!',
+                      style: const TextStyle(color: Colors.red),
                     ),
-                  ),
-                ),
-              ),
-              leading: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-                  onPressed: () => AppRoute.pop(context),
-                ),
-              ),
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Tree Monitor',
-                    style: AppFonts.body.copyWith(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    'Monitoring green spaces',
-                    // '${_treeData.length} trees under observation',
-                    style: AppFonts.regular.copyWith(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                  );
+                }
 
-            // Tree List
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(15, 8, 15, 20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) => _TreeCard(
-                    treeData: plantedTrees[index],
-                    onDirectionPressed: () {
-                      _openMapsApp(plantedTrees[index].location.coordinates[1], plantedTrees[index].location.coordinates[0]);
-                      // debugPrint("Direction pressed for tree: ${_treeData[index]['id']}");
-                    },
-                    onMonitorPressed: () {
-                      AppRoute.goToNextPage(
-                          context: context,
-                          screen: MonitorActivityScreen.route,
-                          arguments: {
-                            'plantationId':plantedTrees[index].id.toString(),
-                            'serviceId':plantedTrees[index].monitoringServiceId
-                          }
-                      );
-                    },
-                  ),
-                  childCount: plantedTrees.length,
-                ),
-              ),
-            ),
-          ],
-        );
-      }
+                if (state
+                    is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
+                  final plantedTrees =
+                      state.data.data; //  real list of PlantedTreeModel
 
-      return const SizedBox(); // fallback
-    },
-  )
+                  return CustomScrollView(
+                    slivers: [
+                      // Sleek App Bar
+                      SliverAppBar(
+                        expandedHeight: 80,
+                        floating: false,
+                        pinned: true,
+                        elevation: 0,
+                        backgroundColor: Colors.transparent,
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0xFF00695C),
+                                  Color(0xFF004D40),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        leading: Container(
+                          margin: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new,
+                                color: Colors.white, size: 18),
+                            onPressed: () => AppRoute.pop(context),
+                          ),
+                        ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Tree Monitor',
+                              style: AppFonts.body.copyWith(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Monitoring green spaces',
+                              // '${_treeData.length} trees under observation',
+                              style: AppFonts.regular.copyWith(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-)
-    );
+                      // Tree List
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(15, 8, 15, 20),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => _TreeCard(
+                              treeData: plantedTrees[index],
+                              onDirectionPressed: () {
+                                _openMapsApp(
+                                    plantedTrees[index].location.coordinates[1],
+                                    plantedTrees[index]
+                                        .location
+                                        .coordinates[0]);
+                                // debugPrint("Direction pressed for tree: ${_treeData[index]['id']}");
+                              },
+                              onMonitorPressed: () {
+                                if (plantedTrees[index].monitoringServiceId ==
+                                    null) {
+                                  showNotification(context,
+                                      type: Not.failed,
+                                      message:
+                                          "No monitoring service available for this tree.");
+                                  return;
+                                }
+                                AppRoute.goToNextPage(
+                                    context: context,
+                                    screen: MonitorActivityScreen.route,
+                                    arguments: {
+                                      'plantationId':
+                                          plantedTrees[index].id.toString(),
+                                      'serviceId': plantedTrees[index]
+                                          .monitoringServiceId
+                                    });
+                              },
+                            ),
+                            childCount: plantedTrees.length,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return const SizedBox(); // fallback
+              },
+            )));
   }
 
   void _openMapsApp(double lat, double lng) async {
@@ -204,23 +238,21 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: isSelected
-            ? const Color(0xFF0E5D57)
-            : Colors.white,
+        color: isSelected ? const Color(0xFF0E5D57) : Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isSelected
-              ? const Color(0xFF0E5D57)
-              : const Color(0xFFE5E7EB),
+          color: isSelected ? const Color(0xFF0E5D57) : const Color(0xFFE5E7EB),
           width: 1.5,
         ),
-        boxShadow: isSelected ? [
-          BoxShadow(
-            color: const Color(0xFF0E5D57).withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : null,
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF0E5D57).withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -248,9 +280,7 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                 style: AppFonts.body.copyWith(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : const Color(0xFF6B7280),
+                  color: isSelected ? Colors.white : const Color(0xFF6B7280),
                 ),
               ),
             ],
@@ -327,7 +357,7 @@ class _TreeCard extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: _buildTreeImage(treeData.thumbnail??''),
+                          child: _buildTreeImage(treeData.thumbnail ?? ''),
                         ),
                       ),
 
@@ -350,37 +380,36 @@ class _TreeCard extends StatelessWidget {
                                 ),
                                 const Spacer(),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE6F7FF),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    treeData.treeSpecies.id.length > 10
-                                        ? '...${treeData.treeSpecies.id.substring(treeData.treeSpecies.id.length - 10)}'
-                                        : treeData.treeSpecies.id, // fallback if less than 8 chars
-                                    style: AppFonts.regular.copyWith(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF1A5F3E),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
                                     ),
-                                  )
-                                ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE6F7FF),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      treeData.treeSpecies.id.length > 10
+                                          ? '...${treeData.treeSpecies.id.substring(treeData.treeSpecies.id.length - 10)}'
+                                          : treeData.treeSpecies
+                                              .id, // fallback if less than 8 chars
+                                      style: AppFonts.regular.copyWith(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF1A5F3E),
+                                      ),
+                                    )),
                               ],
                             ),
-
                             const SizedBox(height: 8),
-
                             Row(
                               children: [
                                 Container(
                                   width: 16,
                                   height: 16,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF0E5D57).withOpacity(0.1),
+                                    color: const Color(0xFF0E5D57)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -402,16 +431,15 @@ class _TreeCard extends StatelessWidget {
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: 8),
-
                             Row(
                               children: [
                                 Container(
                                   width: 16,
                                   height: 16,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6B7280).withOpacity(0.1),
+                                    color: const Color(0xFF6B7280)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -435,8 +463,6 @@ class _TreeCard extends StatelessWidget {
                       ),
                     ],
                   ),
-
-
 
                   const SizedBox(height: 16),
 
@@ -632,17 +658,13 @@ class _TreeCard extends StatelessWidget {
       );
     } else {
       return Image.network(
-        BaseNetwork.BASE_Image_URL+imageUrl,
+        BaseNetwork.BASE_Image_URL + imageUrl,
         width: 64,
         height: 64,
         fit: BoxFit.cover,
       );
     }
   }
-
-
-
-
 }
 
 /*
@@ -669,4 +691,3 @@ const SizedBox(height: 20),
                     ],
                   ),
 */
-

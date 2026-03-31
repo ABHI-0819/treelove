@@ -16,40 +16,39 @@ import '../../../vendor/task/models/service_detail_response_model.dart';
 import 'tree_plantation_screen.dart';
 
 class SelectTreeTypeScreen extends StatefulWidget {
-  static const route ="/select-species-plantation";
+  static const route = "/select-species-plantation";
   final String serviceType;
   final String projectAreaId;
-  const SelectTreeTypeScreen({super.key,required this.serviceType,required this.projectAreaId});
+  const SelectTreeTypeScreen(
+      {super.key, required this.serviceType, required this.projectAreaId});
 
   @override
   State<SelectTreeTypeScreen> createState() => _SelectTreeTypeScreenState();
 }
 
 class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
-
   late ServiceDetailBloc serviceDetailBloc;
-  
+
   @override
   void initState() {
-    serviceDetailBloc = ServiceDetailBloc(ServicesRepository(api: ApiConnection()));
-    serviceDetailBloc.add(ApiListFetch(serviceName: widget.serviceType,projectAreaId: widget.projectAreaId));
+    serviceDetailBloc =
+        ServiceDetailBloc(ServicesRepository(api: ApiConnection()));
+    serviceDetailBloc.add(ApiListFetch(
+        serviceName: widget.serviceType, projectAreaId: widget.projectAreaId));
 
     // TODO: implement initState
     super.initState();
   }
 
-  Future<void>  _refreshData()async{
-    serviceDetailBloc.add(ApiListFetch(serviceName: widget.serviceType,projectAreaId: widget.projectAreaId));
-
+  Future<void> _refreshData() async {
+    serviceDetailBloc.add(ApiListFetch(
+        serviceName: widget.serviceType, projectAreaId: widget.projectAreaId));
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.white,
-
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80), // same height
         child: AppBar(
@@ -105,78 +104,97 @@ class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
         ),
       ),
       body: BlocProvider(
-  create: (context) => serviceDetailBloc,
-  child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select tree species',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                "↓ Pull down to refresh",
-                textAlign: TextAlign.center,
+        create: (context) => serviceDetailBloc,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select tree species',
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey[600],
-                  fontStyle: FontStyle.italic,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            BlocBuilder<ServiceDetailBloc,
-                ApiState<ServiceDetailResponse, ResponseModel>>(
-              builder: (context, state) {
-                if(state is ApiLoading){
-                  return Center(child: CircularProgressIndicator());
-                } else if (state is ApiSuccess<ServiceDetailResponse,
-                    ResponseModel>)
-                {
-                  ServiceDetailResponse service = state.data;
-                  return   Expanded(
-                    child:  CommonRefreshIndicator(
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  "↓ Pull down to refresh",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              BlocBuilder<ServiceDetailBloc,
+                  ApiState<ServiceDetailResponse, ResponseModel>>(
+                builder: (context, state) {
+                  if (state is ApiLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (state
+                      is ApiSuccess<ServiceDetailResponse, ResponseModel>) {
+                    ServiceDetailResponse service = state.data;
+                    return Expanded(
+                        child: CommonRefreshIndicator(
                       onRefresh: _refreshData,
                       isLoading: false,
-                      child:
-                      ListView.separated(
-                      itemCount: service.data.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        // final tree = treeTypes[index];
-                        return TreeTypeCard(tree: TreeType(
-                          serviceType: widget.serviceType,
-                            serviceId: service.data[index].serviceId,
-                            projectAreaId: widget.projectAreaId,
-                            name: service.data[index].name, species: service.data[index].scientificName,
-                            imageUrl:service.data[index].media,
-                            totalDone:service.data[index].totalDone,
-                            totalRequired: service.data[index].totalRequired,
-                        ));
-                      },
-                    ),
-                  ));
-                } else {
-                  return const Center(
-                    child: Text(
-                      "No tree species found",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  );
-                }
-              },
-            ),
-
-          ],
+                      child: ListView.separated(
+                        itemCount: service.data.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          // final tree = treeTypes[index];
+                          return TreeTypeCard(
+                              onTap: () => navigateToPlantation(
+                                  serviceId: service.data[index].serviceId),
+                              tree: TreeType(
+                                serviceType: widget.serviceType,
+                                serviceId: service.data[index].serviceId,
+                                projectAreaId: widget.projectAreaId,
+                                name: service.data[index].name,
+                                species: service.data[index].scientificName,
+                                imageUrl: service.data[index].media,
+                                totalDone: service.data[index].totalDone,
+                                totalRequired:
+                                    service.data[index].totalRequired,
+                              ));
+                        },
+                      ),
+                    ));
+                  } else {
+                    return const Center(
+                      child: Text(
+                        "No tree species found",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
-),
     );
+  }
+
+  void navigateToPlantation({String? serviceId}) {
+    if (serviceId == null) return;
+    final result = AppRoute.goToNextPageWithResult(
+        context: context,
+        screen: PlantTreeScreen.route,
+        arguments: {
+          'serviceType': widget.serviceType,
+          'serviceId': serviceId,
+          'projectAreaId': widget.projectAreaId,
+        });
+    if (result != null) {
+      serviceDetailBloc.add(ApiListFetch(
+          serviceName: widget.serviceType,
+          projectAreaId: widget.projectAreaId));
+    }
   }
 }
 
@@ -186,7 +204,7 @@ class TreeType {
   final String projectAreaId;
   final String name;
   final String species;
-  final String ? imageUrl;
+  final String? imageUrl;
   final int totalDone;
   final int totalRequired;
 
@@ -196,28 +214,22 @@ class TreeType {
     required this.projectAreaId,
     required this.name,
     required this.species,
-     this.imageUrl,
-     required this.totalDone,
-     required this.totalRequired,
+    this.imageUrl,
+    required this.totalDone,
+    required this.totalRequired,
   });
 }
 
 class TreeTypeCard extends StatelessWidget {
   final TreeType tree;
+  final VoidCallback onTap;
 
-  const TreeTypeCard({super.key, required this.tree});
+  const TreeTypeCard({super.key, required this.tree, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        // TODO: Handle tree selection logic
-        AppRoute.goToNextPage(context: context, screen: PlantTreeScreen.route, arguments: {
-          'serviceType':tree.serviceType,
-          'serviceId': tree.serviceId,
-          'projectAreaId':tree.projectAreaId
-        });
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -238,7 +250,8 @@ class TreeTypeCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                tree.imageUrl??"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s",
+                tree.imageUrl ??
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s",
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
@@ -265,8 +278,7 @@ class TreeTypeCard extends StatelessWidget {
             ),
             Spacer(),
             Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: _getStatusColor(tree.totalDone, tree.totalRequired)
                     .withOpacity(0.15),
@@ -312,7 +324,6 @@ class TreeTypeCard extends StatelessWidget {
     return Colors.red; // very low progress ❌
   }
 }
-
 
 /*
 import 'package:flutter/material.dart';

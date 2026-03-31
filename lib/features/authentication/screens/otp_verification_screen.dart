@@ -74,11 +74,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     height: 1.3,
                     color: Colors.black87,
                   ),
-                  // style: TextStyle(
-                  //   fontSize: 32,
-                  //   fontWeight: FontWeight.w600,
-                  //   height: 1.2,
-                  // ),
                 ),
                 const SizedBox(height: 12),
                 const Text(
