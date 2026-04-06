@@ -91,9 +91,12 @@ class BaseNetwork {
       "${_BASE_URL}api/v1/projects/project-areas/";
   static const String satelliteMonitorResultUrl =
       "${_BASE_URL}api/v1/survey/satellite-monitoring/";
+
+  static const String fieldworkerDashboardUrl =
+      "${_BASE_URL}api/v1/projects/fieldworker-dashboard/";
   //http://43.205.169.130/api/v1/projects/fieldworker-dashboard/
   // https://api.treelov.com/api/v1/projects/fieldworker/home-dashboard
-  static const String fieldworkerDashboardUrl =
+  static const String fieldworkerHomeDashboardUrl =
       "${_BASE_URL}api/v1/projects/fieldworker/home-dashboard/";
 
   //TODO: Vendor URL :

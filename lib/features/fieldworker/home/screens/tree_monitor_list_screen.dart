@@ -23,8 +23,9 @@ import '../../../vendor/home/bloc/map_bloc.dart';
 
 class TreeMonitorListScreen extends StatefulWidget {
   static const route = '/tree-monitor-list';
+  final String projectAreaId;
 
-  const TreeMonitorListScreen({super.key});
+  const TreeMonitorListScreen({super.key, required this.projectAreaId});
 
   @override
   State<TreeMonitorListScreen> createState() => _TreeMonitorListScreenState();
@@ -67,7 +68,7 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
   @override
   void initState() {
     mapBloc = MapBloc(PlantationRepository(api: ApiConnection()));
-    mapBloc.add(ApiListFetch());
+    mapBloc.add(ApiListFetch(areaId: widget.projectAreaId));
     // TODO: implement initState
     super.initState();
   }
@@ -356,7 +357,7 @@ class _TreeCard extends StatelessWidget {
                           ),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(8.r),
                           child: _buildTreeImage(treeData.thumbnail ?? ''),
                         ),
                       ),
@@ -636,6 +637,7 @@ class _TreeCard extends StatelessWidget {
     }
   }
 
+  /*
   Widget _buildTreeImage(String imageUrl) {
     if (imageUrl.startsWith('http')) {
       return CachedNetworkImage(
@@ -665,29 +667,80 @@ class _TreeCard extends StatelessWidget {
       );
     }
   }
+  */
+  Widget _buildTreeImage(String? imageUrl) {
+    // ✅ Null / empty safety
+    if (imageUrl == null || imageUrl.isEmpty || imageUrl == 'null') {
+      return _buildPlaceholder();
+    }
+
+    final isNetworkUrl = imageUrl.startsWith('http');
+    final fullUrl =
+        isNetworkUrl ? imageUrl : BaseNetwork.BASE_Image_URL + imageUrl;
+
+    return CachedNetworkImage(
+      imageUrl: fullUrl,
+      width: 64.w,
+      height: 64.h,
+      fit: BoxFit.cover,
+
+      //  While loading (slow network)
+      placeholder: (context, url) => _buildLoader(),
+
+      //  When image fails (network/server/404)
+      errorWidget: (context, url, error) {
+        return _buildErrorWithRetry(fullUrl);
+      },
+    );
+  }
+
+  Widget _buildErrorWithRetry(String url) {
+    return GestureDetector(
+      onTap: () {
+        // Force reload by rebuilding widget
+        // (you can also use a state variable if needed)
+      },
+      child: Container(
+        width: 64.w,
+        height: 64.h,
+        color: Colors.grey.shade200,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.refresh, size: 18),
+            SizedBox(height: 2),
+            Text(
+              'Retry',
+              style: TextStyle(fontSize: 8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoader() {
+    return Container(
+        width: 64.w,
+      height: 64.h,
+      alignment: Alignment.center,
+      color: Colors.grey.shade200,
+      child: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 64.w,
+      height: 64.h,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image),
+    );
+  }
+
 }
 
-/*
-const SizedBox(height: 20),
-
-                  // Health & Growth Status Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatusIndicator(
-                            'Health',
-                            healthStatus,
-                            _getHealthColor(healthStatus)
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatusIndicator(
-                            'Growth',
-                            growthRate,
-                            _getGrowthColor(growthRate)
-                        ),
-                      ),
-                    ],
-                  ),
-*/

@@ -23,18 +23,18 @@ import '../../home/screens/tree_maintenance_list_screen.dart';
 import '../models/assigned_service_type_response.dart';
 
 class ProjectActionScreen extends StatefulWidget {
-  static const route ='/ProjectActionScreen';
+  static const route = '/ProjectActionScreen';
   final String projectId;
   final String projectAreaId;
 
-  const ProjectActionScreen({super.key,required this.projectId,required this.projectAreaId});
+  const ProjectActionScreen(
+      {super.key, required this.projectId, required this.projectAreaId});
 
   @override
   State<ProjectActionScreen> createState() => _ProjectActionScreenState();
 }
 
 class _ProjectActionScreenState extends State<ProjectActionScreen> {
-
   late AreaDetailBloc areaDetailBloc;
 
   @override
@@ -62,10 +62,12 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
             ApiState<AssignedServiceTypeResponse, ResponseModel>>(
           listener: (context, state) {
             EasyLoading.dismiss();
-              if (state is ApiFailure<AssignedServiceTypeResponse, ResponseModel>) {
+            if (state
+                is ApiFailure<AssignedServiceTypeResponse, ResponseModel>) {
               showNotification(context,
                   message: state.error.message.toString());
-            } else if (state is TokenExpired<AssignedServiceTypeResponse, ResponseModel>) {
+            } else if (state
+                is TokenExpired<AssignedServiceTypeResponse, ResponseModel>) {
               AppRoute.pushReplacement(context, SignInScreen.route,
                   arguments: {});
             }
@@ -73,11 +75,10 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
           child: BlocBuilder<AreaDetailBloc,
               ApiState<AssignedServiceTypeResponse, ResponseModel>>(
             builder: (context, state) {
-              if(state is ApiLoading){
+              if (state is ApiLoading) {
                 return Center(child: CircularProgressIndicator());
-              }
-             else if (state is ApiSuccess<AssignedServiceTypeResponse,
-                  ResponseModel>) {
+              } else if (state
+                  is ApiSuccess<AssignedServiceTypeResponse, ResponseModel>) {
                 AssignedServiceTypeResponse service = state.data;
                 final areaData = service.data!;
                 final summaryList = areaData.serviceSummary; // ✅ Get from API
@@ -86,19 +87,19 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
                     _buildHeader(
                         context: context,
                         title: service.data!.name,
-                        subTitle: 'Thane, India'
-                    ),
-
+                        subTitle: 'Thane, India'),
                     SliverPadding(
                       padding: const EdgeInsets.all(16),
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
-                              (context, index) {
+                          (context, index) {
                             final summary = summaryList[index];
 
                             // Decide icon & color based on service_type
-                            final iconData = _getServiceIcon(summary.serviceType);
-                            final bgColor = _getServiceColor(summary.serviceType);
+                            final iconData =
+                                _getServiceIcon(summary.serviceType);
+                            final bgColor =
+                                _getServiceColor(summary.serviceType);
 
                             return _buildActionCard(
                               title: summary.serviceType,
@@ -123,19 +124,20 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
                                         context: context,
                                         screen: TreeMaintenanceListScreen.route,
                                         arguments: {
+                                          'projectAreaId': widget.projectAreaId,
                                           'serviceId': summary.serviceType
-                                        }
-                                    );
+                                        });
                                     break;
                                   case "monitoring":
                                     AppRoute.goToNextPage(
                                         context: context,
                                         screen: TreeMonitorListScreen.route,
-                                        arguments: {}
-                                    );
+                                        arguments: {
+                                          'projectAreaId': widget.projectAreaId,
+                                        });
                                     break;
                                   default:
-                                  // Handle other cases
+                                    // Handle other cases
                                     break;
                                 }
                               },
@@ -196,7 +198,8 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
           // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 18),
           onPressed: () => AppRoute.pop(context),
         ),
       ),
@@ -249,7 +252,6 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
     );
   }
 
-
   // ✅ Map service types to icons
   IconData _getServiceIcon(String type) {
     switch (type.toLowerCase()) {
@@ -287,7 +289,7 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
     VoidCallback? onTap,
   }) {
     double progress =
-    totalRequired == 0 ? 0 : totalDone / totalRequired; // calculate %
+        totalRequired == 0 ? 0 : totalDone / totalRequired; // calculate %
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -379,5 +381,4 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
       ),
     );
   }
-
 }

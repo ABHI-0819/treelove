@@ -262,6 +262,7 @@ class AppRoute {
         return MaterialPageRoute(
             builder: (_) => TreeMaintenanceListScreen(
                   serviceId: argument!['serviceId'],
+                  projectAreaId: argument['projectAreaId'],
                 ));
       case '/maintenance-activity':
         Map? argument = settings.arguments as Map?;
@@ -271,7 +272,11 @@ class AppRoute {
                   serviceId: argument['serviceId'],
                 ));
       case '/tree-monitor-list':
-        return MaterialPageRoute(builder: (_) => TreeMonitorListScreen());
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => TreeMonitorListScreen(
+                  projectAreaId: argument!['projectAreaId'],
+                ));
       case '/monitor-activity':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(

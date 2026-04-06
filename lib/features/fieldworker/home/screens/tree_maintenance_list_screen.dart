@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/config/themes/app_fonts.dart';
 import 'package:treelove/core/network/base_network.dart';
@@ -21,7 +23,9 @@ import 'maintenance_activity_screen.dart';
 class TreeMaintenanceListScreen extends StatefulWidget {
   static const route = "/tree-maintenance-list";
   final String serviceId;
-  const TreeMaintenanceListScreen({super.key, required this.serviceId});
+  final String projectAreaId;
+  const TreeMaintenanceListScreen(
+      {super.key, required this.serviceId, required this.projectAreaId});
 
   @override
   State<TreeMaintenanceListScreen> createState() =>
@@ -36,7 +40,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
   @override
   void initState() {
     mapBloc = MapBloc(PlantationRepository(api: ApiConnection()));
-    mapBloc.add(ApiListFetch());
+    mapBloc.add(ApiListFetch(areaId: widget.projectAreaId));
     // TODO: implement initState
     super.initState();
   }
@@ -48,6 +52,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
     super.dispose();
   }
 
+  /*
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +87,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
               if (state
                   is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
                 final plantedTrees =
-                    state.data.data; // ✅ real list of PlantedTreeModel
+                    state.data.data; //  real list of PlantedTreeModel
 
                 return CustomScrollView(
                   slivers: [
@@ -207,6 +212,162 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
           )),
     );
   }
+  */
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FFFE),
+      body: BlocProvider(
+        create: (context) => mapBloc,
+        child: CustomScrollView(
+          slivers: [
+            _buildAppBar(),
+            _buildFilterSection(),
+
+            // 👇 ONLY THIS PART WILL REBUILD
+            _buildTreeListBloc(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverAppBar _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 70.h,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF00695C),
+                Color(0xFF004D40),
+              ],
+            ),
+          ),
+        ),
+      ),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 18),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Tree Care',
+            style: AppFonts.body.copyWith(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            'Making nature healthier',
+            style: AppFonts.regular.copyWith(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildFilterSection() {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Filter by Status'),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                spacing: 8.w,
+                children: [
+                  _buildFilterChip('All'),
+                  _buildFilterChip('Today', dotColor: const Color(0xFFE53935)),
+                  _buildFilterChip('Tomorrow',
+                      dotColor: const Color(0xFF4CAF50)),
+                  _buildFilterChip('Overdue',
+                      dotColor: const Color(0xFFFF8C00)),
+                  _buildFilterChip('Maintenance in 2 days',
+                      dotColor: const Color(0xFF2196F3)),
+                  _buildFilterChip('Upcoming',
+                      dotColor: const Color(0xFF4CAF50)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTreeListBloc() {
+    return BlocConsumer<MapBloc,
+        ApiState<PlantedListResponseModel, ResponseModel>>(
+      listener: (context, state) {
+        if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
+          AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
+        }
+      },
+      builder: (context, state) {
+        if (state is ApiLoading<PlantedListResponseModel, ResponseModel>) {
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (state is ApiFailure<PlantedListResponseModel, ResponseModel>) {
+          return SliverFillRemaining(
+            child: Center(
+              child: Text(
+                state.error.message ?? 'Something went wrong!',
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          );
+        }
+
+        if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
+          final plantedTrees = state.data.data;
+
+          return SliverPadding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) =>
+                    _buildTreeCard(context, plantedTrees[index], index),
+                childCount: plantedTrees.length,
+              ),
+            ),
+          );
+        }
+
+        return const SliverToBoxAdapter(child: SizedBox());
+      },
+    );
+  }
 
   Widget _buildFilterChip(String label, {Color? dotColor}) {
     final isSelected = selectedFilter == label;
@@ -237,9 +398,10 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
           borderRadius: BorderRadius.circular(18),
           onTap: () {
             setState(() {
-              selectedFilter = label; // ✅ only one filter active
+              selectedFilter = label; //  only one filter active
             });
             mapBloc.add(ApiListFetch(
+              projectAreaId: widget.projectAreaId,
               maintenanceStatus: label,
             ));
             debugLog(label, name: "filter");
@@ -357,13 +519,8 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                           ),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            '${BaseNetwork.BASE_Image_URL}${treeData.thumbnail ?? ''}',
-
-                            // Images.sampleImg,
-                            fit: BoxFit.cover,
-                          ),
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: _buildTreeImage(treeData.thumbnail ?? ''),
                         ),
                       ),
 
@@ -508,7 +665,8 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${treeData.maintenanceStatus}',
+                          treeData.maintenanceStatus ??
+                              "No Status", // 'Maintenance Today', //  dynamic status text based on treeData
                           // status['text'],
                           style: AppFonts.body.copyWith(
                             fontSize: 13,
@@ -595,7 +753,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                               onTap: () {
                                 if (treeData.maintenanceServiceId == null) {
                                   showNotification(context,
-                                    type: Not.failed,
+                                      type: Not.failed,
                                       message:
                                           "No maintenance service assigned for this tree.");
                                   return;
@@ -642,5 +800,79 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
     } else {
       showNotification(context, message: "Could not open maps");
     }
+  }
+
+  Widget _buildTreeImage(String? imageUrl) {
+    // ✅ Null / empty safety
+    if (imageUrl == null || imageUrl.isEmpty || imageUrl == 'null') {
+      return _buildPlaceholder();
+    }
+
+    final isNetworkUrl = imageUrl.startsWith('http');
+    final fullUrl =
+        isNetworkUrl ? imageUrl : BaseNetwork.BASE_Image_URL + imageUrl;
+
+    return CachedNetworkImage(
+      imageUrl: fullUrl,
+      width: 64.w,
+      height: 64.h,
+      fit: BoxFit.cover,
+
+      //  While loading (slow network)
+      placeholder: (context, url) => _buildLoader(),
+
+      //  When image fails (network/server/404)
+      errorWidget: (context, url, error) {
+        return _buildErrorWithRetry(fullUrl);
+      },
+    );
+  }
+
+  Widget _buildErrorWithRetry(String url) {
+    return GestureDetector(
+      onTap: () {
+        // Force reload by rebuilding widget
+        // (you can also use a state variable if needed)
+      },
+      child: Container(
+        width: 64.w,
+        height: 64.h,
+        color: Colors.grey.shade200,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.refresh, size: 18),
+            SizedBox(height: 2),
+            Text(
+              'Retry',
+              style: TextStyle(fontSize: 8),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoader() {
+    return Container(
+      width: 64.w,
+      height: 64.h,
+      alignment: Alignment.center,
+      color: Colors.grey.shade200,
+      child: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 64.w,
+      height: 64.h,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image),
+    );
   }
 }

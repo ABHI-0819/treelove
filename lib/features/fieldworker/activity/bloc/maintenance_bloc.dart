@@ -9,8 +9,8 @@ import '../models/maintenance_activity_response_model.dart';
 import '../models/maintenance_created_response_model.dart';
 import '../models/maintenance_request_model.dart';
 
-
-class MaintenanceBloc extends Bloc<ApiEvent, ApiState<MaintenanceResponse, ResponseModel>> {
+class MaintenanceBloc
+    extends Bloc<ApiEvent, ApiState<MaintenanceResponse, ResponseModel>> {
   final MaintenanceRepository repository;
 
   MaintenanceBloc(this.repository) : super(ApiInitial()) {
@@ -19,9 +19,9 @@ class MaintenanceBloc extends Bloc<ApiEvent, ApiState<MaintenanceResponse, Respo
 
   /// ✅ Handles maintenance creation
   Future<void> _onCreateMaintenance(
-      ApiAdd<MaintenanceRequestModel> event,
-      Emitter<ApiState<MaintenanceResponse, ResponseModel>> emit,
-      ) async {
+    ApiAdd<MaintenanceRequestModel> event,
+    Emitter<ApiState<MaintenanceResponse, ResponseModel>> emit,
+  ) async {
     emit(ApiLoading());
 
     try {
@@ -29,7 +29,7 @@ class MaintenanceBloc extends Bloc<ApiEvent, ApiState<MaintenanceResponse, Respo
       final result = await repository.addMaintenanceRecord(event.data);
 
       switch (result.status) {
-        case ApiStatus.success:
+        case ApiStatus.success || ApiStatus.created:
           emit(ApiSuccess(result.response)); // MaintenanceResponseModel
           break;
         case ApiStatus.refreshTokenExpired:
@@ -49,8 +49,8 @@ class MaintenanceBloc extends Bloc<ApiEvent, ApiState<MaintenanceResponse, Respo
   }
 }
 
-
-class MaintenanceActivityBloc extends Bloc<ApiEvent, ApiState<MaintenanceActivityResponseModel, ResponseModel>> {
+class MaintenanceActivityBloc extends Bloc<ApiEvent,
+    ApiState<MaintenanceActivityResponseModel, ResponseModel>> {
   final MaintenanceRepository repository;
 
   MaintenanceActivityBloc(this.repository) : super(ApiInitial()) {
@@ -58,9 +58,9 @@ class MaintenanceActivityBloc extends Bloc<ApiEvent, ApiState<MaintenanceActivit
   }
 
   Future<void> _onFetchMaintenanceActivityList(
-      ApiListFetch event,
-      Emitter<ApiState<MaintenanceActivityResponseModel, ResponseModel>> emit,
-      ) async {
+    ApiListFetch event,
+    Emitter<ApiState<MaintenanceActivityResponseModel, ResponseModel>> emit,
+  ) async {
     emit(ApiLoading());
 
     try {
@@ -88,5 +88,4 @@ class MaintenanceActivityBloc extends Bloc<ApiEvent, ApiState<MaintenanceActivit
       emit(ApiFailure(ResponseModel(message: 'Something went wrong.')));
     }
   }
-
 }

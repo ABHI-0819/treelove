@@ -28,7 +28,7 @@ class DashboardRepository {
   // field worker dashboard
   Future<ApiResult> getFieldWorkerDashboard() async {
     ApiResult result = await api.getApiConnection(
-        BaseNetwork.fieldworkerDashboardUrl, BaseNetwork.getJsonHeaders(),
+        BaseNetwork.fieldworkerHomeDashboardUrl, BaseNetwork.getJsonHeaders(),
         // BaseNetwork.getHeaderWithToken(token),
         (String str) {
       final decoded = json.decode(str);

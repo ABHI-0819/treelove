@@ -583,7 +583,7 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
       treeHealth: selectedHealth,
       treeGrowth: selectedGrowthStage,
       media: treeImages,
-      treeGirth: 13,
+      treeGirth: 2,
       treeGirthUnit: 'ft',
       treeHeight: 17,
       treeHeightUnit: 'ft'
@@ -605,7 +605,6 @@ class _MonitorActivityScreenState extends State<MonitorActivityScreen> {
             EasyLoading.dismiss();
             showNotification(type: Not.success,context, message: state.data.message.toString());
             // Optional: reset form or go back
-            AppRoute.pop(context);
           } else if (state is ApiFailure<MonitorResponse, ResponseModel>) {
             EasyLoading.dismiss();
             showNotification(type: Not.failed,context, message: state.error.toString());

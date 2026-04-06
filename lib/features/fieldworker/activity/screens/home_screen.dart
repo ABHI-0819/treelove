@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    ServiceIds.load();
+    // ServiceIds.load();
     projectAreaBloc =
         ProjectAreaBloc(ProjectAreaRepository(api: ApiConnection()));
     projectAreaBloc.add(ApiListFetch());
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Ongoing Areas (2)',
+                  'Ongoing Areas',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
