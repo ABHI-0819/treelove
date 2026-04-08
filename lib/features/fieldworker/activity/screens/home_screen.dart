@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:treelove/common/repositories/project_area_repository.dart';
 import 'package:treelove/core/network/api_connection.dart';
+import 'package:treelove/core/widgets/common_refresh_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../common/bloc/api_event.dart';
 import '../../../../common/bloc/api_state.dart';
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: BlocProvider(
         create: (context) => projectAreaBloc,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 15.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 15.h),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +59,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    "↓ Pull down to refresh",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 BlocListener<ProjectAreaBloc,
                     ApiState<ProjectAreasResponse, ResponseModel>>(
                   listener: (context, state) {
@@ -82,36 +95,43 @@ class _HomeScreenState extends State<HomeScreen> {
                           is ApiSuccess<ProjectAreasResponse, ResponseModel>) {
                         ProjectAreasResponse areaList = state.data;
                         return Expanded(
-                          child: ListView.builder(
-                            // controller: _scrollController,
-                            itemCount:
-                                areaList.data.length, // Number of projects
-                            itemBuilder: (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  AppRoute.goToNextPage(
-                                      context: context,
-                                      screen: ProjectActionScreen.route,
-                                      arguments: {
-                                        'projectId':
-                                            areaList.data[index].projectId,
-                                        'projectAreaId': areaList.data[index].id
-                                      });
-                                },
-                                child: ProjectAreaCard(
-                                    title: areaList.data[index].name,
-                                    subtitle: areaList.data[index].type,
-                                    location: areaList
-                                        .data[index].locationDescription,
-                                    taskCount: areaList.data[index].capacity,
-                                    latitude:
-                                        areaList.data[index].centroid.latitude,
-                                    longitude:
-                                        areaList.data[index].centroid.longitude,
-                                    todayTasks:
-                                        areaList.data[index].todayTasks),
-                              );
+                          child: CommonRefreshIndicator(
+                            onRefresh: () {
+                              projectAreaBloc.add(ApiListFetch());
+                              return Future.delayed(const Duration(seconds: 1));
                             },
+                            child: ListView.builder(
+                              // controller: _scrollController,
+                              itemCount:
+                                  areaList.data.length, // Number of projects
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  onTap: () {
+                                    AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: ProjectActionScreen.route,
+                                        arguments: {
+                                          'projectId':
+                                              areaList.data[index].projectId,
+                                          'projectAreaId':
+                                              areaList.data[index].id
+                                        });
+                                  },
+                                  child: ProjectAreaCard(
+                                      title: areaList.data[index].name,
+                                      subtitle: areaList.data[index].type,
+                                      location: areaList
+                                          .data[index].locationDescription,
+                                      taskCount: areaList.data[index].capacity,
+                                      latitude: areaList
+                                          .data[index].centroid.latitude,
+                                      longitude: areaList
+                                          .data[index].centroid.longitude,
+                                      todayTasks:
+                                          areaList.data[index].todayTasks),
+                                );
+                              },
+                            ),
                           ),
                         );
                       } else {

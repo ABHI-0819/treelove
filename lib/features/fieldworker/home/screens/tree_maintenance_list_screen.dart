@@ -13,6 +13,7 @@ import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/planted.list.response.model.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/plantation_repository.dart';
+import '../../../../core/config/constants/enum/navigation_enum.dart';
 import '../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../core/network/api_connection.dart';
 import '../../../../core/widgets/common_notification.dart';
@@ -401,7 +402,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
               selectedFilter = label; //  only one filter active
             });
             mapBloc.add(ApiListFetch(
-              projectAreaId: widget.projectAreaId,
+              areaId: widget.projectAreaId,
               maintenanceStatus: label,
             ));
             debugLog(label, name: "filter");
@@ -623,7 +624,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Last maintained: ${treeData.lastMaintainedAgo}',
+                                  'Last maintained: ${treeData.lastMaintainedDate}',
                                   // 'Last maintained: ${status['lastMaintained']}',
                                   style: AppFonts.regular.copyWith(
                                     fontSize: 13,
@@ -750,7 +751,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: () {
+                              onTap: () async {
                                 if (treeData.maintenanceServiceId == null) {
                                   showNotification(context,
                                       type: Not.failed,
@@ -758,13 +759,22 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
                                           "No maintenance service assigned for this tree.");
                                   return;
                                 }
-                                AppRoute.goToNextPage(
-                                    context: context,
-                                    screen: MaintenanceActivityScreen.route,
-                                    arguments: {
-                                      'plantationId': treeData.id.toString(),
-                                      'serviceId': treeData.maintenanceServiceId
-                                    });
+                                final result = await AppRoute
+                                    .goToNextPageWithResult<NavigationResult>(
+                                  context: context,
+                                  screen: MaintenanceActivityScreen.route,
+                                  arguments: {
+                                    'plantationId': treeData.id.toString(),
+                                    'serviceId': treeData.maintenanceServiceId,
+                                  },
+                                );
+
+                                if (result == NavigationResult.success) {
+                                  // 🔥 Refresh your list / API
+                                  mapBloc.add(ApiListFetch(
+                                      areaId: widget.projectAreaId));
+                                }
+
                                 // AppRoute.goToNextPage(context: context, ...)
                               },
                               child: Center(

@@ -9,6 +9,7 @@ import '../../../../common/bloc/api_event.dart';
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/service_repository.dart';
+import '../../../../core/config/constants/enum/navigation_enum.dart';
 import '../../../../core/network/api_connection.dart';
 import '../../../../core/widgets/common_refresh_indicator.dart';
 import '../../../vendor/task/bloc/service_detail_bloc.dart';
@@ -117,7 +118,7 @@ class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Center(
                 child: Text(
                   "↓ Pull down to refresh",
@@ -129,6 +130,7 @@ class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
               BlocBuilder<ServiceDetailBloc,
                   ApiState<ServiceDetailResponse, ResponseModel>>(
                 builder: (context, state) {
@@ -180,20 +182,22 @@ class _SelectTreeTypeScreenState extends State<SelectTreeTypeScreen> {
     );
   }
 
-  void navigateToPlantation({String? serviceId}) {
+  Future<void> navigateToPlantation({String? serviceId}) async {
     if (serviceId == null) return;
-    final result = AppRoute.goToNextPageWithResult(
-        context: context,
-        screen: PlantTreeScreen.route,
-        arguments: {
-          'serviceType': widget.serviceType,
-          'serviceId': serviceId,
-          'projectAreaId': widget.projectAreaId,
-        });
-    if (result != null) {
+    final result = await AppRoute.goToNextPageWithResult<NavigationResult>(
+      context: context,
+      screen: PlantTreeScreen.route,
+      arguments: {
+        'serviceType': widget.serviceType,
+        'serviceId': serviceId,
+        'projectAreaId': widget.projectAreaId,
+      },
+    );
+    if (result == NavigationResult.success) {
       serviceDetailBloc.add(ApiListFetch(
-          serviceName: widget.serviceType,
-          projectAreaId: widget.projectAreaId));
+        serviceName: widget.serviceType,
+        projectAreaId: widget.projectAreaId,
+      ));
     }
   }
 }

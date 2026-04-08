@@ -9,6 +9,7 @@ import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/repositories/service_repository.dart';
 import 'package:treelove/core/config/themes/app_color.dart';
 import 'package:treelove/core/network/api_connection.dart';
+import 'package:treelove/core/widgets/common_refresh_indicator.dart';
 import 'package:treelove/features/fieldworker/activity/bloc/project_area_bloc.dart';
 import 'package:treelove/features/fieldworker/home/screens/tree_monitor_list_screen.dart';
 
@@ -81,73 +82,100 @@ class _ProjectActionScreenState extends State<ProjectActionScreen> {
                   is ApiSuccess<AssignedServiceTypeResponse, ResponseModel>) {
                 AssignedServiceTypeResponse service = state.data;
                 final areaData = service.data!;
-                final summaryList = areaData.serviceSummary; // ✅ Get from API
-                return CustomScrollView(
-                  slivers: [
-                    _buildHeader(
-                        context: context,
-                        title: service.data!.name,
-                        subTitle: 'Thane, India'),
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final summary = summaryList[index];
-
-                            // Decide icon & color based on service_type
-                            final iconData =
-                                _getServiceIcon(summary.serviceType);
-                            final bgColor =
-                                _getServiceColor(summary.serviceType);
-
-                            return _buildActionCard(
-                              title: summary.serviceType,
-                              icon: iconData,
-                              totalRequired: summary.totalRequired,
-                              totalDone: summary.totalDone,
-                              bgColor: bgColor,
-                              onTap: () {
-                                switch (summary.serviceType.toLowerCase()) {
-                                  case "plantation":
-                                    AppRoute.goToNextPage(
-                                      context: context,
-                                      screen: SelectTreeTypeScreen.route,
-                                      arguments: {
-                                        "serviceType": summary.serviceType,
-                                        "projectAreaId": widget.projectAreaId
-                                      },
-                                    );
-                                    break;
-                                  case "maintenance":
-                                    AppRoute.goToNextPage(
-                                        context: context,
-                                        screen: TreeMaintenanceListScreen.route,
-                                        arguments: {
-                                          'projectAreaId': widget.projectAreaId,
-                                          'serviceId': summary.serviceType
-                                        });
-                                    break;
-                                  case "monitoring":
-                                    AppRoute.goToNextPage(
-                                        context: context,
-                                        screen: TreeMonitorListScreen.route,
-                                        arguments: {
-                                          'projectAreaId': widget.projectAreaId,
-                                        });
-                                    break;
-                                  default:
-                                    // Handle other cases
-                                    break;
-                                }
-                              },
-                            );
-                          },
-                          childCount: summaryList.length,
+                final summaryList = areaData.serviceSummary; // Get from API
+                return CommonRefreshIndicator(
+                  onRefresh: () {
+                    areaDetailBloc.add(ApiFetch(
+                        projectId: widget.projectId,
+                        projectAreaId: widget.projectAreaId));
+                    return Future.delayed(const Duration(seconds: 1));
+                  },
+                  child: CustomScrollView(
+                    slivers: [
+                      _buildHeader(
+                          context: context,
+                          title: service.data?.name,
+                          subTitle: 'Let’s keep things growing 🌱'),
+                      SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 10.h),
+                            child: Text(
+                              "↓ Pull down to refresh",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.grey[600],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      SliverPadding(
+                        padding: const EdgeInsets.all(16),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final summary = summaryList[index];
+
+                              // Decide icon & color based on service_type
+                              final iconData =
+                                  _getServiceIcon(summary.serviceType);
+                              final bgColor =
+                                  _getServiceColor(summary.serviceType);
+
+                              return _buildActionCard(
+                                title: summary.serviceType,
+                                icon: iconData,
+                                totalRequired: summary.totalRequired,
+                                totalDone: summary.totalDone,
+                                bgColor: bgColor,
+                                onTap: () {
+                                  switch (summary.serviceType.toLowerCase()) {
+                                    case "plantation":
+                                      AppRoute.goToNextPage(
+                                        context: context,
+                                        screen: SelectTreeTypeScreen.route,
+                                        arguments: {
+                                          "serviceType": summary.serviceType,
+                                          "projectAreaId": widget.projectAreaId
+                                        },
+                                      );
+                                      break;
+                                    case "maintenance":
+                                      AppRoute.goToNextPage(
+                                          context: context,
+                                          screen:
+                                              TreeMaintenanceListScreen.route,
+                                          arguments: {
+                                            'projectAreaId':
+                                                widget.projectAreaId,
+                                            'serviceId': summary.serviceType
+                                          });
+                                      break;
+                                    case "monitoring":
+                                      AppRoute.goToNextPage(
+                                          context: context,
+                                          screen: TreeMonitorListScreen.route,
+                                          arguments: {
+                                            'projectAreaId':
+                                                widget.projectAreaId,
+                                          });
+                                      break;
+                                    default:
+                                      // Handle other cases
+                                      break;
+                                  }
+                                },
+                              );
+                            },
+                            childCount: summaryList.length,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               } else {
                 return const Center(

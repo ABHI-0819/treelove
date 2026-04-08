@@ -11,6 +11,7 @@ import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/planted.list.response.model.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../common/repositories/plantation_repository.dart';
+import '../../../../core/config/constants/enum/navigation_enum.dart';
 import '../../../../core/config/constants/enum/notification_enum.dart';
 import '../../../../core/config/resource/images.dart';
 import '../../../../core/config/route/app_route.dart';
@@ -191,7 +192,7 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                                         .coordinates[0]);
                                 // debugPrint("Direction pressed for tree: ${_treeData[index]['id']}");
                               },
-                              onMonitorPressed: () {
+                              onMonitorPressed: () async {
                                 if (plantedTrees[index].monitoringServiceId ==
                                     null) {
                                   showNotification(context,
@@ -200,15 +201,23 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                                           "No monitoring service available for this tree.");
                                   return;
                                 }
-                                AppRoute.goToNextPage(
-                                    context: context,
-                                    screen: MonitorActivityScreen.route,
-                                    arguments: {
-                                      'plantationId':
-                                          plantedTrees[index].id.toString(),
-                                      'serviceId': plantedTrees[index]
-                                          .monitoringServiceId
-                                    });
+                                final result = await AppRoute
+                                    .goToNextPageWithResult<NavigationResult>(
+                                  context: context,
+                                  screen: MonitorActivityScreen.route,
+                                  arguments: {
+                                    'plantationId':
+                                        plantedTrees[index].id.toString(),
+                                    'serviceId':
+                                        plantedTrees[index].monitoringServiceId,
+                                  },
+                                );
+
+                                if (result == NavigationResult.success) {
+                                  //  Refresh your list / API
+                                  mapBloc.add(ApiListFetch(
+                                      areaId: widget.projectAreaId));
+                                }
                               },
                             ),
                             childCount: plantedTrees.length,
@@ -223,6 +232,8 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
               },
             )));
   }
+
+
 
   void _openMapsApp(double lat, double lng) async {
     String url = "https://www.google.com/maps/dir/?api=1&destination=$lat,$lng";
@@ -721,7 +732,7 @@ class _TreeCard extends StatelessWidget {
 
   Widget _buildLoader() {
     return Container(
-        width: 64.w,
+      width: 64.w,
       height: 64.h,
       alignment: Alignment.center,
       color: Colors.grey.shade200,
@@ -741,6 +752,4 @@ class _TreeCard extends StatelessWidget {
       child: const Icon(Icons.image),
     );
   }
-
 }
-

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,10 +15,9 @@ import '../../../../core/config/themes/app_fonts.dart';
 import '../../../../core/network/api_connection.dart';
 import '../../../../core/storage/preference_keys.dart';
 import '../../../../core/storage/secure_storage.dart';
+import '../../../../core/widgets/common_refresh_indicator.dart';
 import '../bloc/fieldwork_dashboard_bloc.dart';
 import '../models/fieldworker_dashboard_response_model.dart';
-
-
 
 class DashboardScreen extends StatefulWidget {
   static const route = '/dashboard';
@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void initState() {
     super.initState();
-     ServiceIds.load();
+    ServiceIds.load();
     _fadeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -61,35 +61,42 @@ class _DashboardScreenState extends State<DashboardScreen>
       backgroundColor: AppColor.scaffoldBackground,
       body: BlocProvider(
         create: (_) => dashboardBloc,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildAppBar(),
-            BlocBuilder<FieldworkDashboardBloc,
-                ApiState<FieldworkerDashboardResponseModel, ResponseModel>>(
-              builder: (context, state) {
-                if (state is ApiLoading) {
-                  return const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColor.primary,
-                        strokeWidth: 2,
+        child: CommonRefreshIndicator(
+          isLoading: dashboardBloc.state is ApiLoading,
+          onRefresh: () {
+            dashboardBloc.add(ApiFetch());
+            return Future.delayed(const Duration(seconds: 1));
+          },
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildAppBar(),
+              BlocBuilder<FieldworkDashboardBloc,
+                  ApiState<FieldworkerDashboardResponseModel, ResponseModel>>(
+                builder: (context, state) {
+                  if (state is ApiLoading) {
+                    return const SliverFillRemaining(
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColor.primary,
+                          strokeWidth: 2,
+                        ),
                       ),
-                    ),
-                  );
-                } else if (state is ApiFailure<
-                    FieldworkerDashboardResponseModel, ResponseModel>) {
-                  return SliverFillRemaining(
-                    child: _ErrorView(message: state.error.message),
-                  );
-                } else if (state is ApiSuccess<
-                    FieldworkerDashboardResponseModel, ResponseModel>) {
-                  return _buildContent(state.data);
-                }
-                return const SliverToBoxAdapter(child: SizedBox.shrink());
-              },
-            ),
-          ],
+                    );
+                  } else if (state is ApiFailure<
+                      FieldworkerDashboardResponseModel, ResponseModel>) {
+                    return SliverFillRemaining(
+                      child: _ErrorView(message: state.error.message),
+                    );
+                  } else if (state is ApiSuccess<
+                      FieldworkerDashboardResponseModel, ResponseModel>) {
+                    return _buildContent(state.data);
+                  }
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -188,9 +195,21 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildContent(FieldworkerDashboardResponseModel data) {
     return SliverPadding(
-      padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 40.h),
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 40.h),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
+          Center(
+            child: Text(
+              "↓ Pull down to refresh",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          SizedBox(height: 10.h),
           _FadeSlide(
             ctrl: _fadeCtrl,
             delay: 0.00,

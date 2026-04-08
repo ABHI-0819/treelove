@@ -57,6 +57,7 @@ import '../../../features/vendor/home/screens/map_screen.dart';
 import '../../../features/vendor/task/screens/task_allocation_screen.dart';
 import '../../widgets/image_viewe.dart';
 import '../../widgets/screen_404.dart';
+import '../constants/enum/navigation_enum.dart';
 
 class AppRoute {
   Route onGenerateRoute(RouteSettings settings) {
@@ -245,11 +246,13 @@ class AppRoute {
                 ));
       case '/PlantTreeScreen':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(
-            builder: (_) => PlantTreeScreen(
-                serviceType: argument!['serviceType'],
-                serviceId: argument['serviceId'],
-                projectAreaId: argument['projectAreaId']));
+        return MaterialPageRoute<NavigationResult>(
+          builder: (_) => PlantTreeScreen(
+            serviceType: argument!['serviceType'],
+            serviceId: argument['serviceId'],
+            projectAreaId: argument['projectAreaId'],
+          ),
+        );
       case '/select-species-plantation':
         Map? argument = settings.arguments as Map?;
         return MaterialPageRoute(
@@ -266,7 +269,7 @@ class AppRoute {
                 ));
       case '/maintenance-activity':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(
+        return MaterialPageRoute<NavigationResult>(
             builder: (_) => MaintenanceActivityScreen(
                   plantationId: argument!['plantationId'],
                   serviceId: argument['serviceId'],
@@ -279,7 +282,7 @@ class AppRoute {
                 ));
       case '/monitor-activity':
         Map? argument = settings.arguments as Map?;
-        return MaterialPageRoute(
+        return MaterialPageRoute<NavigationResult>(
             builder: (_) => MonitorActivityScreen(
                   plantationId: argument!['plantationId'],
                   serviceId: argument['serviceId'],
@@ -403,6 +406,20 @@ class AppRoute {
       ModalRoute.withName(untilRouteName),
       arguments: arguments,
     );
+  }
+
+  static void popWithResult<T>(BuildContext context, [T? result]) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop<T>(context, result);
+    }
+  }
+
+  static void safePopWithResult<T>(BuildContext context, [T? result]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Navigator.canPop(context)) {
+        Navigator.pop<T>(context, result);
+      }
+    });
   }
 
   /// Push a new route and wait for a result to be returned when the pushed route is popped.
