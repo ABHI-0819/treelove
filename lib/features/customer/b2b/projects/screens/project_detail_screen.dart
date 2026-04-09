@@ -345,6 +345,27 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                     ),
                   ),
                   Positioned(
+                    top: 15,
+                    left: 15,
+                    child: SafeArea(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
                     bottom: 15,
                     right: 15,
                     child: Container(

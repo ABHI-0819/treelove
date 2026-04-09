@@ -25,6 +25,7 @@ import '../../../../core/utils/location_permission_helper.dart';
 import '../../../../core/widgets/common_notification.dart';
 import '../../../../core/widgets/common_tree_diseases.dart';
 import '../../../../core/widgets/image_viewe.dart';
+import '../../../../core/widgets/success_dialog.dart';
 import '../../../authentication/screens/sign_in_screen.dart';
 import '../../activity/models/maintenance_activity_response_model.dart';
 import '../../activity/models/maintenance_created_response_model.dart';
@@ -334,9 +335,10 @@ class _MaintenanceActivityScreenState extends State<MaintenanceActivityScreen> {
       ApiState<MaintenanceResponse, ResponseModel> state) {
     EasyLoading.dismiss();
     if (state is ApiSuccess<MaintenanceResponse, ResponseModel>) {
-      _showSnack(
-          state.data.message ?? 'Maintenance activity submitted successfully');
-      AppRoute.safePopWithResult(context, NavigationResult.success);
+      SuccessDialog.showAndPop(
+        context: context,
+        message: state.data.message ?? 'Maintenance activity submitted successfully.',
+      );
     } else if (state is ApiFailure<MaintenanceResponse, ResponseModel>) {
       showNotification(
           type: Not.failed, context, message: state.error.data.toString());

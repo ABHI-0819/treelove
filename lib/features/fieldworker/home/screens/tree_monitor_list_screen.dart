@@ -97,138 +97,130 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                 }
               },
               builder: (context, state) {
-                if (state
-                    is ApiLoading<PlantedListResponseModel, ResponseModel>) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state
-                    is ApiFailure<PlantedListResponseModel, ResponseModel>) {
-                  return Center(
-                    child: Text(
-                      state.error.message ?? 'Something went wrong!',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-
-                if (state
-                    is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
-                  final plantedTrees =
-                      state.data.data; //  real list of PlantedTreeModel
-
-                  return CustomScrollView(
-                    slivers: [
-                      // Sleek App Bar
-                      SliverAppBar(
-                        expandedHeight: 80,
-                        floating: false,
-                        pinned: true,
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF00695C),
-                                  Color(0xFF004D40),
-                                ],
-                              ),
+                return CustomScrollView(
+                  slivers: [
+                    // Sleek App Bar
+                    SliverAppBar(
+                      expandedHeight: 80,
+                      floating: false,
+                      pinned: true,
+                      elevation: 0,
+                      backgroundColor: Colors.transparent,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF00695C),
+                                Color(0xFF004D40),
+                              ],
                             ),
                           ),
-                        ),
-                        leading: Container(
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new,
-                                color: Colors.white, size: 18),
-                            onPressed: () => AppRoute.pop(context),
-                          ),
-                        ),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Tree Monitor',
-                              style: AppFonts.body.copyWith(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              'Monitoring green spaces',
-                              // '${_treeData.length} trees under observation',
-                              style: AppFonts.regular.copyWith(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
+                      leading: Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          // backdropFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new,
+                              color: Colors.white, size: 18),
+                          onPressed: () => AppRoute.pop(context),
+                        ),
+                      ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Tree Monitor',
+                            style: AppFonts.body.copyWith(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Monitoring green spaces',
+                            // '${_treeData.length} trees under observation',
+                            style: AppFonts.regular.copyWith(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                      // Tree List
+                    // Tree List / Loading States
+                    if (state is ApiLoading<PlantedListResponseModel, ResponseModel>)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (state is ApiFailure<PlantedListResponseModel, ResponseModel>)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text(
+                            state.error.message ?? 'Something went wrong!',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      )
+                    else if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>)
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(15, 8, 15, 20),
                         sliver: SliverList(
                           delegate: SliverChildBuilderDelegate(
-                            (context, index) => _TreeCard(
-                              treeData: plantedTrees[index],
-                              onDirectionPressed: () {
-                                _openMapsApp(
-                                    plantedTrees[index].location.coordinates[1],
-                                    plantedTrees[index]
-                                        .location
-                                        .coordinates[0]);
-                                // debugPrint("Direction pressed for tree: ${_treeData[index]['id']}");
-                              },
-                              onMonitorPressed: () async {
-                                if (plantedTrees[index].monitoringServiceId ==
-                                    null) {
-                                  showNotification(context,
-                                      type: Not.failed,
-                                      message:
-                                          "No monitoring service available for this tree.");
-                                  return;
-                                }
-                                final result = await AppRoute
-                                    .goToNextPageWithResult<NavigationResult>(
-                                  context: context,
-                                  screen: MonitorActivityScreen.route,
-                                  arguments: {
-                                    'plantationId':
-                                        plantedTrees[index].id.toString(),
-                                    'serviceId':
-                                        plantedTrees[index].monitoringServiceId,
-                                  },
-                                );
+                            (context, index) {
+                              final tree = state.data.data[index];
+                              return _TreeCard(
+                                treeData: tree,
+                                onDirectionPressed: () {
+                                  _openMapsApp(
+                                      tree.location.coordinates[1],
+                                      tree.location.coordinates[0]);
+                                },
+                                onMonitorPressed: () async {
+                                  if (tree.monitoringServiceId == null) {
+                                    showNotification(context,
+                                        type: Not.failed,
+                                        message:
+                                            "No monitoring service available for this tree.");
+                                    return;
+                                  }
+                                  final result = await AppRoute
+                                      .goToNextPageWithResult<NavigationResult>(
+                                    context: context,
+                                    screen: MonitorActivityScreen.route,
+                                    arguments: {
+                                      'plantationId': tree.id.toString(),
+                                      'serviceId': tree.monitoringServiceId,
+                                    },
+                                  );
 
-                                if (result == NavigationResult.success) {
-                                  //  Refresh your list / API
-                                  mapBloc.add(ApiListFetch(
-                                      areaId: widget.projectAreaId));
-                                }
-                              },
-                            ),
-                            childCount: plantedTrees.length,
+                                  if (result == NavigationResult.success) {
+                                    // Refresh your list / API
+                                    mapBloc.add(ApiListFetch(
+                                        areaId: widget.projectAreaId));
+                                  }
+                                },
+                              );
+                            },
+                            childCount: state.data.data.length,
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                }
-
-                return const SizedBox(); // fallback
+                      )
+                    else
+                      const SliverToBoxAdapter(child: SizedBox()),
+                  ],
+                );
               },
             )));
   }

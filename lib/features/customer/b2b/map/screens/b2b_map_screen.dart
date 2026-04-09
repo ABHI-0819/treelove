@@ -25,675 +25,7 @@ import '../../../../../core/widgets/tree_bottomsheet.dart';
 import '../../../../vendor/home/bloc/map_bloc.dart';
 import '../../../../vendor/home/models/project_list_model.dart';
 import '../../../retail/my-trees/screens/tree_monitoring_history.dart';
-/*
-class B2bMapScreen extends StatefulWidget {
-  static const route = '/b2b-map';
-  const B2bMapScreen({super.key});
 
-  @override
-  State<B2bMapScreen> createState() => _B2bMapScreenState();
-}
-
-class _B2bMapScreenState extends State<B2bMapScreen> with TickerProviderStateMixin {
-  final MapController _mapController = MapController();
-
-  // Color Palette
-  static const Color primary = Color(0xFF00473C);
-  static const Color primaryDark = Color(0xFF002D26);
-  static const Color primaryLight = Color(0xFF1C665A);
-  static const Color secondary = Color(0xFF63B27F);
-  static const Color secondaryLight = Color(0xFF9DD9A5);
-  static const Color secondaryDark = Color(0xFF387A58);
-  static const Color background = Color(0xFFF8F4E3);
-  static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF6B7280);
-
-
-  // Sample tree data
-  final List<TreeData> trees = [
-    TreeData(
-      id: 'T001',
-      name: 'Oak Magnificus',
-      species: 'White Oak',
-      position: const LatLng(19.0760, 72.8777),
-      healthStatus: TreeHealth.excellent,
-      age: '5 years',
-      height: '12 feet',
-      plantedDate: '2019-03-15',
-      images: [
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
-        'https://images.unsplash.com/photo-1574263867128-b3e6f57b20b8?w=400',
-        'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 30)),
-      needsMaintenance: false,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 30)),
-          type: 'Watering & Pruning',
-          status: 'Completed',
-          notes: 'Tree is healthy, pruned dead branches',
-        ),
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 90)),
-          type: 'Fertilization',
-          status: 'Completed',
-          notes: 'Applied organic fertilizer',
-        ),
-      ],
-    ),
-    TreeData(
-      id: 'T002',
-      name: 'Neem Guardian',
-      species: 'Neem Tree',
-      position: const LatLng(19.0780, 72.8790),
-      healthStatus: TreeHealth.good,
-      age: '3 years',
-      height: '8 feet',
-      plantedDate: '2021-06-20',
-      images: [
-        'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
-        'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 75)),
-      needsMaintenance: true,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 75)),
-          type: 'General Checkup',
-          status: 'Completed',
-          notes: 'Minor pest control needed',
-        ),
-      ],
-    ),
-    TreeData(
-      id: 'T003',
-      name: 'Mango Delight',
-      species: 'Mango Tree',
-      position: const LatLng(19.0800, 72.8760),
-      healthStatus: TreeHealth.excellent,
-      age: '4 years',
-      height: '10 feet',
-      plantedDate: '2020-07-10',
-      images: [
-        'https://images.unsplash.com/photo-1605185529743-1d4df42d6e06?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 15)),
-      needsMaintenance: false,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 15)),
-          type: 'Watering',
-          status: 'Completed',
-          notes: 'Regular watering schedule maintained',
-        ),
-      ],
-    ),
-  ];
-
-  PlantedTreeModel? selectedTree;
-
-  late MapBloc  mapBloc;
-
-  @override
-  void initState() {
-    mapBloc = MapBloc(
-        PlantationRepository(api:  ApiConnection())
-    );
-    mapBloc.add(ApiListFetch());
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-
-      body: BlocProvider(
-        create: (context) => mapBloc,
-        child: Stack(
-          children: [
-            _buildMap(),
-            buildZoomButtons(),
-            _buildHeader(),
-            if (selectedTree != null) _buildTreeBottomSheet(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildZoomButtons() {
-    return Positioned(
-      right: 16,
-      bottom: 80, // Changed from top to bottom for better UX
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  final currentZoom = _mapController.camera.zoom;
-                  if (currentZoom < 20) {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      currentZoom + 1,
-                    );
-                  }
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    size: 20,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  final currentZoom = _mapController.camera.zoom;
-                  if (currentZoom > 3) {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      currentZoom - 1,
-                    );
-                  }
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.remove,
-                    size: 20,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMap() {
-    return BlocConsumer<MapBloc, ApiState<PlantedListResponseModel, ResponseModel>>(
-      listener: (context, state) {
-        if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
-          AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
-        }
-      },
-      builder: (context, state) {
-        if (state is ApiLoading<PlantedListResponseModel, ResponseModel>) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state is ApiFailure<PlantedListResponseModel, ResponseModel>) {
-          return Center(
-            child: Text(
-              state.error.message ?? 'Something went wrong!',
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        }
-
-        if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
-          final plantedTrees = state.data.data; // ✅ real list of PlantedTreeModel
-
-          final markers = plantedTrees.map((tree) => _buildTreeMarker(tree)).toList();
-
-          return FlutterMap(
-            mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: const LatLng(19.112251, 72.864512),
-              initialZoom: 10.0,
-              minZoom: 3.0,
-              maxZoom: 20.0,
-              // Fixed interaction options
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.doubleTapZoom |
-                InteractiveFlag.pinchZoom |
-                InteractiveFlag.drag |
-                InteractiveFlag.flingAnimation,
-                enableMultiFingerGestureRace: true,
-                scrollWheelVelocity: 0.005,
-                pinchZoomWinGestures: MultiFingerGesture.pinchZoom,
-              ),
-              keepAlive: true,
-              backgroundColor: Colors.grey,
-              // Add tap handling at map level
-
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
-                tileProvider: NetworkTileProvider(
-                  headers: {
-                    'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
-                  },
-                ),
-              ),
-              if (markers.isNotEmpty) MarkerLayer(markers: markers),
-            ],
-          );
-        }
-
-        return const SizedBox(); // fallback
-      },
-    );
-  }
-
-  /*
-  Widget _buildMap() {
-    return BlocConsumer<MapBloc, ApiState<PlantedListResponseModel, ResponseModel>>(
-      listener: (context, state) {
-        if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
-          AppRoute.pushReplacement(
-            context,
-            SignInScreen.route,
-            arguments: {},
-          );
-        }
-      },
-      builder: (context, state) {
-        if (state is ApiLoading<PlantedListResponseModel, ResponseModel>) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state is ApiFailure<PlantedListResponseModel, ResponseModel>) {
-          return Center(
-            child: Text(
-              state.error.message ?? 'Something went wrong!',
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        }
-
-        if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
-          final plantData = state.data.data ?? [];
-          final markers = trees.isNotEmpty
-              ? trees.map((tree) => _buildTreeMarker(tree)).toList()
-              : <Marker>[];
-
-          return FlutterMap(
-            mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: LatLng(19.0760, 72.8777),
-              initialZoom: 15.0,
-              minZoom: 10.0,
-              maxZoom: 18.0,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
-                tileProvider: NetworkTileProvider(
-                  headers: {
-                    'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
-                  },
-                ),
-              ),
-              if (markers.isNotEmpty) MarkerLayer(markers: markers),
-            ],
-          );
-        }
-
-        return const SizedBox(); // fallback
-      },
-    );
-  }
-
-   */
-
-
-
-
-  /*
-
-  Widget _buildMap() {
-    return BlocConsumer<MapBloc,
-        ApiState<ProjectListResponse, ResponseModel>>(
-  listener: (context, state) {
-    if(state is TokenExpired<ProjectListResponse, ResponseModel>){
-      return AppRoute.pushReplacement( context, SignInScreen.route, arguments: {});
-    }
-    // TODO: implement listener
-  },
-  builder: (context, state) {
-    if(state is ApiSuccess<ProjectListResponse, ResponseModel> ){
-      return FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          initialCenter: const LatLng(19.0760, 72.8777),
-          initialZoom: 15.0,
-          minZoom: 10.0,
-          maxZoom: 18.0,
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.app',
-            tileProvider: NetworkTileProvider(
-              headers: {
-                'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
-              },
-            ),
-          ),
-          MarkerLayer(
-            markers: trees.map((tree) => _buildTreeMarker(tree)).toList(),
-          ),
-        ],
-      );
-    }else {
-      return SizedBox();
-    }
-
-  },
-);
-  }
-
-   */
-/*
-  Marker _buildTreeMarker(PlantedTreeModel tree) {
-    // decide marker color based on tree health
-    Color markerColor;
-    if (tree.treeHealth.toLowerCase().contains("healthy")) {
-      markerColor = secondary;
-    } else if (tree.treeHealth.toLowerCase().contains("good")) {
-      markerColor = secondaryLight;
-    } else {
-      markerColor = Colors.orange;
-    }
-
-    final lat = tree.location.coordinates[1]; // GeoJSON: [lng, lat]
-    final lng = tree.location.coordinates[0];
-
-    return Marker(
-      point: LatLng(lat, lng),
-      width: 50,
-      height: 50,
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedTree = tree; // ✅ save selected planted tree
-          });
-          _showTreeDetails(tree);
-        },
-        child: SvgPicture.asset(
-          Images.treeMarker,
-          color: markerColor,
-        ),
-      ),
-    );
-  }
-
- */
-
-
-
-  Marker _buildTreeMarker(PlantedTreeModel tree) {
-
-    final lat = tree.location.coordinates[1]; // GeoJSON: [lng, lat]
-    final lng = tree.location.coordinates[0];
-    return Marker(
-      point: LatLng(lat, lng),
-      width: 50,
-      height: 50,
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedTree = tree;
-          });
-          _showTreeDetails(tree);
-        },
-        child: SvgPicture.asset(Images.treeMarker),
-      ),
-    );
-  }
-
-
-
-  Widget _buildHeader() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: cardBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primary.withOpacity(0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: primary,
-                  size: 18,
-                ),
-              ),
-            ),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: cardBackground,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: primary.withOpacity(0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.forest_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "My Trees",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            const SizedBox(width: 44),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3);
-  }
-
-  Widget _buildStatsCard() {
-    return Positioned(
-      top: 120,
-      left: 20,
-      right: 20,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: primary.withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _buildStatItem(
-                icon: Icons.park_rounded,
-                label: "Total Trees",
-                value: "${trees.length}",
-                color: secondary,
-              ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.grey.shade200,
-            ),
-            Expanded(
-              child: _buildStatItem(
-                icon: Icons.health_and_safety_rounded,
-                label: "Healthy",
-                value: "${trees.where((t) => t.healthStatus == TreeHealth.excellent).length}",
-                color: secondary,
-              ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.grey.shade200,
-            ),
-            Expanded(
-              child: _buildStatItem(
-                icon: Icons.warning_rounded,
-                label: "Need Care",
-                value: "${trees.where((t) => t.needsMaintenance).length}",
-                color: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-      ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2),
-    );
-  }
-
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: textPrimary,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /*
-  void _showTreeDetails(PlantedTreeModel tree) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _TreeDetailsBottomSheet(tree: tree),
-    );
-  }
-
-   */
-
-
-
-  void _showTreeDetails(PlantedTreeModel tree) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _TreeDetailsBottomSheet(tree: tree),
-    );
-  }
-
-
-
-  Widget _buildTreeBottomSheet() {
-    return const SizedBox(); // Placeholder for the bottom sheet logic
-  }
-}
-
- */
 class B2bMapScreen extends StatefulWidget {
   static const route = '/b2b-map';
   const B2bMapScreen({super.key});
@@ -762,7 +94,8 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
             onPressed: () {
               final currentZoom = _mapController.camera.zoom;
               if (currentZoom < 20) {
-                _mapController.move(_mapController.camera.center, currentZoom + 1);
+                _mapController.move(
+                    _mapController.camera.center, currentZoom + 1);
               }
             },
           ),
@@ -772,7 +105,8 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
             onPressed: () {
               final currentZoom = _mapController.camera.zoom;
               if (currentZoom > 3) {
-                _mapController.move(_mapController.camera.center, currentZoom - 1);
+                _mapController.move(
+                    _mapController.camera.center, currentZoom - 1);
               }
             },
           ),
@@ -781,7 +115,8 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
     );
   }
 
-  Widget _buildZoomButton({required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildZoomButton(
+      {required IconData icon, required VoidCallback onPressed}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -810,7 +145,8 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
   }
 
   Widget _buildMap() {
-    return BlocConsumer<MapBloc, ApiState<PlantedListResponseModel, ResponseModel>>(
+    return BlocConsumer<MapBloc,
+        ApiState<PlantedListResponseModel, ResponseModel>>(
       listener: (context, state) {
         if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
           AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
@@ -841,43 +177,51 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
               point: LatLng(lat, lng),
               width: 50,
               height: 50,
-              child:  GestureDetector(
+              child: GestureDetector(
                 onTap: () {
                   // _showTreeDetails(tree);
                   TreeDetailsBottomSheet.show(
                     context,
                     treeName: tree.treeSpecies.localName,
                     scientificName: tree.treeSpecies.scientificName,
-                    imageUrl: BaseNetwork.BASE_Image_URL+tree.thumbnail!??tree.treeSpecies.image, // or null
+                    imageUrl: BaseNetwork.BASE_Image_URL + tree.thumbnail! ??
+                        tree.treeSpecies.image, // or null
                     health: tree.treeHealth,
-                    growth:tree.treeGrowth,
+                    growth: tree.treeGrowth,
                     girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
                     direction: 'Direction',
-                    onDirectionTap: (){
-
-                    },
+                    onDirectionTap: () {},
                     nextMaintenanceDate: tree.nextMaintenanceDate,
                     nextMonitoringDate: tree.nextMonitoringDate,
                     onMaintenanceHistoryTap: () {
-                      AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                        'treeSpecies':'neem',
-                        'location':"mumbai",
-                        'treeId':'2131'
-                      });
+                      AppRoute.goToNextPage(
+                          context: context,
+                          screen: TreeMaintenanceHistoryScreen.route,
+                          arguments: {
+                            'treeSpecies': 'neem',
+                            'location': "mumbai",
+                            'treeId': '2131'
+                          });
                       // Navigate to maintenance history
                     },
                     onManualMonitorHistoryTap: () {
-                        AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                        'treeSpecies':'neem',
-                        'location':"mumbai",
-                        'treeId':'2131'
-                      });
+                      AppRoute.goToNextPage(
+                          context: context,
+                          screen: TreeMonitoringHistoryScreen.route,
+                          arguments: {
+                            'treeSpecies': 'neem',
+                            'location': "mumbai",
+                            'treeId': '2131'
+                          });
                       // Navigate to manual monitoring history
                     },
                     onSatelliteMonitorHistoryTap: () {
-                      AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-                        'plantationId':tree.id,
-                      });
+                      AppRoute.goToNextPage(
+                          context: context,
+                          screen: SatelliteHistoryScreen.route,
+                          arguments: {
+                            'plantationId': tree.id,
+                          });
                       // Navigate to satellite monitoring history
                     },
                   );
@@ -901,7 +245,8 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate:
+                    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
                 userAgentPackageName: 'com.yourcompany.yourapp',
                 tileProvider: NetworkTileProvider(
                   headers: {
@@ -919,18 +264,27 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                   markers: markers,
                   builder: (context, markers) {
                     final count = markers.length;
-                    return FloatingActionButton(
-                      onPressed: null,
-                      backgroundColor: count > 1 ? Colors.blue.shade600 : Colors.transparent,
-                      elevation: 4,
-                      child: count == 1
-                          ? const SizedBox.shrink()
-                          : Text(
-                        '$count',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00473C),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     );
@@ -955,7 +309,9 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
       markerColor = Colors.red;
     }
 
-    return SvgPicture.asset(Images.treeMarker);
+    return SvgPicture.asset(
+      Images.treeMarker,
+    );
   }
 
   Widget _buildHeader() {
@@ -1035,14 +391,14 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
   }
 }
 
-
 class _TreeDetailsBottomSheet extends StatefulWidget {
   final PlantedTreeModel tree;
 
   const _TreeDetailsBottomSheet({required this.tree});
 
   @override
-  State<_TreeDetailsBottomSheet> createState() => _TreeDetailsBottomSheetState();
+  State<_TreeDetailsBottomSheet> createState() =>
+      _TreeDetailsBottomSheetState();
 }
 
 class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
@@ -1111,7 +467,8 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
                 // Header
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     child: Row(
                       children: [
                         Expanded(
@@ -1147,7 +504,8 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
                 // Image Section
                 if (imageUrls.isNotEmpty)
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     sliver: SliverToBoxAdapter(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
@@ -1160,14 +518,16 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
                               if (loadingProgress == null) return child;
                               return Container(
                                 color: Colors.grey.shade200,
-                                child: const Center(child: CircularProgressIndicator()),
+                                child: const Center(
+                                    child: CircularProgressIndicator()),
                               );
                             },
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey.shade200,
                                 child: const Center(
-                                  child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+                                  child: Icon(Icons.image_not_supported,
+                                      size: 48, color: Colors.grey),
                                 ),
                               );
                             },
@@ -1179,7 +539,8 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
 
                 // Tree Info Section
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildInfoCard(
@@ -1252,7 +613,7 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
                           onTap: () => AppRoute.goToNextPage(
                             context: context,
                             screen: SatelliteMonitoringResultScreen.route,
-                            arguments:{
+                            arguments: {
                               'monitorId': widget.tree.id
                             }, // Pass ID directly
                           ),
@@ -1396,10 +757,8 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet> {
   }
 }
 
-
 // Data Models
 enum TreeHealth { excellent, good, needsAttention }
-
 
 class TreeData {
   final String id;
@@ -1446,4 +805,3 @@ class MaintenanceRecord {
 }
 
 /**/
-

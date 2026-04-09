@@ -1408,7 +1408,21 @@ class TreeDetailsBottomSheet extends StatelessWidget {
     );
   }
 
+  Color _getHealthColor(String healthStatus) {
+    final status = healthStatus.toLowerCase();
+    if (status.contains('healthy') || status.contains('good') || status.contains('excellent')) {
+      return const Color(0xFF4CAF50);
+    } else if (status.contains('warning') || status.contains('fair')) {
+      return const Color(0xFFFF9800);
+    } else if (status.contains('critical') || status.contains('poor')) {
+      return const Color(0xFFF44336);
+    }
+    return AppColor.primary;
+  }
+
   Widget _buildTreeDetails(bool isSmallScreen) {
+    final healthColor = _getHealthColor(health);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1423,25 +1437,32 @@ class TreeDetailsBottomSheet extends StatelessWidget {
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
-            final isVeryNarrow = constraints.maxWidth < 300;
+            final isVeryNarrow = constraints.maxWidth < 280;
             if (isVeryNarrow) {
               return Column(
                 children: [
-                  _buildDetailColumn('Health', health, Icons.favorite_outline, isSmallScreen),
+                  _buildDetailRow('Health', health, Icons.favorite, isSmallScreen, color: healthColor),
                   const SizedBox(height: 12),
-                  _buildDetailColumn('Growth', growth, Icons.trending_up, isSmallScreen),
+                  _buildDetailRow('Growth', growth, Icons.trending_up, isSmallScreen, color: const Color(0xFF03A9F4)),
                   const SizedBox(height: 12),
-                  _buildDetailColumn('Girth', girth, Icons.straighten, isSmallScreen),
+                  _buildDetailRow('Girth', girth, Icons.straighten, isSmallScreen, color: const Color(0xFF795548)),
                 ],
               );
             } else {
-              return Column(
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDetailRow('Health', health, Icons.favorite_outline, isSmallScreen),
-                  const SizedBox(height: 12),
-                  _buildDetailRow('Growth', growth, Icons.trending_up, isSmallScreen),
-                  const SizedBox(height: 12),
-                  _buildDetailRow('Girth', girth, Icons.straighten, isSmallScreen),
+                  Expanded(
+                    child: _buildDetailColumn('Health', health, Icons.favorite, isSmallScreen, color: healthColor),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDetailColumn('Growth', growth, Icons.trending_up, isSmallScreen, color: const Color(0xFF03A9F4)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDetailColumn('Girth', girth, Icons.straighten, isSmallScreen, color: const Color(0xFF795548)),
+                  ),
                 ],
               );
             }
@@ -1451,7 +1472,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, IconData icon, bool isSmallScreen) {
+  Widget _buildDetailRow(String label, String value, IconData icon, bool isSmallScreen, {Color color = AppColor.secondary}) {
     return Container(
       padding: EdgeInsets.all(isSmallScreen ? 12 : 14),
       decoration: BoxDecoration(
@@ -1467,13 +1488,13 @@ class TreeDetailsBottomSheet extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(isSmallScreen ? 6 : 8),
             decoration: BoxDecoration(
-              color: AppColor.secondary.withOpacity(0.15),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
               size: isSmallScreen ? 18 : 20,
-              color: AppColor.secondary,
+              color: color,
             ),
           ),
           SizedBox(width: isSmallScreen ? 10 : 12),
@@ -1506,53 +1527,61 @@ class TreeDetailsBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailColumn(String label, String value, IconData icon, bool isSmallScreen) {
+  Widget _buildDetailColumn(String label, String value, IconData icon, bool isSmallScreen, {Color color = AppColor.secondary}) {
     return Container(
-      padding: EdgeInsets.all(isSmallScreen ? 12 : 14),
+      padding: EdgeInsets.all(isSmallScreen ? 10 : 12),
       decoration: BoxDecoration(
         color: AppColor.grey,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColor.border,
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: EdgeInsets.all(isSmallScreen ? 6 : 8),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
             decoration: BoxDecoration(
-              color: AppColor.secondary.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              size: isSmallScreen ? 18 : 20,
-              color: AppColor.secondary,
+              size: isSmallScreen ? 18 : 22,
+              color: color,
             ),
           ),
-          SizedBox(height: isSmallScreen ? 8 : 10),
-          Column(
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 11 : 12,
-                  color: AppColor.textMuted,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: isSmallScreen ? 13 : 15,
-                  color: AppColor.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          SizedBox(height: isSmallScreen ? 8 : 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 13 : 15,
+              color: AppColor.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 11 : 12,
+              color: AppColor.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1623,6 +1652,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
           Icons.history,
           onMaintenanceHistoryTap,
           isSmallScreen,
+          color: AppColor.accent,
         ),
       ],
     );
@@ -1697,6 +1727,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
                     Icons.touch_app_outlined,
                     onManualMonitorHistoryTap,
                     isSmallScreen,
+                    color: const Color(0xFF2196F3),
                   ),
                   const SizedBox(height: 12),
                   _buildActionButton(
@@ -1704,6 +1735,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
                     Icons.satellite_alt_outlined,
                     onSatelliteMonitorHistoryTap,
                     isSmallScreen,
+                    color: const Color(0xFF9C27B0),
                   ),
                 ],
               );
@@ -1716,6 +1748,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
                       Icons.touch_app_outlined,
                       onManualMonitorHistoryTap,
                       isSmallScreen,
+                      color: const Color(0xFF2196F3),
                     ),
                   ),
                   SizedBox(width: isSmallScreen ? 8 : 12),
@@ -1725,6 +1758,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
                       Icons.satellite_alt_outlined,
                       onSatelliteMonitorHistoryTap,
                       isSmallScreen,
+                      color: const Color(0xFF9C27B0),
                     ),
                   ),
                 ],
@@ -1741,7 +1775,9 @@ class TreeDetailsBottomSheet extends StatelessWidget {
       IconData icon,
       VoidCallback? onTap,
       bool isSmallScreen,
+      {Color? color}
       ) {
+    final bgColor = color ?? AppColor.primary;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1753,12 +1789,15 @@ class TreeDetailsBottomSheet extends StatelessWidget {
             horizontal: isSmallScreen ? 12 : 16,
           ),
           decoration: BoxDecoration(
-            color: AppColor.white,
+            color: bgColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColor.border,
-              width: 1,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: bgColor.withOpacity(0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1766,7 +1805,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
               Icon(
                 icon,
                 size: isSmallScreen ? 16 : 18,
-                color: AppColor.primary,
+                color: Colors.white,
               ),
               SizedBox(width: isSmallScreen ? 6 : 8),
               Flexible(
@@ -1775,7 +1814,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: isSmallScreen ? 12 : 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColor.primary,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,

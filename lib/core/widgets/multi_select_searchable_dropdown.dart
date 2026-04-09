@@ -73,9 +73,9 @@ class _MultiSelectSearchableDropdownState<T>
           onChanged: (_) => onTap(),
         );
       },
-      noResultFoundText: "No results found",
-      decoration: const CustomDropdownDecoration(
-
+      decoration: CustomDropdownDecoration(
+        closedBorder: Border.all(color: Colors.grey.shade400, width: 1.0),
+        closedBorderRadius: BorderRadius.circular(12),
       ),
       // Optional: Hook into internal search text if CustomDropdown provides it
       // If not, add a controller or handle from outside
