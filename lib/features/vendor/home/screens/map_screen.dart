@@ -14,6 +14,7 @@ import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/core/network/base_network.dart';
 import 'package:treelove/core/storage/preference_keys.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
@@ -316,31 +317,34 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               context,
               treeName: datum.treeSpecies.localName,
               scientificName: datum.treeSpecies.scientificName,
-              imageUrl: datum.treeSpecies.image, // or null
+              imageUrl: datum.thumbnail ?? datum.treeSpecies.image, // or null
               health: datum.treeHealth,
               growth:datum.treeGrowth,
               girth: '${datum.treeGirth} ${datum.treeGirthUnit}',
               direction: 'Direction',
-              onDirectionTap: (){
-
+              onDirectionTap: () async {
+                final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
               },
               nextMaintenanceDate: datum.nextMaintenanceDate,
               nextMonitoringDate: datum.nextMonitoringDate,
               onMaintenanceHistoryTap: () {
                 AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                  'treeId': datum.id
+                  'treeId': datum.id.toString()
                 });
                 // Navigate to maintenance history
               },
               onManualMonitorHistoryTap: () {
                 AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                  'treeId': datum.id
+                  'treeId': datum.id.toString()
                 });
                 // Navigate to manual monitoring history
               },
               onSatelliteMonitorHistoryTap: () {
                 AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-                  'plantationId':datum.id,
+                  'plantationId': datum.id.toString(),
                 });
                 // Navigate to satellite monitoring history
               },
@@ -407,7 +411,40 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                   ),
                 ),
                 CurrentLocationLayer(),
-                MarkerLayer(markers: markers),
+                MarkerClusterLayerWidget(
+                  options: MarkerClusterLayerOptions(
+                    maxClusterRadius: 120,
+                    size: const Size(48, 48),
+                    markers: markers,
+                    builder: (context, markers) {
+                      final count = markers.length;
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00473C),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            count > 99 ? '99+' : count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
             // Add zoom buttons only in map view

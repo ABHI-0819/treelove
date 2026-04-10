@@ -260,7 +260,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           children: [
             _buildHeaderRow(title: title),
             SizedBox(height: 20.h),
-            _buildLocationRow(location: 'Thane,Mumbai'),
+            _buildLocationRow(location: location),
             SizedBox(height: 10.h),
             _buildDueDateCard(endDate: endDate),
           ],

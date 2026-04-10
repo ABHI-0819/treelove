@@ -620,14 +620,23 @@ class Card extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.grey),
-                      SizedBox(width: 4),
-                      Text('Thane, Mumbai', style: TextStyle(fontSize: 13)),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on, size: 16, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            projectItem.description.isNotEmpty ? projectItem.description : 'Unknown Location',
+                            style: TextStyle(fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(width: 8),
                   Row(
                     children: [
                       Icon(Icons.calendar_today, size: 16, color: Colors.grey),

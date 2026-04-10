@@ -25,6 +25,7 @@ import '../../../../../core/widgets/tree_bottomsheet.dart';
 import '../../../../vendor/home/bloc/map_bloc.dart';
 import '../../../../vendor/home/models/project_list_model.dart';
 import '../../../retail/my-trees/screens/tree_monitoring_history.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class B2bMapScreen extends StatefulWidget {
   static const route = '/b2b-map';
@@ -184,13 +185,17 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                     context,
                     treeName: tree.treeSpecies.localName,
                     scientificName: tree.treeSpecies.scientificName,
-                    imageUrl: BaseNetwork.BASE_Image_URL + tree.thumbnail! ??
-                        tree.treeSpecies.image, // or null
+                    imageUrl: tree.thumbnail ?? tree.treeSpecies.image, // or null
                     health: tree.treeHealth,
                     growth: tree.treeGrowth,
                     girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
                     direction: 'Direction',
-                    onDirectionTap: () {},
+                    onDirectionTap: () async {
+                      final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      }
+                    },
                     nextMaintenanceDate: tree.nextMaintenanceDate,
                     nextMonitoringDate: tree.nextMonitoringDate,
                     onMaintenanceHistoryTap: () {
@@ -198,9 +203,7 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                           context: context,
                           screen: TreeMaintenanceHistoryScreen.route,
                           arguments: {
-                            'treeSpecies': 'neem',
-                            'location': "mumbai",
-                            'treeId': '2131'
+                            'treeId': tree.id.toString()
                           });
                       // Navigate to maintenance history
                     },
@@ -209,9 +212,7 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                           context: context,
                           screen: TreeMonitoringHistoryScreen.route,
                           arguments: {
-                            'treeSpecies': 'neem',
-                            'location': "mumbai",
-                            'treeId': '2131'
+                            'treeId': tree.id.toString()
                           });
                       // Navigate to manual monitoring history
                     },
@@ -220,7 +221,7 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                           context: context,
                           screen: SatelliteHistoryScreen.route,
                           arguments: {
-                            'plantationId': tree.id,
+                            'plantationId': tree.id.toString(),
                           });
                       // Navigate to satellite monitoring history
                     },

@@ -10,7 +10,8 @@ import 'package:treelove/common/screens/satellite_monitoring_result_screen.dart'
 import 'package:treelove/features/authentication/screens/sign_in_screen.dart';
 import 'package:treelove/features/customer/retail/my-trees/screens/tree_maintenance_list.dart';
 import 'package:treelove/features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
-
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
+import 'package:url_launcher/url_launcher.dart';
 /*
 class MyTreesScreen extends StatelessWidget {
 
@@ -416,7 +417,41 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
                   },
                 ),
               ),
-              if (markers.isNotEmpty) MarkerLayer(markers: markers),
+              if (markers.isNotEmpty)
+                MarkerClusterLayerWidget(
+                  options: MarkerClusterLayerOptions(
+                    maxClusterRadius: 120,
+                    size: const Size(48, 48),
+                    markers: markers,
+                    builder: (context, markers) {
+                      final count = markers.length;
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00473C),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            count > 99 ? '99+' : count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           );
         }
@@ -597,30 +632,29 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
             growth:tree.treeGrowth,
             girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
             direction: 'Direction',
-            onDirectionTap: (){
-
+            onDirectionTap: () async {
+              final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
             },
             nextMaintenanceDate: tree.nextMaintenanceDate,
             nextMonitoringDate: tree.nextMonitoringDate,
             onMaintenanceHistoryTap: () {
               AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                'treeSpecies':'neem',
-                'location':"mumbai",
-                'treeId':'2131'
+                'treeId': tree.id.toString()
               });
               // Navigate to maintenance history
             },
             onManualMonitorHistoryTap: () {
               AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                'treeSpecies':'neem',
-                'location':"mumbai",
-                'treeId':'2131'
+                'treeId': tree.id.toString()
               });
               // Navigate to manual monitoring history
             },
             onSatelliteMonitorHistoryTap: () {
               AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-                'plantationId':tree.id,
+                'plantationId': tree.id.toString(),
               });
               // Navigate to satellite monitoring history
             },

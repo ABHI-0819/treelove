@@ -1629,6 +1629,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 // Core
 
@@ -2092,7 +2093,41 @@ class _PlantedTreeMapScreenState extends State<PlantedTreeMapScreen>
                   },
                 ),
               ),
-              if (markers.isNotEmpty) MarkerLayer(markers: markers),
+              if (markers.isNotEmpty)
+                MarkerClusterLayerWidget(
+                  options: MarkerClusterLayerOptions(
+                    maxClusterRadius: 120,
+                    size: const Size(48, 48),
+                    markers: markers,
+                    builder: (context, markers) {
+                      final count = markers.length;
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00473C),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            count > 99 ? '99+' : count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           );
         }
