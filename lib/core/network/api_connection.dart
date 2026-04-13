@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../../common/models/response.mode.dart';
 import '../../common/models/token_refresh_token.dart';
@@ -1842,6 +1843,43 @@ Future<ApiResult> patchApiConnectionMultipart<T>(
   }
 
   /// 🔗 Generate URL with query parameters
+  /// 📌 GET Binary data (for file downloads)
+  Future<Uint8List?> getBinaryData(String url) async {
+    try {
+      String? token = await _getAccessToken();
+      Map<String, String> header = BaseNetwork.getJsonHeaders();
+      if (token != null) header['Authorization'] = 'Bearer $token';
+
+      debugLog("📤 Binary Request: $url", name: "ApiConnection");
+
+      final response = await http.get(Uri.parse(url), headers: header);
+
+      debugLog("📥 Status: ${response.statusCode}", name: "ApiConnection");
+
+      if (response.statusCode == ApiStatusCode.success) {
+        return response.bodyBytes;
+      } else if (response.statusCode == ApiStatusCode.unAuthorized) {
+        debugLog(
+            "⚠️ Binary request unauthorized, refreshing token...",
+            name: "ApiConnection");
+        final refreshed = await _refreshToken();
+        if (refreshed) {
+          final newToken = await _getAccessToken();
+          header['Authorization'] = 'Bearer $newToken';
+          final retryResponse = await http.get(Uri.parse(url), headers: header);
+          if (retryResponse.statusCode == ApiStatusCode.success) {
+            return retryResponse.bodyBytes;
+          }
+        }
+      }
+      return null;
+    } catch (e, st) {
+      debugLog("❌ Error downloading binary data: $e",
+          name: "ApiConnection", stackTrace: st);
+      return null;
+    }
+  }
+
   String generateUrl({
     String? baseUrl,
     String? searchQuery,

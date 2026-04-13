@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/screens/notification_screen.dart';
@@ -16,6 +18,7 @@ import '../../../../../core/config/route/app_route.dart';
 import '../../../../../core/storage/preference_keys.dart';
 import '../../../../../core/storage/secure_storage.dart';
 import '../../map/screens/b2b_map_screen.dart';
+import '../bloc/dashboard_bloc.dart';
 import '../model/dashboard_response_model.dart';
 
 class ClientDashboardScreen extends StatefulWidget {
@@ -171,7 +174,6 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                                 ],
                               ),
                             )
-                         
                           ],
                         ),
                       ),
@@ -231,7 +233,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
                                   dashboard.data.progressByService.maintenance!,
                               monitor:
                                   dashboard.data.progressByService.monitoring!),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 28),
                         ]),
                       ),
                     ),
@@ -324,18 +326,23 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
             SizedBox(
               height: 180.h,
               width: double.infinity,
-              child: FlutterMap(
+              child: TreeloveMap(
+                showLocationButton: false,
                 options: MapOptions(
                   initialZoom: 12,
                 ),
                 children: [
                   TileLayer(
                     urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+                    userAgentPackageName: 'com.yourcompany.yourapp',
                     tileProvider: NetworkTileProvider(
-                      headers: {'User-Agent': 'TreelovApp/1.0'},
+                      headers: {
+                        'User-Agent': 'YourApp/1.0 (https://yourapp.com)',
+                      },
                     ),
                   ),
+                  CurrentLocationLayer(),
                 ],
               ),
             ),
@@ -505,10 +512,11 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
+            color: color.withOpacity(0.05),
+            blurRadius: 8,
             offset: const Offset(0, 3),
           )
         ],
@@ -593,11 +601,12 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColor.primary.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: AppColor.primary.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -748,74 +757,78 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen>
     Color color,
   ) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border(
-            left: BorderSide(
-          color: color,
-          width: 4,
-        )),
+        border: Border.all(color: color.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: AppColor.primary.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: color, size: 26),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       serviceName,
-                      style: AppFonts.regular.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: AppColor.primary,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: AppColor.primaryDark,
                       ),
                     ),
                     Text(
-                      '$completedTrees of $totalTrees trees',
-                      style: AppFonts.caption.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppColor.primary,
+                      '$completionPercent%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: color,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '$completionPercent%',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: completionPercent / 100,
+                    backgroundColor: color.withOpacity(0.15),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    minHeight: 6,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  '$completedTrees of $totalTrees completed',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

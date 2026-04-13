@@ -13,7 +13,6 @@ import '../../../common/models/response.mode.dart';
 import '../../../common/repositories/staff_repository.dart';
 import '../../../core/config/resource/images.dart';
 import '../../../core/config/themes/app_color.dart';
-import '../../../core/config/themes/app_fonts.dart';
 import '../../../core/network/api_connection.dart';
 import '../../../core/widgets/common_notification.dart';
 import '../../../core/widgets/common_refresh_indicator.dart';
@@ -36,11 +35,13 @@ class _StaffListScreenState extends State<StaffListScreen> {
 
   late StaffListBloc staffListBloc;
   late StaffSuspendBloc staffSuspendBloc;
+  late StaffActivateBloc staffActivateBloc;
 
   @override
   void initState() {
     staffListBloc = StaffListBloc(StaffRepository(api: ApiConnection()));
     staffSuspendBloc = StaffSuspendBloc(StaffRepository(api: ApiConnection()));
+    staffActivateBloc = StaffActivateBloc(StaffRepository(api: ApiConnection()));
     staffListBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
@@ -72,6 +73,9 @@ class _StaffListScreenState extends State<StaffListScreen> {
         ),
         BlocProvider(
           create: (context) => staffSuspendBloc,
+        ),
+        BlocProvider(
+          create: (context) => staffActivateBloc,
         )
       ],
       child: Scaffold(
@@ -155,6 +159,24 @@ class _StaffListScreenState extends State<StaffListScreen> {
                 }
                 // TODO: implement listener
               },
+            ),
+            BlocListener<StaffActivateBloc,
+                ApiState<ResponseModel, ResponseModel>>(
+              listener: (context, state) {
+                EasyLoading.dismiss();
+                if (state is ApiSuccess<ResponseModel, ResponseModel>) {
+                  showNotification(context,
+                      message: state.data.message.toString());
+                  staffListBloc.add(ApiListFetch());
+                } else if (state is ApiFailure<ResponseModel, ResponseModel>) {
+                  showNotification(context,
+                      message: state.error.message.toString());
+                } else if (state
+                    is TokenExpired<ResponseModel, ResponseModel>) {
+                  AppRoute.pushReplacement(context, SignInScreen.route,
+                      arguments: {});
+                }
+              },
             )
           ],
           child: BlocBuilder<StaffListBloc,
@@ -195,6 +217,11 @@ class _StaffListScreenState extends State<StaffListScreen> {
                               avatarIcon: Icons.call,
                               onSuspended: () {
                                 _showSuspendWarningPopup(
+                                    context: context,
+                                    userId: staffList.data![index].id);
+                              },
+                              onActivate: () {
+                                _showActivateWarningPopup(
                                     context: context,
                                     userId: staffList.data![index].id);
                               },
@@ -243,123 +270,30 @@ class _StaffListScreenState extends State<StaffListScreen> {
       },
     );
   }
-}
 
-/*
-class UserCard extends StatelessWidget {
-  final String name;
-  final String role;
-  final Color roleColor;
-  final String userId;
-  final String imageUrl;
-  final VoidCallback onSuspended;
-  final bool isActive;
-
-  const UserCard({
-    super.key,
-    required this.name,
-    required this.role,
-    required this.roleColor,
-    required this.userId,
-    required this.imageUrl,
-    required this.onSuspended,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 12.w),
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          // Profile Picture
-          CircleAvatar(
-            backgroundImage: NetworkImage(imageUrl),
-            radius: 26.r,
-            backgroundColor: Colors.grey.shade100,
-            onBackgroundImageError: (_, __) {},
-          ),
-
-          SizedBox(width: 12.w),
-
-          // User Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: AppFonts.regular.copyWith(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'ID: $userId',
-                  style: AppFonts.small.copyWith(color: AppColor.textMuted),
-                ),
-                SizedBox(height: 6.h),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: roleColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    role,
-                    style: TextStyle(
-                      color: roleColor,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Suspend Icon
-          InkWell(
-            onTap: isActive ? onSuspended : null,
-            borderRadius: BorderRadius.circular(24),
-            child: Tooltip(
-              message: isActive ? 'Suspend User' : 'User is suspended',
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isActive ? Colors.red.shade50 : Colors.grey.shade200,
-                ),
-                child: SvgPicture.asset(
-                  Images.suspendedIcon,
-                  color: isActive ? Colors.redAccent : Colors.grey,
-                  width: 24,
-                  height: 24,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+  void _showActivateWarningPopup(
+      {required BuildContext context, required String userId}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CommonWarningPopUp(
+          title: 'Activate User',
+          content: 'Are you sure you want to activate this user? They will regain access to their account.',
+          ok: () {
+            staffActivateBloc.add(ApiUpdate<String>(userId));
+            AppRoute.pop(context);
+            EasyLoading.show();
+          },
+          okButtonLabel: 'Activate',
+          cancel: () {
+            AppRoute.pop(context);
+          },
+          cancelButtonLabel: 'Cancel',
+        );
+      },
     );
   }
 }
-
- */
 
 class ProfileCard extends StatelessWidget {
   final String profileImg;
@@ -368,6 +302,7 @@ class ProfileCard extends StatelessWidget {
   final IconData avatarIcon;
   final bool isActive;
   final VoidCallback onSuspended;
+  final VoidCallback onActivate;
   final void Function() onCall;
 
   const ProfileCard({
@@ -379,54 +314,65 @@ class ProfileCard extends StatelessWidget {
     this.avatarIcon = Icons.emoji_people,
     this.isActive = true,
     required this.onSuspended,
+    required this.onActivate,
     required this.onCall,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10.h, left: 10.w, right: 10.w),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: EdgeInsets.only(bottom: 12.h, left: 16.w, right: 16.w),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isActive ? Colors.white : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        border: isActive ? Border.all(color: Colors.grey.shade100) : Border.all(color: Colors.grey.shade300),
+        boxShadow: isActive ? [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.08),
             spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ],
+        ] : [],
       ),
       child: Row(
         children: [
-          // Avatar
-          CircleAvatar(
-            radius: 24.r,
-            backgroundColor: Colors.grey[300],
-            child: Image.network(
-              profileImg,
-              width: 32.r,
-              // radius * 2
-              height: 32.r,
-              fit: BoxFit.contain,
-              // or BoxFit.contain if you want full image inside
-              errorBuilder: (context, error, stackTrace) =>
-                  Icon(Icons.person, size: 24.r, color: Colors.grey),
-            ),
+          // Avatar with Active/Inactive dot
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 26.r,
+                backgroundColor: Colors.grey[200],
+                child: ClipOval(
+                  child: Image.network(
+                    profileImg,
+                    width: 52.r,
+                    height: 52.r,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.person, size: 28.r, color: Colors.grey),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.green : Colors.redAccent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              ),
+            ],
           ),
-          /*
-          UserAvatar(
-            imageUrl:profileImg,
-            radius: 24.r,
-            backgroundColor: Colors.grey[300],
-          ),
+          const SizedBox(width: 16),
 
-           */
-          SizedBox(width: 16),
-
-          // Name and Title
+          // Name, Title and Badge
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,59 +380,91 @@ class ProfileCard extends StatelessWidget {
                 Text(
                   name,
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? Colors.black87 : Colors.grey.shade600,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      title.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[500],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.green.shade50 : Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                         isActive ? 'ACTIVE' : 'SUSPENDED',
+                         style: TextStyle(
+                           fontSize: 10,
+                           fontWeight: FontWeight.w700,
+                           color: isActive ? Colors.green.shade700 : Colors.red.shade700,
+                         )
+                      )
+                    )
+                  ],
                 ),
               ],
             ),
           ),
 
-          // Icons
+          // Action Icons
           Row(
             mainAxisSize: MainAxisSize.min,
             spacing: 8.w,
             children: [
+              if (isActive)
+                InkWell(
+                  onTap: onCall,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.green.withOpacity(0.1),
+                      ),
+                      child: const Icon(
+                        Icons.phone,
+                        size: 20,
+                        color: Colors.green,
+                      )),
+                ),
               InkWell(
-                onTap: onCall,
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.shade200,
-                    ),
-                    child: Icon(
-                      Icons.phone,
-                      color: Colors.green,
-                    )),
-              ),
-              InkWell(
-                onTap: isActive ? onSuspended : null,
+                onTap: isActive ? onSuspended : onActivate,
                 borderRadius: BorderRadius.circular(24),
                 child: Tooltip(
-                  message: isActive ? 'Suspend User' : 'User is suspended',
+                  message: isActive ? 'Suspend User' : 'Activate User',
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color:
-                          isActive ? Colors.red.shade50 : Colors.grey.shade200,
+                      color: isActive ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
                     ),
-                    child: SvgPicture.asset(
-                      Images.suspendedIcon,
-                      color: isActive ? Colors.redAccent : Colors.grey,
-                      width: 24,
-                      height: 24,
-                    ),
+                    child: isActive 
+                        ? SvgPicture.asset(
+                            Images.suspendedIcon,
+                            color: Colors.redAccent,
+                            width: 20,
+                            height: 20,
+                          )
+                        : const Icon(
+                            Icons.settings_backup_restore,
+                            color: Colors.green,
+                            size: 20,
+                          ),
                   ),
                 ),
               ),

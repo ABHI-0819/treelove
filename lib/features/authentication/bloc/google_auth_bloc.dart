@@ -27,31 +27,17 @@ class GoogleAuthBloc extends Bloc<GoogleAuthEvent, GoogleAuthState> {
     try {
       final googleUser = await authService.signInWithGoogle();
       if (googleUser != null) {
-        if (googleUser.isNewUser) {
-          emit(GoogleNovigateToUserTypeScreen(
-            googleServiceResponse: GoogleUser(
-              email: googleUser.email,
-              displayName: googleUser.displayName,
-              uid: googleUser.uid,
-              accessToken: googleUser.accessToken,
-              idToken: googleUser.idToken,
-              isNewUser: googleUser.isNewUser,
-            ),
-          ));
-        } else {
-          add(GoogleAuthLogin(
-              request: GoogleLoginRequestModel(
-                  email: googleUser.email,
-                  name: googleUser.displayName,
-                  idToken: googleUser.idToken!,
-                  oauthUid: googleUser.uid.toString(),
-                  provider: "google",
-                  // userTypeId:
-                  //     "03edfa34-3232-4fdf-85f9-a9d8d8270581", // Assuming '2' is the user type for existing users
-                  additionalData: {
-                "profilePicture": googleUser.photoURL.toString(),
-              })));
-        }
+        // Forward Google credentials to backend directly. Let backend dictate new/existing state.
+        add(GoogleAuthLogin(
+            request: GoogleLoginRequestModel(
+                email: googleUser.email,
+                name: googleUser.displayName,
+                idToken: googleUser.idToken ?? "",
+                oauthUid: googleUser.uid,
+                provider: "google",
+                additionalData: {
+                  "profilePicture": googleUser.photoURL ?? "",
+                })));
       } else {
         emit(GoogleAuthInitial());
       }
@@ -61,9 +47,6 @@ class GoogleAuthBloc extends Bloc<GoogleAuthEvent, GoogleAuthState> {
               status: "failed",
               message: "Google Sign-In failed: ${e.toString()}")));
     }
-    // Check if user is already authenticated with Google
-    // If yes, emit GoogleAuthSuccess with user data
-    // If no, emit GoogleAuthInitial to show login button
   }
 
   Future<void> _onLogin(
@@ -76,36 +59,51 @@ class GoogleAuthBloc extends Bloc<GoogleAuthEvent, GoogleAuthState> {
       switch (result.status) {
         case ApiStatus.success || ApiStatus.created:
           if (result.response.data?.requiresGroupSelection == true) {
-            final googleUser = await authService.signInWithGoogle();
-            if (googleUser != null) {
-              emit(GoogleNovigateToUserTypeScreen(
-                googleServiceResponse: GoogleUser(
-                  email: event.request.email,
-                  displayName: event.request.name,
-                  uid: googleUser.uid,
-                  idToken: googleUser.idToken,
-                  isNewUser: googleUser.isNewUser,
-                ),
-              ));
-            } else {
-              emit(GoogleAuthFailure(
-                  error: ResponseModel(
-                      status: "failed",
-                      message:
-                          "Google Sign-In failed during group selection.")));
-            }
+            // Already have user data from the event request, bypass redundant sign-in!
+            emit(GoogleNovigateToUserTypeScreen(
+              googleServiceResponse: GoogleUser(
+                email: event.request.email,
+                displayName: event.request.name,
+                uid: event.request.oauthUid??'',
+                idToken: event.request.idToken,
+                photoURL: event.request.additionalData?["profilePicture"],
+                isNewUser: true,
+              ),
+            ));
           } else {
-            pref.setString(
-                Keys.accessToken, result.response.data?.tokens.access ?? '');
-            pref.setString(
-                Keys.refreshToken, result.response.data?.tokens.refresh ?? '');
+            final authData = result.response.data;
+            if (authData != null && authData.user != null) {
+              final user = authData.user!;
+              final profile = user.profile;
+              
+              pref.setString(Keys.id, user.id ?? '');
+              pref.setString(Keys.email, user.email ?? '');
+              pref.setString(Keys.phone, user.phone ?? '');
+              pref.setString(Keys.groupName, user.groupName ?? '');
+              pref.setBool(Keys.isActive, user.isActive ?? false);
+              
+              if (profile != null) {
+                pref.setString(Keys.profileId, profile.id ?? '');
+                pref.setString(Keys.name, "${profile.firstName ?? ''} ${profile.lastName ?? ''}".trim());
+                pref.setString(Keys.firstName, profile.firstName ?? '');
+                pref.setString(Keys.lastName, profile.lastName ?? '');
+              }
+            }
+
+            final tokens = result.response.data?.tokens;
+            if (tokens != null) {
+              pref.setString(Keys.accessToken, tokens.access ?? '');
+              pref.setString(Keys.refreshToken, tokens.refresh ?? '');
+              pref.setString(Keys.accessTokenExpires, tokens.accessExpires?.toString() ?? '');
+              pref.setString(Keys.refreshTokenExpires, tokens.refreshExpires?.toString() ?? '');
+            }
+
             emit(GoogleAuthNavigateToHomeScreen(
-              userType: result.response.data?.userType ?? '',
+              userType: result.response.data?.user?.groupName ?? '',
             ));
           }
-        case ApiStatus.unAuthorized:
-          emit(GoogleAuthFailure(error: result.response));
           break;
+        case ApiStatus.unAuthorized:
         default:
           emit(GoogleAuthFailure(error: result.response));
       }

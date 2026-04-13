@@ -5,8 +5,9 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/models/planted.list.response.model.dart';
 import 'package:treelove/common/repositories/plantation_repository.dart';
@@ -91,10 +92,15 @@ class _VendorMapScreenState extends State<VendorMapScreen>
 
   List<PlantedTreeModel> _filterTrees(List<PlantedTreeModel> trees) {
     if (_searchQuery.isEmpty) return trees;
-    return trees.where((tree) =>
-    tree.treeSpecies.localName.toString().toLowerCase().contains(_searchQuery.toLowerCase()) == true ||
-        tree.plantationDate.toString().contains(_searchQuery)
-    ).toList();
+    return trees
+        .where((tree) =>
+            tree.treeSpecies.localName
+                    .toString()
+                    .toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ==
+                true ||
+            tree.plantationDate.toString().contains(_searchQuery))
+        .toList();
   }
 
   @override
@@ -119,7 +125,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                   builder: (context, state) {
                     if (state is ApiLoading) {
                       return _buildLoadingState();
-                    } else if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
+                    } else if (state is ApiSuccess<PlantedListResponseModel,
+                        ResponseModel>) {
                       final plantedData = state.data;
                       final filteredTrees = _filterTrees(plantedData.data);
 
@@ -134,7 +141,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                                 child: Opacity(
                                   opacity: 1 - _viewTransitionAnimation.value,
                                   child: Transform.scale(
-                                    scale: 1 - (_viewTransitionAnimation.value * 0.05),
+                                    scale: 1 -
+                                        (_viewTransitionAnimation.value * 0.05),
                                     child: buildMapView(filteredTrees),
                                   ),
                                 ),
@@ -145,7 +153,12 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                                 child: Opacity(
                                   opacity: _viewTransitionAnimation.value,
                                   child: Transform.translate(
-                                    offset: Offset(0, 50 * (1 - _viewTransitionAnimation.value)),
+                                    offset: Offset(
+                                        0,
+                                        50 *
+                                            (1 -
+                                                _viewTransitionAnimation
+                                                    .value)),
                                     child: _buildListView(filteredTrees),
                                   ),
                                 ),
@@ -188,7 +201,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+              child:
+                  const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
             ),
           ),
           const SizedBox(width: 12),
@@ -214,9 +228,11 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                 decoration: InputDecoration(
                   hintText: 'Search trees...',
                   hintStyle: TextStyle(color: Colors.grey[500], fontSize: 15),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20),
+                  prefixIcon:
+                      Icon(Icons.search, color: Colors.grey[500], size: 20),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
@@ -319,11 +335,13 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               scientificName: datum.treeSpecies.scientificName,
               imageUrl: datum.thumbnail ?? datum.treeSpecies.image, // or null
               health: datum.treeHealth,
-              growth:datum.treeGrowth,
+              growth: datum.treeGrowth,
               girth: '${datum.treeGirth} ${datum.treeGirthUnit}',
+              treeHeight: '${datum.treeHeight ?? '0'} ${datum.treeHeightUnit ?? 'ft'}',
               direction: 'Direction',
               onDirectionTap: () async {
-                final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+                final url = Uri.parse(
+                    'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
                 if (await canLaunchUrl(url)) {
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 }
@@ -331,21 +349,26 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               nextMaintenanceDate: datum.nextMaintenanceDate,
               nextMonitoringDate: datum.nextMonitoringDate,
               onMaintenanceHistoryTap: () {
-                AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                  'treeId': datum.id.toString()
-                });
+                AppRoute.goToNextPage(
+                    context: context,
+                    screen: TreeMaintenanceHistoryScreen.route,
+                    arguments: {'treeId': datum.id.toString()});
                 // Navigate to maintenance history
               },
               onManualMonitorHistoryTap: () {
-                AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                  'treeId': datum.id.toString()
-                });
+                AppRoute.goToNextPage(
+                    context: context,
+                    screen: TreeMonitoringHistoryScreen.route,
+                    arguments: {'treeId': datum.id.toString()});
                 // Navigate to manual monitoring history
               },
               onSatelliteMonitorHistoryTap: () {
-                AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-                  'plantationId': datum.id.toString(),
-                });
+                AppRoute.goToNextPage(
+                    context: context,
+                    screen: SatelliteHistoryScreen.route,
+                    arguments: {
+                      'plantationId': datum.id.toString(),
+                    });
                 // Navigate to satellite monitoring history
               },
             );
@@ -376,7 +399,7 @@ class _VendorMapScreenState extends State<VendorMapScreen>
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            FlutterMap(
+            TreeloveMap(
               mapController: _mapController,
               options: MapOptions(
                 initialCenter: const LatLng(19.112251, 72.864512),
@@ -386,9 +409,9 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                 // Fixed interaction options
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.doubleTapZoom |
-                  InteractiveFlag.pinchZoom |
-                  InteractiveFlag.drag |
-                  InteractiveFlag.flingAnimation,
+                      InteractiveFlag.pinchZoom |
+                      InteractiveFlag.drag |
+                      InteractiveFlag.flingAnimation,
                   enableMultiFingerGestureRace: true,
                   scrollWheelVelocity: 0.005,
                   pinchZoomWinGestures: MultiFingerGesture.pinchZoom,
@@ -403,7 +426,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                  urlTemplate:
+                      'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                   tileProvider: NetworkTileProvider(
                     headers: {
                       'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
@@ -571,37 +595,49 @@ class _VendorMapScreenState extends State<VendorMapScreen>
 
     return GestureDetector(
       onTap: () {
+        final lat = tree.location.coordinates[1];
+        final lng = tree.location.coordinates[0];
         // _showEnhancedTreeBottomSheet(context, tree);
         TreeDetailsBottomSheet.show(
           context,
           treeName: tree.treeSpecies.localName,
           scientificName: tree.treeSpecies.scientificName,
-          imageUrl: BaseNetwork.BASE_Image_URL+tree.thumbnail!??tree.treeSpecies.image, // or null
+          imageUrl: tree.thumbnail ?? tree.treeSpecies.image, // or null
           health: tree.treeHealth,
-          growth:tree.treeGrowth,
+          growth: tree.treeGrowth,
           girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
+          treeHeight: '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
           direction: 'Direction',
-          onDirectionTap: (){
-
+          onDirectionTap: () async {
+            final url = Uri.parse(
+                'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
           },
           nextMaintenanceDate: tree.nextMaintenanceDate,
           nextMonitoringDate: tree.nextMonitoringDate,
           onMaintenanceHistoryTap: () {
-            AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-              'treeId':tree.id
-            });
+            AppRoute.goToNextPage(
+                context: context,
+                screen: TreeMaintenanceHistoryScreen.route,
+                arguments: {'treeId': tree.id});
             // Navigate to maintenance history
           },
           onManualMonitorHistoryTap: () {
-            AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-              'treeId':tree.id
-            });
+            AppRoute.goToNextPage(
+                context: context,
+                screen: TreeMonitoringHistoryScreen.route,
+                arguments: {'treeId': tree.id});
             // Navigate to manual monitoring history
           },
           onSatelliteMonitorHistoryTap: () {
-            AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-              'plantationId':tree.id,
-            });
+            AppRoute.goToNextPage(
+                context: context,
+                screen: SatelliteHistoryScreen.route,
+                arguments: {
+                  'plantationId': tree.id,
+                });
             // Navigate to satellite monitoring history
           },
         );
@@ -619,27 +655,28 @@ class _VendorMapScreenState extends State<VendorMapScreen>
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
                   imageUrl,
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      width: 80,
-                      height: 80,
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        color: Colors.green[100],
+                        color: Colors.green[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        Icons.eco,
-                        color: Colors.green[600],
+                        Icons.park_outlined,
+                        color: Colors.green[400],
                         size: 32,
                       ),
                     );
@@ -650,44 +687,58 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      tree.treeSpecies.localName.toString() ?? "Unknown Species",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Height: ${tree.treeHeight} ft",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tree.treeSpecies.localName.toString() ?? "Unknown Species",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColor.primaryDark,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildMiniHealthBadge(tree.treeHealth),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "Planted: ${tree.plantationDate.toString()}",
+                      tree.treeSpecies.scientificName.toString() ?? "Unknown",
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[500],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(Icons.height, size: 14, color: AppColor.secondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}",
+                          style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(Icons.straighten, size: 14, color: AppColor.secondaryDark),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${tree.treeGirth ?? '0'} ${tree.treeGirthUnit ?? 'inch'}",
+                          style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.eco,
-                  color: Colors.green[600],
-                  size: 20,
                 ),
               ),
             ],
@@ -697,7 +748,43 @@ class _VendorMapScreenState extends State<VendorMapScreen>
     );
   }
 
-  void _showEnhancedTreeBottomSheet(BuildContext context, PlantedTreeModel treeModel) {
+  Widget _buildMiniHealthBadge(String health) {
+    Color badgeColor = Colors.green;
+    String status = health.toLowerCase();
+    
+    if (status.contains('warning') || status.contains('fair')) {
+      badgeColor = Colors.orange;
+    } else if (status.contains('critical') || status.contains('poor') || status.contains('bad')) {
+      badgeColor = Colors.red;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: badgeColor.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.favorite, size: 10, color: badgeColor),
+          const SizedBox(width: 4),
+          Text(
+            health.toUpperCase(),
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: badgeColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEnhancedTreeBottomSheet(
+      BuildContext context, PlantedTreeModel treeModel) {
     final lat = treeModel.location.coordinates[1];
     final lng = treeModel.location.coordinates[0];
 
@@ -755,7 +842,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
   }
 
   Widget _buildImageSection(PlantedTreeModel treeModel) {
-    final imageUrl = BaseNetwork.BASE_Image_URL + treeModel.treeSpecies.image.toString();
+    final imageUrl =
+        BaseNetwork.BASE_Image_URL + treeModel.treeSpecies.image.toString();
 
     return Container(
       height: 220,
@@ -777,8 +865,7 @@ class _VendorMapScreenState extends State<VendorMapScreen>
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Image.network(
-               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s"
-            );
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s");
           },
         ),
       ),
@@ -797,11 +884,12 @@ class _VendorMapScreenState extends State<VendorMapScreen>
             color: Colors.black87,
           ),
         ),
-       SizedBox(
-         height: 2,
-       ),
+        SizedBox(
+          height: 2,
+        ),
         Text(
-          datum.treeSpecies.scientificName.toString() ?? "Scientific name unavailable",
+          datum.treeSpecies.scientificName.toString() ??
+              "Scientific name unavailable",
           style: TextStyle(
             fontSize: 18,
             fontStyle: FontStyle.italic,
@@ -838,7 +926,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
     );
   }
 
-  Widget _buildEnhancedInfoCard(String title, String value, IconData icon, Color color) {
+  Widget _buildEnhancedInfoCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       width: (MediaQuery.of(context).size.width - 72) / 2,
       padding: const EdgeInsets.all(8),
@@ -889,7 +978,6 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               ),
             ],
           )
-
         ],
       ),
     );
@@ -941,12 +1029,12 @@ class _VendorMapScreenState extends State<VendorMapScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: isPrimary
             ? [
-          BoxShadow(
-            color: Colors.green.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
             : null,
       ),
       child: ElevatedButton.icon(
@@ -1115,7 +1203,9 @@ class _SmoothToggleTabState extends State<SmoothToggleTab>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: widget.isMapSelected ? Colors.white : Colors.grey[600],
+                          color: widget.isMapSelected
+                              ? Colors.white
+                              : Colors.grey[600],
                         ),
                       ),
                     ),
@@ -1136,7 +1226,9 @@ class _SmoothToggleTabState extends State<SmoothToggleTab>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: !widget.isMapSelected ? Colors.white : Colors.grey[600],
+                          color: !widget.isMapSelected
+                              ? Colors.white
+                              : Colors.grey[600],
                         ),
                       ),
                     ),

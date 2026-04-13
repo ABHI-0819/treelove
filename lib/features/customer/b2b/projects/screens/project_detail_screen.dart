@@ -7,11 +7,16 @@ import '../../../../../common/bloc/api_event.dart';
 import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/response.mode.dart';
 import '../../../../../common/repositories/project_repository.dart';
+import '../../../../../common/screens/maintenance_stats_screen.dart';
 import '../../../../../core/config/route/app_route.dart';
 import '../../../../../core/network/api_connection.dart';
 import '../../../../authentication/screens/sign_in_screen.dart';
 import '../bloc/b2b_project_bloc.dart';
 import '../model/b2b_project_detail_response_model.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import '../../../../../common/repositories/report_repository.dart';
+import '../../../../../common/widgets/report_selection_sheet.dart';
 
 class ProjectB2BDetailsScreen extends StatefulWidget {
   static const route = "/b2b-project-detail";
@@ -30,68 +35,6 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
   late Animation<Offset> _slideAnimation;
 
   int selectedAreaIndex = 0;
-
-  // Sample data - multiple areas
-  final List<Map<String, dynamic>> projectAreas = [
-    {
-      "id": "3c7a426b-da29-4858-82ce-e3327464ba6a",
-      "name": "Mahalaxmi Open Ground",
-      "capacity": 10000,
-      "service_summary": [
-        {
-          "service_type": "Maintenance",
-          "total_required": 1000,
-          "total_done": 250
-        },
-        {
-          "service_type": "Monitoring",
-          "total_required": 1000,
-          "total_done": 180
-        },
-        {
-          "service_type": "Plantation",
-          "total_required": 1000,
-          "total_done": 450
-        }
-      ]
-    },
-    {
-      "id": "4d8b537c-eb3a-5959-93df-f4438575cb7b",
-      "name": "Mahalaxmi Garden Area",
-      "capacity": 5000,
-      "service_summary": [
-        {
-          "service_type": "Maintenance",
-          "total_required": 500,
-          "total_done": 350
-        },
-        {
-          "service_type": "Monitoring",
-          "total_required": 500,
-          "total_done": 400
-        },
-        {"service_type": "Plantation", "total_required": 500, "total_done": 500}
-      ]
-    },
-    {
-      "id": "5e9c648d-fc4b-6a6a-a4ee-05549686dc8c",
-      "name": "Mahalaxmi Walkway",
-      "capacity": 3000,
-      "service_summary": [
-        {
-          "service_type": "Maintenance",
-          "total_required": 300,
-          "total_done": 150
-        },
-        {
-          "service_type": "Monitoring",
-          "total_required": 300,
-          "total_done": 300
-        },
-        {"service_type": "Plantation", "total_required": 300, "total_done": 300}
-      ]
-    }
-  ];
 
   late B2BProjectBloc b2bProjectBloc;
 
@@ -122,6 +65,42 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
     b2bProjectBloc.add(ApiFetch(id: widget.projectId));
   }
 
+  void _handleReportDownload(ReportType type) async {
+    EasyLoading.show(status: 'Downloading report...');
+    try {
+      final repo = ReportRepository(api: ApiConnection());
+      final file = await repo.downloadReport(widget.projectId, type);
+      EasyLoading.dismiss();
+
+      if (file != null) {
+        await Share.shareXFiles([XFile(file.path)], text: 'Project Report');
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to download report')),
+          );
+        }
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  void _showReportSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ReportSelectionSheet(
+        onSelect: _handleReportDownload,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -147,8 +126,8 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                   if (state is TokenExpired<B2BProjectDetailResponseModel,
                       ResponseModel>) {
                     // Handle token expiration
-                    AppRoute.pushReplacement(
-                        context, SignInScreen.route, arguments: {});
+                    AppRoute.pushReplacement(context, SignInScreen.route,
+                        arguments: {});
                   }
                 },
                 child: BlocBuilder<B2BProjectBloc,
@@ -169,19 +148,19 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                           ),
                           SizedBox(height: 20),
                           _buildStatsRow(
-                            totalAmount:  project.data.projectInfo.getFormattedContractValue(),
-                            amountPaid: project.data.projectInfo.totalAmountPaid,
+                            totalAmount: project.data.projectInfo
+                                .getFormattedContractValue(),
+                            amountPaid:
+                                project.data.projectInfo.totalAmountPaid,
                             projectAreasCount: project.data.totalProjectAreas,
                           ),
                           SizedBox(height: 20),
                           _buildServiceSummary(
-                            serviceSummary: project.data.serviceSummary,
-                            projectTitle:  project.data.projectInfo.name
-                          ),
+                              serviceSummary: project.data.serviceSummary,
+                              projectTitle: project.data.projectInfo.name),
                           SizedBox(height: 20),
                           _buildProjectAreas(
-                            projectArea: project.data.projectAreas
-                          ),
+                              projectArea: project.data.projectAreas),
                         ],
                       );
                     } else if (state is ApiFailure<
@@ -198,6 +177,41 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportButton() {
+    return GestureDetector(
+      onTap: _showReportSelection,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColor.primary,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColor.primary.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.file_download_outlined, color: Colors.white, size: 16),
+            SizedBox(width: 8),
+            Text(
+              'Download Report',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -415,19 +429,31 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                 ),
                 SizedBox(height: 15),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.location_on,
-                        color: AppColor.secondary, size: 18),
-                    SizedBox(width: 5),
-                    Text(
-                      projectInfo.locationDescription ??
-                          'Location not specified',
-                      // 'Mumbai, Mahalaxmi',
-                      style: TextStyle(
-                        color: AppColor.primaryDark,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.location_on,
+                              color: AppColor.secondary, size: 18),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              projectInfo.locationDescription ??
+                                  'Location not specified',
+                              // 'Mumbai, Mahalaxmi',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: AppColor.primaryDark,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    _buildReportButton(),
                   ],
                 ),
                 SizedBox(height: 10),
@@ -458,109 +484,97 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
       {required String totalAmount,
       required String amountPaid,
       required int projectAreasCount}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              totalAmount,
-              // '₹12.3L',
-              'Total Amount',
-              Icons.account_balance_wallet,
-              AppColor.primary,
-            ),
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: _buildStatCard(
-              amountPaid,
-              // '₹5.23L',
-              'Amount Paid',
-              Icons.payments,
-              AppColor.secondary,
-            ),
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: _buildStatCard(
-              projectAreasCount.toString(),
-              // '${projectAreas.length}',
-              'Project Areas',
-              Icons.map,
-              AppColor.secondaryDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    // Strip ending '.00' decimals to save horizontal space dynamically
+    String cleanTotal = totalAmount.replaceAll('.00', '');
+    String cleanPaid = amountPaid.replaceAll('.00', '');
 
-  Widget _buildStatCard(
-      String value, String label, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
-            offset: Offset(0, 3),
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+          Expanded(
+              child: _buildCompactStatItem(
+            cleanTotal,
+            'Total Amount',
+            Icons.account_balance_wallet_outlined,
+            AppColor.primary,
+          )),
+          Container(height: 40, width: 1, color: Colors.grey.withOpacity(0.2)),
+          Expanded(
+              child: _buildCompactStatItem(
+            cleanPaid,
+            'Amount Paid',
+            Icons.payments_outlined,
+            AppColor.secondary,
+          )),
+          Container(height: 40, width: 1, color: Colors.grey.withOpacity(0.2)),
+          Expanded(
+              flex: 1,
+              child: _buildCompactStatItem(
+                projectAreasCount.toString(),
+                'Areas',
+                Icons.map_outlined,
+                AppColor.secondaryDark,
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactStatItem(
+      String value, String label, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 22),
+          SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColor.primaryDark,
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
           ),
-          SizedBox(height: 10),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColor.primaryDark,
-            ),
-          ),
+          SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildServiceSummary({required List<ServiceSummary> serviceSummary,required String projectTitle}) {
-    // Calculate overall service summary from selected area
-    // var selectedArea = projectAreas[selectedAreaIndex];
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColor.cardBackground,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+  Widget _buildServiceSummary(
+      {required List<ServiceSummary> serviceSummary,
+      required String projectTitle}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -580,119 +594,155 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
                         color: AppColor.primaryDark,
                       ),
                     ),
-
                     Text(
                       projectTitle,
-                      // selectedArea['name'],
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-
                   ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
-          Column(
-            spacing: 5.h,
-            children: List.generate(
-              serviceSummary.length,
-              (int index) => _buildServiceItem(
-                  serviceSummary[index].serviceType,
-                  serviceSummary[index].totalRequired,
-                  serviceSummary[index].totalDone,
-                  _getServiceIcon(serviceSummary[index].serviceType),
-                  _getServiceColor(serviceSummary[index].serviceType)),
+          SizedBox(height: 16.h),
+          SizedBox(
+            height: 105,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: serviceSummary.length,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                final summary = serviceSummary[index];
+                final sType = summary.serviceType;
+                final icon = _getServiceIcon(sType);
+                final color = _getServiceColor(sType);
+                final required = summary.totalRequired;
+                final done = summary.totalDone;
+                
+                final VoidCallback? onTap = sType.toLowerCase() == 'maintenance'
+                    ? () {
+                        AppRoute.goToNextPage(
+                          context: context,
+                          screen: MaintenanceStatsScreen.route,
+                          arguments: {
+                            'projectId': widget.projectId,
+                            'projectAreaId': null,
+                            'projectName': projectTitle,
+                          },
+                        );
+                      }
+                    : null;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 155,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColor.cardBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: color.withOpacity(0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(icon, color: color, size: 22),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  sType,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: AppColor.primaryDark,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Progress",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$done/$required",
+                                    style: TextStyle(
+                                      color: AppColor.primaryDark,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (onTap != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Text(
+                                        "Dash",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 2),
+                                      Icon(Icons.open_in_new, size: 10, color: Colors.white),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           )
-          /*
-          SizedBox(height: 20),
-          ...selectedArea['service_summary'].map<Widget>((service) {
-            int index = selectedArea['service_summary'].indexOf(service);
-            List<Color> colors = [
-              AppColor.secondary,
-              AppColor.primary,
-              AppColor.secondaryDark
-            ];
-            List<IconData> icons = [Icons.eco, Icons.build, Icons.visibility];
-
-            return Column(
-              children: [
-                _buildServiceItem(
-                    service['service_type'],
-                    service['total_required'],
-                    service['total_done'],
-                    icons[index % icons.length],
-                    colors[index % colors.length]),
-                if (index < selectedArea['service_summary'].length - 1)
-                  SizedBox(height: 15),
-              ],
-            );
-          }).toList(),
-
-           */
         ],
       ),
     );
   }
 
-  Widget _buildServiceItem(
-      String service, int required, int done, IconData icon, Color color) {
-    double progress = done / required;
+  Widget _buildProjectAreas({required List<ProjectArea> projectArea}) {
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              SizedBox(width: 10),
-              Text(
-                service,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColor.primaryDark,
-                ),
-              ),
-              Spacer(),
-              Text(
-                '$done/$required',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: color.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 6,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProjectAreas(
-  {required List<ProjectArea> projectArea}
-      ) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColor.cardBackground,
@@ -734,24 +784,18 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
           SizedBox(height: 20),
 
           // Filter Chips
-          _buildAreaFilterChips(
-            projectArea: projectArea
-          ),
+          _buildAreaFilterChips(projectArea: projectArea),
 
           SizedBox(height: 20),
 
           // Selected Area Details
-          _buildSelectedAreaDetails(
-            projectArea: projectArea
-          ),
+          _buildSelectedAreaDetails(projectArea: projectArea),
         ],
       ),
     );
   }
 
-  Widget _buildAreaFilterChips({
-    required List<ProjectArea> projectArea
-}) {
+  Widget _buildAreaFilterChips({required List<ProjectArea> projectArea}) {
     return Container(
       height: 50,
       child: ListView.builder(
@@ -811,9 +855,7 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
     );
   }
 
-  Widget _buildSelectedAreaDetails(
-  { required List<ProjectArea> projectArea}
-      ) {
+  Widget _buildSelectedAreaDetails({required List<ProjectArea> projectArea}) {
     var selectedArea = projectArea[selectedAreaIndex];
 
     return AnimatedSwitcher(
@@ -911,13 +953,27 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children:
-                projectArea[selectedAreaIndex].serviceSummary.map<Widget>((service) {
+                children: projectArea[selectedAreaIndex]
+                    .serviceSummary
+                    .map<Widget>((service) {
                   return _buildMiniStat(
                     '${service.totalDone}/${service.totalRequired}',
                     service.serviceType,
                     _getServiceIcon(service.serviceType),
                     _getServiceColor(service.serviceType),
+                    onTap: service.serviceType.toLowerCase() == 'maintenance'
+                        ? () {
+                            AppRoute.goToNextPage(
+                              context: context,
+                              screen: MaintenanceStatsScreen.route,
+                              arguments: {
+                                'projectId': widget.projectId,
+                                'projectAreaId': selectedArea.id,
+                                'projectName': selectedArea.name,
+                              },
+                            );
+                          }
+                        : null,
                   );
                 }).toList(),
               ),
@@ -971,27 +1027,67 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
   }
 
   Widget _buildMiniStat(
-      String value, String label, IconData icon, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 20),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: AppColor.primaryDark,
-          ),
+      String value, String label, IconData icon, Color color,
+      {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+        decoration: onTap != null 
+            ? BoxDecoration(
+                color: color.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.3)),
+              )
+            : null,
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColor.primaryDark,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+            if (onTap != null) ...[
+              SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Dash",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(Icons.open_in_new, size: 9, color: Colors.white),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -1052,7 +1148,6 @@ class _ProjectB2BDetailsScreenState extends State<ProjectB2BDetailsScreen>
 
     return totalProgress / area.serviceSummary.length;
   }
-
 
   Color _getProgressColor(double progress) {
     if (progress >= 80) return Colors.green;

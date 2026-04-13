@@ -158,12 +158,14 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                     ),
 
                     // Tree List / Loading States
-                    if (state is ApiLoading<PlantedListResponseModel, ResponseModel>)
+                    if (state
+                        is ApiLoading<PlantedListResponseModel, ResponseModel>)
                       const SliverFillRemaining(
                         hasScrollBody: false,
                         child: Center(child: CircularProgressIndicator()),
                       )
-                    else if (state is ApiFailure<PlantedListResponseModel, ResponseModel>)
+                    else if (state
+                        is ApiFailure<PlantedListResponseModel, ResponseModel>)
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Center(
@@ -173,7 +175,8 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                           ),
                         ),
                       )
-                    else if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>)
+                    else if (state
+                        is ApiSuccess<PlantedListResponseModel, ResponseModel>)
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(15, 8, 15, 20),
                         sliver: SliverList(
@@ -183,8 +186,7 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
                               return _TreeCard(
                                 treeData: tree,
                                 onDirectionPressed: () {
-                                  _openMapsApp(
-                                      tree.location.coordinates[1],
+                                  _openMapsApp(tree.location.coordinates[1],
                                       tree.location.coordinates[0]);
                                 },
                                 onMonitorPressed: () async {
@@ -224,8 +226,6 @@ class _TreeMonitorListScreenState extends State<TreeMonitorListScreen> {
               },
             )));
   }
-
-
 
   void _openMapsApp(double lat, double lng) async {
     String url = "https://www.google.com/maps/dir/?api=1&destination=$lat,$lng";

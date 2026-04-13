@@ -1,6 +1,7 @@
 import 'package:treelove/core/network/api_connection.dart';
 import 'package:treelove/features/vendor/home/models/project_detail_model.dart';
 import 'package:treelove/features/vendor/home/models/project_list_model.dart';
+import 'package:treelove/features/vendor/home/models/vendor_dashboard_model.dart';
 
 import '../../core/network/base_network.dart';
 import '../../core/network/base_network_status.dart';
@@ -29,6 +30,8 @@ class ProjectRepository {
         status: filter,
         category: category,
         type : type,
+        page: page,
+        pageSize: limit,
         searchQuery: search);
     ApiResult result = await api.getApiConnection<ProjectListResponse>(
       // BaseNetwork.projectListURL,
@@ -66,6 +69,14 @@ class ProjectRepository {
           BaseNetwork.getJsonHeaders(),
       // BaseNetwork.getJsonHeadersWithToken(token),
       b2bProjectDetailResponseModelFromJson,
+    );
+    return result;
+  }
+  Future<ApiResult> fetchVendorDashboard() async {
+    ApiResult result = await api.getApiConnection<VendorDashboardModel>(
+      BaseNetwork.vendorHomeDashboardUrl,
+      BaseNetwork.getJsonHeaders(),
+      vendorDashboardModelFromJson,
     );
     return result;
   }

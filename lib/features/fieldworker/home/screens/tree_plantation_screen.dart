@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -59,6 +60,7 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
   bool _isPopped = false;
 
   String plantationType = 'Fresh';
+
   final TextEditingController latitudeController = TextEditingController();
   final TextEditingController longitudeController = TextEditingController();
   final TextEditingController girthController = TextEditingController();
@@ -256,8 +258,9 @@ class _PlantTreeScreenState extends State<PlantTreeScreen> {
           if (state is ApiSuccess<PlantationResponseModel, ResponseModel>) {
             _resetForm();
             SuccessDialog.showAndPop(
-              context: context, 
-              message: state.data.message ?? 'Plantation submitted successfully.',
+              context: context,
+              message:
+                  state.data.message ?? 'Plantation submitted successfully.',
             );
           } else if (state
               is ApiFailure<PlantationResponseModel, ResponseModel>) {
@@ -919,12 +922,14 @@ class LocationPreviewMap extends StatelessWidget {
   final double? longitude;
   final double zoom;
 
-  const LocationPreviewMap({
+  LocationPreviewMap({
     super.key,
     required this.latitude,
     required this.longitude,
     this.zoom = 14,
   });
+
+  final MapController _mapController = MapController();
 
   @override
   Widget build(BuildContext context) {
@@ -955,7 +960,8 @@ class LocationPreviewMap extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: FlutterMap(
+        child: TreeloveMap(
+          mapController: _mapController,
           options: MapOptions(
             initialCenter: point,
             initialZoom: zoom,

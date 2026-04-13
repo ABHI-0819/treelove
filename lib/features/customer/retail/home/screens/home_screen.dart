@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -20,9 +21,16 @@ import '../../cart/cart_screen.dart';
 import '../../maintenance/select_maintenance_location.dart';
 import '../../project/screens/project_overview_section.dart';
 import '../../project/screens/project_template_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:treelove/common/models/blog_model.dart';
+import 'package:treelove/common/models/testimonial_model.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../bloc/engagement_bloc.dart';
 import 'area_selection_screen.dart';
 import 'location_selection_screen.dart';
+
 final SecurePreference preference = SecurePreference();
+
 class HomeScreen extends StatefulWidget {
   static const String route = '/retail-home-screen';
 
@@ -41,74 +49,118 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFEF7),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const HomeTopSection(),
+    return BlocProvider(
+      create: (context) => EngagementBloc()..add(FetchEngagementData()),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFFFEF7),
+        body: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const HomeTopSection(),
 
-            // NEW: Featured Plantation Types Section
-            _buildFeaturedPlantationTypes(),
+              // NEW: Featured Plantation Types Section
+              _buildFeaturedPlantationTypes(),
 
-            // Quick Planting Options
-            const QuickPlantingOptionsSection(),
+              // Quick Planting Options
+              const QuickPlantingOptionsSection(),
 
-            // Service Section
-            _buildServiceSection(),
+              // Service Section
+              _buildServiceSection(),
 
-            // Project Categories
-            ProjectCategorySection(
-              sectionTitle: 'TreeLov Projects',
-              category: 'treelov',
-              onSeeAllTap: () {
-                AppRoute.goToNextPage(
-                  context: context,
-                  screen: ProjectTemplateScreen.route,
-                  arguments: {
-                    'title': 'TreeLov Project',
-                    'category': 'treelov',
-                  },
-                );
-              },
-            ),
-            ProjectCategorySection(
-              sectionTitle: 'Government Plantations',
-              category: 'government',
-              onSeeAllTap: () {
-                AppRoute.goToNextPage(
-                  context: context,
-                  screen: ProjectTemplateScreen.route,
-                  arguments: {
-                    'title': 'Government Plantations',
-                    'category': 'government',
-                  },
-                );
-              },
-            ),
-            ProjectCategorySection(
-              sectionTitle: 'Farmer Projects',
-              category: 'farmer',
-              onSeeAllTap: () {
-                AppRoute.goToNextPage(
-                  context: context,
-                  screen: ProjectTemplateScreen.route,
-                  arguments: {
-                    'title': 'Farmer Projects',
-                    'category': 'farmer',
-                  },
-                );
-              },
-            ),
+              // Project Categories
+              ProjectCategorySection(
+                sectionTitle: 'TreeLov Projects',
+                category: 'treelov',
+                onSeeAllTap: () {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: ProjectTemplateScreen.route,
+                    arguments: {
+                      'title': 'TreeLov Project',
+                      'category': 'treelov',
+                    },
+                  );
+                },
+              ),
+              ProjectCategorySection(
+                sectionTitle: 'Government Plantations',
+                category: 'government',
+                onSeeAllTap: () {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: ProjectTemplateScreen.route,
+                    arguments: {
+                      'title': 'Government Plantations',
+                      'category': 'government',
+                    },
+                  );
+                },
+              ),
+              ProjectCategorySection(
+                sectionTitle: 'Farmer Projects',
+                category: 'farmer',
+                onSeeAllTap: () {
+                  AppRoute.goToNextPage(
+                    context: context,
+                    screen: ProjectTemplateScreen.route,
+                    arguments: {
+                      'title': 'Farmer Projects',
+                      'category': 'farmer',
+                    },
+                  );
+                },
+              ),
 
-            // Trending Topics
-            TrendingTopicsWidget(topics: []),
-
-            // Customer Satisfaction
-            const CustomerSatisfactionWidget(),
-          ],
+              // Engagement Sections (Blogs & Testimonials)
+              BlocBuilder<EngagementBloc, EngagementState>(
+                builder: (context, state) {
+                  if (state is EngagementLoading) {
+                    return const Center(
+                        child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    ));
+                  } else if (state is EngagementLoaded) {
+                    return Column(
+                      children: [
+                        if (state.blogs != null && state.blogs!.isNotEmpty)
+                          TrendingTopicsWidget(
+                            blogs: state.blogs!,
+                            onSeeAll: () {
+                              AppRoute.goToNextPage(
+                                context: context,
+                                screen: '/blog-list',
+                                arguments: {'blogs': state.blogs!},
+                              );
+                            },
+                          ),
+                        if (state.testimonials != null &&
+                            state.testimonials!.isNotEmpty)
+                          CustomerSatisfactionWidget(
+                            testimonials: state.testimonials!,
+                            onSeeAll: () {
+                              AppRoute.goToNextPage(
+                                context: context,
+                                screen: '/testimonial-list',
+                                arguments: {
+                                  'testimonials': state.testimonials!
+                                },
+                              );
+                            },
+                          ),
+                        SizedBox(height: 100.h),
+                      ],
+                    );
+                  } else if (state is EngagementError) {
+                    return Center(child: Text(state.message));
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -150,7 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
             iconBgColor: const Color(0xFFE8F5E9),
             onTap: () {
               OrderFlowState().orderType = OrderType.normal;
-              AppRoute.goToNextPage(context: context, screen: MapScreen.route, arguments: {});
+              AppRoute.goToNextPage(
+                  context: context, screen: MapScreen.route, arguments: {});
               // Navigate to nearby plantations
             },
           ),
@@ -164,10 +217,10 @@ class _HomeScreenState extends State<HomeScreen> {
             iconBgColor: const Color(0xFFE8F5E9),
             onTap: () {
               OrderFlowState().orderType = OrderType.normal;
-              AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
-                'title':'Forest Projects',
-                'category':'ngo'
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: ProjectTemplateScreen.route,
+                  arguments: {'title': 'Forest Projects', 'category': 'ngo'});
               // Navigate to forest plantations
             },
           ),
@@ -181,10 +234,13 @@ class _HomeScreenState extends State<HomeScreen> {
             iconBgColor: const Color(0xFFF9FBE7),
             onTap: () {
               OrderFlowState().orderType = OrderType.normal;
-              AppRoute.goToNextPage(context: context, screen: ProjectTemplateScreen.route, arguments: {
-                'title':'Farmers Plantations',
-                'category':'farmer'
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: ProjectTemplateScreen.route,
+                  arguments: {
+                    'title': 'Farmers Plantations',
+                    'category': 'farmer'
+                  });
               // Navigate to farmer plantations
             },
           ),
@@ -307,29 +363,29 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-
           _buildServiceCard(
             icon: Images.monitorIcon,
             title: 'Tree Monitoring',
             subtitle: 'Track your tree growth',
             onTap: () {
-              AppRoute.goToNextPage(context: context, screen: SelectMonitoringScreen.route, arguments: {
-                'inquiryType': InquiryType.monitoring
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: SelectMonitoringScreen.route,
+                  arguments: {'inquiryType': InquiryType.monitoring});
               // Add navigation
             },
           ),
           SizedBox(height: 12.h),
-
           _buildServiceCard(
             icon: Images.babyPlantIcon,
             title: 'Tree Maintenance',
             subtitle: 'Keep trees healthy',
             onTap: () {
               // Add navigation
-              AppRoute.goToNextPage(context: context, screen: SelectMonitoringScreen.route, arguments: {
-                'inquiryType': InquiryType.maintenance
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: SelectMonitoringScreen.route,
+                  arguments: {'inquiryType': InquiryType.maintenance});
             },
           ),
         ],
@@ -452,15 +508,6 @@ class HomeTopSection extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    // CircleAvatar(
-                    //   radius: 22.r,
-                    //   backgroundColor: Colors.white,
-                    //   child: CircleAvatar(
-                    //     radius: 20.r,
-                    //     backgroundImage: AssetImage(Images.accountIcon),
-                    //   ),
-                    // ),
-                    // SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,9 +559,7 @@ class HomeTopSection extends StatelessWidget {
                       AppRoute.goToNextPage(
                         context: context,
                         screen: NotificationsScreen.route,
-                        arguments: {
-
-                        },
+                        arguments: {},
                       );
                     },
                   ),
@@ -526,10 +571,7 @@ class HomeTopSection extends StatelessWidget {
                       AppRoute.goToNextPage(
                         context: context,
                         screen: CartScreen.route,
-                        arguments: {
-                          'msgType':'',
-                          'customMsg':''
-                        },
+                        arguments: {'msgType': '', 'customMsg': ''},
                       );
                     },
                   ),
@@ -627,7 +669,6 @@ class QuickPlantingOptionsSection extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-
           PlantingOptionCard(
             icon: Icons.cake_outlined,
             title: 'Birthday Plantation',
@@ -635,14 +676,16 @@ class QuickPlantingOptionsSection extends StatelessWidget {
             color: const Color(0xFFE91E63),
             onTap: () {
               OrderFlowState().orderType = OrderType.birthday;
-              AppRoute.goToNextPage(context: context, screen: AreaSelectionScreen.route, arguments: {
-                'treeCount': 20,
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: AreaSelectionScreen.route,
+                  arguments: {
+                    'treeCount': 20,
+                  });
               // Navigate to birthday plantation
             },
           ),
           SizedBox(height: 12.h),
-
           PlantingOptionCard(
             icon: Icons.favorite_border,
             title: 'Anniversary Gifts',
@@ -650,9 +693,12 @@ class QuickPlantingOptionsSection extends StatelessWidget {
             color: const Color(0xFFD32F2F),
             onTap: () {
               OrderFlowState().orderType = OrderType.anniversary;
-              AppRoute.goToNextPage(context: context, screen: AreaSelectionScreen.route, arguments: {
-                'treeCount': 25,
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: AreaSelectionScreen.route,
+                  arguments: {
+                    'treeCount': 25,
+                  });
               // Navigate to anniversary gifts
             },
           ),
@@ -716,7 +762,6 @@ class PlantingOptionCard extends StatelessWidget {
               ),
             ),
             SizedBox(width: 16.w),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -741,7 +786,6 @@ class PlantingOptionCard extends StatelessWidget {
                 ],
               ),
             ),
-
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
@@ -819,40 +863,17 @@ class _ActionIcon extends StatelessWidget {
     );
   }
 }
-class TrendingTopic {
-  final String id;
-  final String imagePath;
-  final String headline;
-  final String subHeadline;
-  final String durationText;
-  final String category;
-  final DateTime publishedDate;
-  final String? readMoreUrl;
-
-  const TrendingTopic({
-    required this.id,
-    required this.imagePath,
-    required this.headline,
-    required this.subHeadline,
-    required this.durationText,
-    required this.category,
-    required this.publishedDate,
-    this.readMoreUrl,
-  });
-}
 
 class TrendingTopicsWidget extends StatefulWidget {
-  final List<TrendingTopic> topics;
+  final List<BlogModel> blogs;
   final String? sectionTitle;
   final VoidCallback? onSeeAll;
-  final Function(TrendingTopic)? onTopicTap;
 
   const TrendingTopicsWidget({
     super.key,
-    required this.topics,
+    required this.blogs,
     this.sectionTitle,
     this.onSeeAll,
-    this.onTopicTap,
   });
 
   @override
@@ -879,13 +900,15 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.topics.isEmpty) {
+    if (widget.blogs.isEmpty) {
       return _buildEmptyState();
     }
 
+    final displayBlogs = widget.blogs.take(3).toList();
+
     return Container(
       color: const Color(0xFFF8F4E3),
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -893,17 +916,15 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Trending Topic',
+                'Trending Topics',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
+                  fontSize: 16.sp,
+                  color: const Color(0xFF222222),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               GestureDetector(
-                onTap: (){
-
-                },
+                onTap: widget.onSeeAll,
                 child: const Text(
                   'See All',
                   style: TextStyle(
@@ -915,22 +936,8 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
               ),
             ],
           ),
-          _buildHeader(),
-          SizedBox(height: 20.h),
-          _buildTopicsCarousel(),
           SizedBox(height: 16.h),
-          _buildPageIndicators(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(
+          Text(
             widget.sectionTitle ?? "Read up on trending\n'Plantation' topics",
             style: TextStyle(
               fontSize: 18.sp,
@@ -939,36 +946,34 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
               height: 1.3,
             ),
           ),
-        ),
-        if (widget.onSeeAll != null)
-          TextButton(
-            onPressed: widget.onSeeAll,
-            child: Text(
-              'See All',
-              style: TextStyle(
-                color: const Color(0xFF115D41),
-                fontWeight: FontWeight.w500,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-      ],
+          SizedBox(height: 20.h),
+          _buildTopicsCarousel(displayBlogs),
+          SizedBox(height: 16.h),
+          _buildPageIndicators(displayBlogs.length),
+        ],
+      ),
     );
   }
 
-  Widget _buildTopicsCarousel() {
+  Widget _buildTopicsCarousel(List<BlogModel> displayBlogs) {
     return SizedBox(
-      height: 320.h,
+      height: 280.h,
       child: PageView.builder(
+        padEnds: false,
         controller: _pageController,
         onPageChanged: (index) => setState(() => _currentIndex = index),
-        itemCount: widget.topics.length,
+        itemCount: displayBlogs.length,
         itemBuilder: (context, index) {
+          final blog = displayBlogs[index];
           return Padding(
             padding: EdgeInsets.only(right: 12.w),
             child: TrendingTopicCard(
-              topic: widget.topics[index],
-              onTap: () => widget.onTopicTap?.call(widget.topics[index]),
+              blog: blog,
+              onTap: () async {
+                if (!await launchUrl(Uri.parse(blog.url))) {
+                  debugPrint('Could not launch ${blog.url}');
+                }
+              },
             ),
           );
         },
@@ -976,13 +981,13 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
     );
   }
 
-  Widget _buildPageIndicators() {
-    if (widget.topics.length <= 1) return const SizedBox.shrink();
+  Widget _buildPageIndicators(int count) {
+    if (count <= 1) return const SizedBox.shrink();
 
     return Center(
       child: PageIndicators(
         currentIndex: _currentIndex,
-        total: widget.topics.length,
+        total: count,
       ),
     );
   }
@@ -1017,12 +1022,12 @@ class _TrendingTopicsWidgetState extends State<TrendingTopicsWidget> {
 }
 
 class TrendingTopicCard extends StatelessWidget {
-  final TrendingTopic topic;
+  final BlogModel blog;
   final VoidCallback? onTap;
 
   const TrendingTopicCard({
     super.key,
-    required this.topic,
+    required this.blog,
     this.onTap,
   });
 
@@ -1058,24 +1063,26 @@ class TrendingTopicCard extends StatelessWidget {
 
   Widget _buildBackgroundImage() {
     return Positioned.fill(
-      child: Image.asset(
-        topic.imagePath,
+      child: CachedNetworkImage(
+        imageUrl: blog.thumbnailImage,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-              color: Colors.grey[300],
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('Image not found', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              )
-          );
-        },
+        placeholder: (context, url) => Container(
+          color: Colors.grey[200],
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: Colors.grey[300],
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                SizedBox(height: 8),
+                Text('Image not found', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1099,8 +1106,8 @@ class TrendingTopicCard extends StatelessWidget {
 
   Widget _buildCategoryBadge() {
     return Positioned(
-      top: 12.h,
-      left: 12.w,
+      top: 10.h,
+      left: 10.w,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         decoration: BoxDecoration(
@@ -1108,10 +1115,10 @@ class TrendingTopicCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Text(
-          topic.category.toUpperCase(),
+          "TRENDING",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 10.sp,
+            fontSize: 9.sp,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
           ),
@@ -1122,16 +1129,16 @@ class TrendingTopicCard extends StatelessWidget {
 
   Widget _buildContent() {
     return Positioned(
-      left: 16.w,
-      right: 16.w,
-      bottom: 20.h,
+      left: 14.w,
+      right: 14.w,
+      bottom: 14.h,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            topic.headline,
+            blog.title,
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 16.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               height: 1.2,
@@ -1139,27 +1146,27 @@ class TrendingTopicCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
           Text(
-            topic.subHeadline,
+            blog.description,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 12.sp,
               color: Colors.white.withOpacity(0.9),
               height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF115D41),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: EdgeInsets.symmetric(vertical: 8.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24.r),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 elevation: 0,
               ),
@@ -1168,7 +1175,7 @@ class TrendingTopicCard extends StatelessWidget {
                 'Read Now',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14.sp,
+                  fontSize: 12.sp,
                 ),
               ),
             ),
@@ -1198,7 +1205,7 @@ class TrendingTopicCard extends StatelessWidget {
             ),
             SizedBox(width: 4.w),
             Text(
-              topic.durationText,
+              '5 min read',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 12.sp,
@@ -1278,9 +1285,9 @@ class ExplorePlantationCard extends StatelessWidget {
             colorFilter: isActive
                 ? null
                 : const ColorFilter.mode(
-              Colors.black45,
-              BlendMode.saturation,
-            ),
+                    Colors.black45,
+                    BlendMode.saturation,
+                  ),
           ),
         ),
         child: Padding(
@@ -1315,67 +1322,24 @@ class ExplorePlantationCard extends StatelessWidget {
 }
 
 class CustomerSatisfactionWidget extends StatefulWidget {
-  const CustomerSatisfactionWidget({super.key});
+  final List<TestimonialModel> testimonials;
+  final VoidCallback? onSeeAll;
+
+  const CustomerSatisfactionWidget({
+    super.key,
+    required this.testimonials,
+    this.onSeeAll,
+  });
 
   @override
   State<CustomerSatisfactionWidget> createState() =>
       _CustomerSatisfactionWidgetState();
 }
 
-class _CustomerSatisfactionWidgetState extends State<CustomerSatisfactionWidget> {
+class _CustomerSatisfactionWidgetState
+    extends State<CustomerSatisfactionWidget> {
   final PageController _pageController = PageController(viewportFraction: 0.9);
   int _currentPage = 0;
-
-  final List<List<Map<String, String>>> _customerPages = [
-    [
-      {
-        'name': 'Satya Singh',
-        'age': '32y',
-        'location': 'Bengaluru',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-      {
-        'name': 'Priya Sharma',
-        'age': '28y',
-        'location': 'Mumbai',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-    ],
-    [
-      {
-        'name': 'Rajesh Kumar',
-        'age': '45y',
-        'location': 'Delhi',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-      {
-        'name': 'Anita Devi',
-        'age': '35y',
-        'location': 'Chennai',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-    ],
-    [
-      {
-        'name': 'Vikram Patel',
-        'age': '50y',
-        'location': 'Ahmedabad',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-      {
-        'name': 'Neha Gupta',
-        'age': '29y',
-        'location': 'Pune',
-        'image':
-        'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8fDB8fHww'
-      },
-    ],
-  ];
 
   @override
   void initState() {
@@ -1398,57 +1362,67 @@ class _CustomerSatisfactionWidgetState extends State<CustomerSatisfactionWidget>
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFFDFBF6),
-      margin: EdgeInsets.symmetric(horizontal: 5.w),
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 20.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Customer Satisfaction',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: const Color(0xFF222222),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              GestureDetector(
+                onTap: widget.onSeeAll,
+                child: const Text(
+                  'See All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF222222),
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
           Text(
-            '5 lakh+ plantation Completed.',
+            'Keep your trees healthy and thriving.',
             style: AppFonts.body.copyWith(color: const Color(0xFF00473C)),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 4.h),
           Text(
-            '10k+ customers satisfied.',
+            'What our customers say',
             style: AppFonts.subtitle.copyWith(
               color: AppColor.black,
               fontSize: 27.sp,
             ),
           ),
-          SizedBox(height: 10.h),
-          Row(
-            children: [
-              Text(
-                'Our tree survival is at 93%.\n25k of our members are\ncarbon neutral.',
-                style: AppFonts.caption,
-              ),
-              const Spacer(),
-              Text(
-                'Read more',
-                style: TextStyle(
-                  color: Colors.grey.shade800,
-                  fontSize: 16.sp,
-                ),
-              ),
-            ],
+          SizedBox(height: 12.h),
+          Text(
+            'Tree survival is at 93%.\nJoin our members to help the environment.',
+            style: AppFonts.caption,
           ),
+          SizedBox(height: 20.h),
           SizedBox(
-              height: 10.h,
-          ),
-          SizedBox(
-            height: 200.h,
+            height: 210.h,
             child: ListView.builder(
-              controller: _pageController,
-              itemCount: _customerPages.length,
+              padding: EdgeInsets.zero,
+              itemCount: widget.testimonials.take(3).length,
               scrollDirection: Axis.horizontal,
-              itemBuilder: (context, pageIndex) {
-                final pageCustomers = _customerPages[pageIndex];
-                return CustomerCard(
-                        imagePath: pageCustomers[1]['image']!,
-                        name: pageCustomers[1]['name']!,
-                        age: pageCustomers[1]['age']!,
-                        location: pageCustomers[1]['location']!,
-                      );
+              itemBuilder: (context, index) {
+                final testimonial = widget.testimonials[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: 12.w),
+                  child: CustomerCard(
+                    testimonial: testimonial,
+                  ),
+                );
               },
             ),
           ),
@@ -1457,6 +1431,7 @@ class _CustomerSatisfactionWidgetState extends State<CustomerSatisfactionWidget>
     );
   }
 }
+
 class Dot extends StatelessWidget {
   final Color color;
   final double width;
@@ -1483,25 +1458,19 @@ class Dot extends StatelessWidget {
 }
 
 class CustomerCard extends StatelessWidget {
-  final String imagePath;
-  final String name;
-  final String age;
-  final String location;
+  final TestimonialModel testimonial;
 
   const CustomerCard({
     super.key,
-    required this.imagePath,
-    required this.name,
-    required this.age,
-    required this.location,
+    required this.testimonial,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(2),
-      width: 150,
-      margin: EdgeInsets.symmetric(vertical: 4.h,horizontal: 4.w),
+      width: 150.w,
+      margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
@@ -1519,30 +1488,32 @@ class CustomerCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8.r),
-            child: Image.network(
-              imagePath,
+            child: CachedNetworkImage(
+              imageUrl: testimonial.userImage,
               height: 140.h,
-              width: double.infinity,
+              width: 150.w,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(child: Icon(Icons.error));
-              },
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => const Center(
+                  child: Icon(Icons.person, size: 50, color: Colors.grey)),
             ),
           ),
           SizedBox(height: 8.h),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(testimonial.userName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Text(
-              '$age, $location',
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey)
+              testimonial.userDesignation,
+              style: TextStyle(fontSize: 10.sp, color: Colors.grey),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           )
         ],

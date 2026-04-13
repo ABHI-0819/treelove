@@ -20,17 +20,21 @@ class TreeSpeciesList extends StatefulWidget {
   static const route = "/tree-species-list";
   final String areaId;
   final int treeCount;
-  final double ? latitude;
-  final double ? longitude;
+  final double? latitude;
+  final double? longitude;
 
-  const TreeSpeciesList({super.key,required this.areaId,this.treeCount=1,this.latitude,this.longitude});
+  const TreeSpeciesList(
+      {super.key,
+      required this.areaId,
+      this.treeCount = 1,
+      this.latitude,
+      this.longitude});
 
   @override
   State<TreeSpeciesList> createState() => _TreeSpeciesListState();
 }
 
 class _TreeSpeciesListState extends State<TreeSpeciesList> {
-
   late TreeSpeciesBloc _treeSpeciesBloc;
 
   @override
@@ -52,7 +56,7 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:AppColor.background,
+      backgroundColor: AppColor.background,
       appBar: AppBar(
         automaticallyImplyLeading: false, // We add the back button manually
         backgroundColor: AppColor.background,
@@ -64,11 +68,9 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
             InkWell(
                 onTap: () => AppRoute.pop(context),
                 child: Icon(Icons.arrow_back, size: 24)),
-            Text(
-                'Tree Species',
-                style: AppFonts.subtitle.copyWith(
-                    color: AppColor.black, fontSize: 22)
-            ),
+            Text('Tree Species',
+                style: AppFonts.subtitle
+                    .copyWith(color: AppColor.black, fontSize: 22)),
             Spacer(),
             IconButton(
               icon: const Icon(Icons.filter_list, color: Colors.black),
@@ -86,10 +88,10 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
   Widget _mainBody() {
     return BlocProvider(
       create: (context) => _treeSpeciesBloc,
-      child: BlocBuilder<TreeSpeciesBloc, ApiState<TreeSpeciesListResponse, ResponseModel>>(
+      child: BlocBuilder<TreeSpeciesBloc,
+          ApiState<TreeSpeciesListResponse, ResponseModel>>(
         builder: (context, state) {
-
-          if(state is ApiLoading){
+          if (state is ApiLoading) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is ApiSuccess<TreeSpeciesListResponse, ResponseModel>) {
@@ -102,37 +104,40 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
                   floating: false,
                   delegate: StickySearchBar(
                     hintText: 'Search Station Here',
-                    onChanged: (value) {
-
-                    },
+                    onChanged: (value) {},
                   ),
                 ),
-
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                         final item = speciesList[index];
+                      (context, index) {
+                        final item = speciesList[index];
                         return Card(
                             elevation: 1,
                             child: TreeTypeCard(
-                              onTap: (){
+                              onTap: () {
                                 AppRoute.goToNextPage(
-                                    context: context, screen: TreeSpeciesDetails.route, arguments: {
-                                      'id' :item.id,
-                                      'areaId':widget.areaId,
-                                      'treeCount':widget.treeCount,
-                                      'latitude':widget.latitude,
-                                      'longitude':widget.longitude
-                                });
+                                    context: context,
+                                    screen: TreeSpeciesDetails.route,
+                                    arguments: {
+                                      'id': item.id,
+                                      'areaId': widget.areaId,
+                                      'treeCount': widget.treeCount,
+                                      'latitude': widget.latitude,
+                                      'longitude': widget.longitude
+                                    });
                               },
                               tree: TreeType(
                                 name: item.treeName,
                                 species: item.scientificName,
-                                imageUrl:item.image??"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s",
-                              ),)
-                        );
+                                price: item.servicePricing?.plantingPrice != null 
+                                    ? "₹${item.servicePricing!.plantingPrice}" 
+                                    : "N/A",
+                                imageUrl: item.image ??
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s",
+                              ),
+                            ));
                       },
                       childCount: speciesList.length,
                     ),
@@ -148,7 +153,6 @@ class _TreeSpeciesListState extends State<TreeSpeciesList> {
   }
 }
 
-
 class StickySearchBar extends SliverPersistentHeaderDelegate {
   final String hintText;
   final Function(String) onChanged;
@@ -156,10 +160,10 @@ class StickySearchBar extends SliverPersistentHeaderDelegate {
   StickySearchBar({required this.hintText, required this.onChanged});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset,
-      bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color:  AppColor.background,
+      color: AppColor.background,
       // color: AppColor.background,
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       child: Container(
@@ -224,8 +228,7 @@ class _RoleFilterState extends State<RoleFilter> {
       child: Row(
         children: roles
             .map(
-              (role) =>
-              Padding(
+              (role) => Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
                   label: Text(role),
@@ -240,29 +243,31 @@ class _RoleFilterState extends State<RoleFilter> {
                   },
                 ),
               ),
-        ).toList(),
+            )
+            .toList(),
       ),
     );
   }
 }
 
-
 class TreeType {
   final String name;
   final String species;
   final String imageUrl;
+  final String price;
 
   const TreeType({
     required this.name,
     required this.species,
     required this.imageUrl,
+    required this.price,
   });
 }
 
 class TreeTypeCard extends StatelessWidget {
   final TreeType tree;
   void Function() onTap;
-   TreeTypeCard({super.key, required this.tree, required this.onTap});
+  TreeTypeCard({super.key, required this.tree, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -283,20 +288,20 @@ class TreeTypeCard extends StatelessWidget {
           ],
         ),
         child: Row(
-          spacing: 16.w,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                tree.imageUrl ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s', // Fallback to empty string if null to avoid errors
-                width: 60,
-                height: 60,
+                tree.imageUrl ??
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuCZtWNJjBjxoVw9OCxZXKQE-biHdtZ7c5Ig&s',
+                width: 65,
+                height: 65,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Image.asset(
-                    Images.sampleImg, // Replace with your asset path
-                    width: 60,
-                    height: 60,
+                    Images.sampleImg,
+                    width: 65,
+                    height: 65,
                     fit: BoxFit.cover,
                   );
                 },
@@ -310,32 +315,60 @@ class TreeTypeCard extends StatelessWidget {
                 },
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tree.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    tree.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Text(
-                  tree.species,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
+                  const SizedBox(height: 2),
+                  Text(
+                    tree.species,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
-            ),
-            Spacer(),
-            badges.Badge(
-              badgeContent: Icon(Icons.arrow_forward, color: AppColor.white,),
-              badgeStyle: const badges.BadgeStyle(
-                badgeColor: AppColor.primary,
-                padding: EdgeInsets.all(8),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColor.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      tree.price,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.primary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColor.primary.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColor.primary),
             ),
           ],
         ),

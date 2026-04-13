@@ -40,7 +40,7 @@ class BaseNetwork {
   static const String trendingTopicURL =
       "${_BASE_URL}api/v1/engagement/bloglinks/bloglinks/";
   static const String testimonialsURL =
-      "${_BASE_URL}api/v1/content/testimonials/";
+      "${_BASE_URL}api/v1/engagement/testimonials/testimonials/";
 
   static const String projectListURL = "${_BASE_URL}api/v1/projects/projects/";
   static const String projectDashboardURL =
@@ -100,6 +100,8 @@ class BaseNetwork {
       "${_BASE_URL}api/v1/projects/fieldworker/home-dashboard/";
 
   //TODO: Vendor URL :
+  static const String vendorHomeDashboardUrl =
+      "${_BASE_URL}api/v1/projects/vendor/home-dashboard/";
   static const String taskAllocationUrl =
       "${_BASE_URL}api/v1/projects/fieldworker-assignments/";
   static const String staffCreationUrl =
@@ -114,6 +116,8 @@ class BaseNetwork {
       "${_BASE_URL}api/v1/projects/client/home-dashboard/";
   static const String b2bProjectDashboardURL =
       "${_BASE_URL}api/v1/projects/client-dashboard/";
+  static const String maintenanceDashboardUrl =
+      "${_BASE_URL}api/v1/analytics/dashboard/maintenance/projects/";
   static const String maintenanceActivityUrl =
       "${_BASE_URL}api/v1/survey/maintenance-activity/";
 
@@ -121,6 +125,14 @@ class BaseNetwork {
       "${_BASE_URL}api/v1/notifications/device-tokens/register/";
   static const String notificationsListUrl =
       "${_BASE_URL}api/v1/notifications/";
+
+  // Reports Export URLs
+  static const String reportOverallURL =
+      "${_BASE_URL}api/v1/reports/overall/export/";
+  static const String reportMaintenanceURL =
+      "${_BASE_URL}api/v1/reports/maintenance/export/";
+  static const String reportMonitoringURL =
+      "${_BASE_URL}api/v1/reports/monitoring/export/";
 
   //http://10.202.100.187:9004/swagger/
 /*

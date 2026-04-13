@@ -53,6 +53,11 @@ class MonitoringRecord {
   final String services;
   final Location location;
   final String remarks;
+  final String? treeHealth;
+  final double? treeHeight;
+  final String? treeHeightUnit;
+  final double? treeGirth;
+  final String? treeGirthUnit;
   final String? thumbnail;
 
   MonitoringRecord({
@@ -65,6 +70,11 @@ class MonitoringRecord {
     required this.services,
     required this.location,
     required this.remarks,
+    this.treeHealth,
+    this.treeHeight,
+    this.treeHeightUnit,
+    this.treeGirth,
+    this.treeGirthUnit,
     this.thumbnail,
   });
 
@@ -77,7 +87,12 @@ class MonitoringRecord {
     monitoringType: json["monitoring_type"] as String,
     services: json["services"] as String,
     location: Location.fromJson(json["location"] as Map<String, dynamic>),
-    remarks: json["remarks"] as String,
+    remarks: json["remarks"] as String? ?? 'No remarks',
+    treeHealth: json["tree_health"] as String?,
+    treeHeight: json["tree_height"] != null ? double.tryParse(json["tree_height"].toString()) : null,
+    treeHeightUnit: json["tree_height_unit"] as String?,
+    treeGirth: json["tree_girth"] != null ? double.tryParse(json["tree_girth"].toString()) : null,
+    treeGirthUnit: json["tree_girth_unit"] as String?,
     thumbnail: json["thumbnail"] as String?,
   );
 
@@ -94,6 +109,11 @@ class MonitoringRecord {
     "services": services,
     "location": location.toJson(),
     "remarks": remarks,
+    "tree_health": treeHealth,
+    "tree_height": treeHeight,
+    "tree_height_unit": treeHeightUnit,
+    "tree_girth": treeGirth,
+    "tree_girth_unit": treeGirthUnit,
     "thumbnail": thumbnail,
   };
 }

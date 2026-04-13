@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:treelove/common/repositories/monitor_repository.dart';
 import 'package:treelove/features/customer/retail/my-trees/bloc/monitor_history_bloc.dart';
 
@@ -142,6 +143,31 @@ class _TreeMonitoringHistoryScreenState extends State<TreeMonitoringHistoryScree
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (record.thumbnail != null && record.thumbnail!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: record.thumbnail!,
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 160,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 160,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
           Text(
             formatDate(record.monitoringDate),
             style: const TextStyle(
@@ -156,11 +182,9 @@ class _TreeMonitoringHistoryScreenState extends State<TreeMonitoringHistoryScree
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildInfoItem("Health", record.remarks),
-              _buildInfoItem("Girth", "N/A"), // You don't have girth in model!
-              _buildInfoItem("Height", "N/A"), // You don't have height in model!
-              // ⚠️ Note: Your MonitoringRecord doesn't include girth/height!
-              // If you need them, update your API/model.
+              _buildInfoItem("Health", record.treeHealth ?? "Unknown"),
+              _buildInfoItem("Girth", record.treeGirth != null ? "${record.treeGirth} ${record.treeGirthUnit ?? ''}" : "N/A"),
+              _buildInfoItem("Height", record.treeHeight != null ? "${record.treeHeight} ${record.treeHeightUnit ?? ''}" : "N/A"),
             ],
           ),
 

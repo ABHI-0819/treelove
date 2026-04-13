@@ -123,8 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               color: AppColor.primary,
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child:
-                const Icon(Icons.eco_rounded, color: AppColor.white, size: 18),
+            child: const Icon(Icons.person, color: AppColor.white, size: 18),
           ),
           SizedBox(width: 10.w),
           Column(

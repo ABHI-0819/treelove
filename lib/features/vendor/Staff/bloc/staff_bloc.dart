@@ -125,3 +125,37 @@ class StaffSuspendBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseMo
   }
 }
 
+class StaffActivateBloc extends Bloc<ApiEvent, ApiState<ResponseModel, ResponseModel>> {
+  final StaffRepository repository;
+  StaffActivateBloc(this.repository) : super(ApiInitial()) {
+    on<ApiUpdate<String>>(_onActivateStaff);
+  }
+
+  Future<void> _onActivateStaff(
+      ApiUpdate<String> event,
+      Emitter<ApiState<ResponseModel, ResponseModel>> emit,
+      ) async {
+    emit(ApiLoading()); // Emit loading state
+
+    try {
+      final result = await repository.activateStaff(userId: event.data);
+      switch (result.status) {
+        case ApiStatus.success:
+          emit(ApiSuccess(result.response));
+          break;
+        case ApiStatus.refreshTokenExpired:
+          emit(TokenExpired(result.response)); // 🚀 go to SignIn
+          break;
+        case ApiStatus.unAuthorized:
+          emit(ApiFailure(ResponseModel(
+            message: "Unauthorized access. Please login again.",
+          )));
+          break;
+        default:
+          emit(ApiFailure(result.response));
+      }
+    } catch (e) {
+      emit(ApiFailure(ResponseModel(message: 'An unexpected error occurred: ${e.toString()}')));
+    }
+  }
+}

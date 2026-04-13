@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_svg/svg.dart';
@@ -189,6 +190,7 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
                     health: tree.treeHealth,
                     growth: tree.treeGrowth,
                     girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
+                    treeHeight: '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
                     direction: 'Direction',
                     onDirectionTap: () async {
                       final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
@@ -232,10 +234,10 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
             );
           }).toList();
 
-          return FlutterMap(
+          return TreeloveMap(
             mapController: _mapController,
             options: const MapOptions(
-              initialCenter: LatLng(19.112251, 72.864512),
+              // initialCenter: LatLng(19.112251, 72.864512),
               initialZoom: 10.0,
               minZoom: 3.0,
               maxZoom: 20.0,

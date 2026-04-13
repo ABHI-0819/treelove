@@ -54,15 +54,15 @@ class B2BProjectDetailData {
 
   factory B2BProjectDetailData.fromJson(Map<String, dynamic> json) {
     return B2BProjectDetailData(
-      projectInfo: ProjectInfo.fromJson(json['project_info']),
-      totalProjectAreas: json['total_project_areas'],
-      totalServiceTypes: json['total_service_types'],
-      serviceSummary: (json['service_summary'] as List)
-          .map((e) => ServiceSummary.fromJson(e))
-          .toList(),
-      projectAreas: (json['project_areas'] as List)
-          .map((e) => ProjectArea.fromJson(e))
-          .toList(),
+      projectInfo: ProjectInfo.fromJson(json['project_info'] ?? {}),
+      totalProjectAreas: int.tryParse(json['total_project_areas']?.toString() ?? '0') ?? 0,
+      totalServiceTypes: int.tryParse(json['total_service_types']?.toString() ?? '0') ?? 0,
+      serviceSummary: (json['service_summary'] as List?)
+          ?.map((e) => ServiceSummary.fromJson(e))
+          .toList() ?? [],
+      projectAreas: (json['project_areas'] as List?)
+          ?.map((e) => ProjectArea.fromJson(e))
+          .toList() ?? [],
     );
   }
 
@@ -129,24 +129,24 @@ class ProjectInfo {
 
   factory ProjectInfo.fromJson(Map<String, dynamic> json) {
     return ProjectInfo(
-      id: json['id'],
-      name: json['name'],
-      type: json['type'],
-      category: json['category'],
-      description: json['description'],
-      image: json['image'],
-      scopeOfWork: json['scope_of_work'],
-      contractValue: json['contract_value'],
-      gstApplicable: json['gst_applicable'],
-      gstPercentage: json['gst_percentage'],
-      totalAmountPaid: json['total_amount_paid'],
-      paymentTerms: json['payment_terms'],
-      timeline: json['timeline'],
-      locationDescription: json['location_description'],
-      startDate: json['start_date'],
-      endDate: json['end_date'],
-      status: json['status'],
-      currency: json['currency'],
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
+      scopeOfWork: json['scope_of_work']?.toString(),
+      contractValue: json['contract_value']?.toString() ?? '0',
+      gstApplicable: json['gst_applicable'] ?? false,
+      gstPercentage: json['gst_percentage']?.toString() ?? '0',
+      totalAmountPaid: json['total_amount_paid']?.toString() ?? '0',
+      paymentTerms: json['payment_terms']?.toString(),
+      timeline: json['timeline']?.toString(),
+      locationDescription: json['location_description']?.toString() ?? '',
+      startDate: json['start_date']?.toString() ?? '',
+      endDate: json['end_date']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      currency: json['currency']?.toString() ?? '',
     );
   }
 
@@ -217,9 +217,9 @@ class ServiceSummary {
 
   factory ServiceSummary.fromJson(Map<String, dynamic> json) {
     return ServiceSummary(
-      serviceType: json['service_type'],
-      totalRequired: json['total_required'],
-      totalDone: json['total_done'],
+      serviceType: json['service_type']?.toString() ?? '',
+      totalRequired: int.tryParse(json['total_required']?.toString() ?? '0') ?? 0,
+      totalDone: int.tryParse(json['total_done']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -259,13 +259,13 @@ class ProjectArea {
 
   factory ProjectArea.fromJson(Map<String, dynamic> json) {
     return ProjectArea(
-      id: json['id'],
-      name: json['name'],
-      capacity: json['capacity'],
-      location: json['location'],
-      serviceSummary: (json['service_summary'] as List)
-          .map((e) => ServiceSummary.fromJson(e))
-          .toList(),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      capacity: int.tryParse(json['capacity']?.toString() ?? '0') ?? 0,
+      location: json['location']?.toString() ?? '',
+      serviceSummary: (json['service_summary'] as List?)
+          ?.map((e) => ServiceSummary.fromJson(e))
+          .toList() ?? [],
       fieldworkers: json['fieldworkers'],
     );
   }

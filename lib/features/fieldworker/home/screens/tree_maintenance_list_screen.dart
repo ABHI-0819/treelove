@@ -53,7 +53,6 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
     super.dispose();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,16 +144,15 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
               child: Row(
                 spacing: 8.w,
                 children: [
-                  _buildFilterChip('All'),
-                  _buildFilterChip('Today', dotColor: const Color(0xFFE53935)),
+                  _buildFilterChip('All', value: ''),
+                  _buildFilterChip('Today',
+                      value: 'today', dotColor: const Color(0xFFE53935)),
                   _buildFilterChip('Tomorrow',
-                      dotColor: const Color(0xFF4CAF50)),
+                      value: 'tomorrow', dotColor: const Color(0xFF4CAF50)),
                   _buildFilterChip('Overdue',
-                      dotColor: const Color(0xFFFF8C00)),
-                  _buildFilterChip('Maintenance in 2 days',
-                      dotColor: const Color(0xFF2196F3)),
+                      value: 'overdue', dotColor: const Color(0xFFFF8C00)),
                   _buildFilterChip('Upcoming',
-                      dotColor: const Color(0xFF4CAF50)),
+                      value: 'upcoming', dotColor: const Color(0xFF4CAF50)),
                 ],
               ),
             ),
@@ -210,7 +208,7 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, {Color? dotColor}) {
+  Widget _buildFilterChip(String label, {String? value, Color? dotColor}) {
     final isSelected = selectedFilter == label;
 
     return Container(
@@ -243,9 +241,9 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
             });
             mapBloc.add(ApiListFetch(
               areaId: widget.projectAreaId,
-              maintenanceStatus: label,
+              maintenanceStatus: value ?? label,
             ));
-            debugLog(label, name: "filter");
+            debugLog(value ?? label, name: "filter");
           },
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -287,14 +285,6 @@ class _TreeMaintenanceListScreenState extends State<TreeMaintenanceListScreen> {
         'dotColor': Color(0xFFE53935),
         'textColor': Color(0xFFD32F2F),
         'lastMaintained': '8 Aug 2025',
-      },
-      {
-        'text': 'Maintenance in 2 days',
-        'bgColor': Color(0xFFE8F4FD),
-        'borderColor': Color(0xFFB6E2FF),
-        'dotColor': Color(0xFF2196F3),
-        'textColor': Color(0xFF1565C0),
-        'lastMaintained': '25 Jul 2025',
       },
       {
         'text': 'Overdue by 1 day',

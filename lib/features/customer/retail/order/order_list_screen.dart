@@ -81,69 +81,113 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Widget _buildOrderCard(OrderData order) {
     final statusColor = _getStatusColor(order.status);
+    
+    // Format Order ID
+    String displayId = order.orderNumber ?? "N/A";
+    if (displayId != "N/A" && !displayId.startsWith("#")) {
+       displayId = "#$displayId";
+    }
 
-    return InkWell(
-      onTap: (){
-        AppRoute.goToNextPage(context: context, screen: OrderTrackerScreen.route, arguments: {
-          'orderId':order.id,
-        });
-      },
-      child:  Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12.withOpacity(0.06),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    // Format Price
+    String priceDisplay = '';
+    if (order.totalAmount != null && order.totalAmount!.isNotEmpty) {
+      priceDisplay = '${order.currency.isNotEmpty ? order.currency : "₹"}${order.totalAmount}';
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            AppRoute.goToNextPage(context: context, screen: OrderTrackerScreen.route, arguments: {
+              'orderId': order.id,
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  order.orderNumber??"Order id not Found",
-                  // order.id.length > 10 ? order.id.substring(order.id.length - 10) : order.id,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                // Text(
-                //   order.id.,
-                //   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                // ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    order.status,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      displayId,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700, 
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: statusColor.withOpacity(0.5), width: 0.5),
+                      ),
+                      child: Text(
+                        order.status.toUpperCase().replaceAll('_', ' '),
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today_rounded, size: 16, color: Colors.black54),
+                            const SizedBox(width: 6),
+                            Text(order.formattedCreatedAt, style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.black54),
+                            const SizedBox(width: 6),
+                            Text('${order.totalItemCount} Items', style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
+                            if (priceDisplay.isNotEmpty && priceDisplay != '₹null') ...[
+                              const SizedBox(width: 12),
+                              const Icon(Icons.payments_outlined, size: 16, color: Colors.black54),
+                              const SizedBox(width: 4),
+                              Text(priceDisplay, style: const TextStyle(fontSize: 14, color: Color(0xFF004D40), fontWeight: FontWeight.w700)),
+                            ]
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: Colors.black38),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                const SizedBox(width: 6),
-                Text(order.formattedCreatedAt, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-                const Spacer(),
-                Text('Items(${order.totalItemCount})', style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -156,15 +200,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.inbox_outlined, size: 80, color: Colors.grey),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF004D40).withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.receipt_long_outlined, size: 64, color: Color(0xFF004D40)),
+            ),
+            const SizedBox(height: 24),
             const Text("No Orders Yet",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 8),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const SizedBox(height: 12),
             const Text(
               "Looks like you haven’t placed any orders yet.\nOnce you do, they'll show up here.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.black54, fontSize: 14, height: 1.4),
             ),
           ],
         ),

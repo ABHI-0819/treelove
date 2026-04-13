@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
@@ -199,7 +200,7 @@ class _MapScreenState extends State<MapScreen> {
                 return
                   Stack(
                   children: [
-                    FlutterMap(
+                    TreeloveMap(
                       mapController: mapController,
                       options: MapOptions(
                         initialCenter:   areaList.data.isEmpty? MapConstant.initialCenter: areaList.data[0].centroid,
@@ -978,7 +979,7 @@ class MapScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          FlutterMap(
+          TreeloveMap(
             mapController: mapController,
             options: MapOptions(
               maxZoom: MapConstant.maximumZoom,
@@ -1245,7 +1246,7 @@ class _DynamicPinMapScreenState extends State<DynamicPinMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlutterMap(
+      body: TreeloveMap(
         mapController: _mapController,
         options: MapOptions(
           maxZoom: MapConstant.maximumZoom,

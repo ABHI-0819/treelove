@@ -335,6 +335,7 @@ class PlantedTreeModel {
   // ✅ Helpers to format dates like "2 days ago"
   String get lastMaintainedAgo => _timeAgo(lastMaintainedDate);
   String get nextMonitoringAgo => _timeAgo(nextMonitoringDate);
+  String get lastMonitoredAgo => _timeAgo(lastMonitoredDate);
 
   static String _timeAgo(String? dateStr) {
     if (dateStr == null) return "N/A";

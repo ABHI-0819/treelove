@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:treelove/features/customer/b2b/dashboard/screens/dashboard_screen.dart';
 import 'package:treelove/features/customer/b2b/projects/screens/projects_screen.dart';
+import 'package:treelove/features/customer/retail/maintenance/screens/inquiry_tab_screen.dart';
 
 import '../../../../../core/config/resource/images.dart';
 import '../../../../../core/config/themes/app_fonts.dart';
@@ -42,9 +43,8 @@ class _OrganizationMainScreenState extends State<OrganizationMainScreen> {
     final bottomBarPages = [
       ClientDashboardScreen(),
       B2BProjectScreen(),
+      const InquiryTabScreen(),
       ProfileScreen()
-      // AccountScreen()
-      // index 2
     ];
 
     return AppExitScope(
@@ -95,10 +95,17 @@ class CustomOrgBottomNav extends StatelessWidget {
             outlinedIcon: Images.projectIcon,
             label: 'Projects'),
         buildNavItem(
-            index: 2,
-            filledIcon: Images.accountFilledIcon,
-            outlinedIcon: Images.accountIcon,
-            label: 'Account'),
+          index: 2,
+          filledIcon: Images.inquiryFilledIcon,
+          outlinedIcon: Images.inquiryIcon,
+          label: 'Inquiry',
+        ),
+        buildNavItem(
+          index: 3,
+          filledIcon: Images.accountFilledIcon,
+          outlinedIcon: Images.accountIcon,
+          label: 'Account',
+        ),
       ],
     );
   }

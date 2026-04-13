@@ -287,6 +287,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   void _loadNextPage() {
+    if (projectListBloc.isFetchingMore || projectListBloc.hasReachedMax) return;
     debugLog('Loading page ${_currentPage + 1}', name: "Pagination");
     _currentPage++;
     projectListBloc.add(ApiListFetch(
@@ -448,8 +449,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       }
                       return ListView.builder(
                         controller: _scrollController,
-                        itemCount: projectData.data.length,
+                        itemCount: projectData.data.length + (projectListBloc.hasReachedMax ? 0 : 1),
                         itemBuilder: (context, index) {
+                          if (index == projectData.data.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1A5F3E))),
+                            );
+                          }
                           return Card(
                             projectItem: projectData.data[index],
                           );
@@ -484,6 +491,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             filter: value,
             category: selectedCategory,
             page: 1,
+            type: 'public'
           ));
         });
       },
@@ -511,6 +519,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             filter: selectedTab == 'All' ? null : selectedTab,
             category: categoryValue,
             page: 1,
+            type: 'public'
           ));
         });
       },

@@ -7,9 +7,6 @@ import 'package:treelove/common/repositories/login_repository.dart';
 import 'package:treelove/core/config/route/app_route.dart';
 import 'package:treelove/features/authentication/screens/create_account_screen.dart';
 import 'package:treelove/features/authentication/screens/password_login_screen.dart';
-import '../../../common/bloc/api_state.dart';
-import '../../../common/models/response.mode.dart';
-import '../../../common/repositories/sign_in_repository.dart';
 import '../../../core/config/constants/enum/input_enum.dart';
 import '../../../core/config/constants/enum/notification_enum.dart';
 import '../../../core/config/resource/images.dart';
@@ -26,9 +23,7 @@ import '../../customer/retail/home/screens/main_screen.dart';
 import '../bloc/google_auth_bloc.dart';
 import '../bloc/google_auth_event.dart';
 import '../bloc/google_auth_state.dart';
-import '../bloc/register_bloc.dart';
 import '../models/google.login.response.model.dart';
-import '../models/register_request_model.dart';
 import 'user_type_screen.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -81,18 +76,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     });
               } else if (state is GoogleAuthNavigateToHomeScreen) {
                 EasyLoading.dismiss();
-                if (state.userType == 'individual') {
+                if (state.userType == 'retail_user') {
                   AppRoute.goToNextPage(
                     context: context,
                     screen: RetailMainScreen.route,
-                    arguments: {'type': 'individual'},
+                    arguments: {'type': state.userType},
                   );
-                } else if (state.userType == 'organisation') {
+                } else if (state.userType == 'b2b_user') {
                   EasyLoading.dismiss();
                   AppRoute.goToNextPage(
                     context: context,
                     screen: OrganizationMainScreen.route,
-                    arguments: {'type': 'organisation'},
+                    arguments: {'type': state.userType},
                   );
                 }
               }

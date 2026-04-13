@@ -87,7 +87,7 @@ class TreeSpecies {
   final String id;
   final List<Disease> diseases;
   final ServicePricing? servicePricing;
-  final String? waterAndCareInfo;
+  final dynamic waterAndCareInfo;
   final String addedById;
   final String updatedById;
   final String treeName;
@@ -162,34 +162,34 @@ class TreeSpecies {
           ? ServicePricing.fromJson(json["service_pricing"])
           : null,
       waterAndCareInfo: json["water_and_care_info"],
-      addedById: json["added_by_id"],
-      updatedById: json["updated_by_id"],
-      treeName: json["tree_name"],
-      scientificName: json["scientific_name"],
-      speciesName: json["species_name"],
-      localName: json["local_name"],
-      image: json["image"],
-      type: json["type"],
-      category: json["category"],
-      nativeRegion: json["native_region"],
-      droughtTolerance: json["drought_tolerance"],
-      soilType: json["soil_type"],
-      suitableWeather: json["suitable_weather"],
-      humidity: json["humidity"],
-      shortDescription: json["short_description"],
-      lifespanYears: json["lifespan_years"],
-      treeDetails: json["tree_details"],
-      identificationMethod: json["identification_method"],
-      avgTreeHeight: json["avg_tree_height"],
-      avgTreeGirth: json["avg_tree_girth"],
-      sizeToBePlanted: json["size_to_be_planted"],
-      pitSize: json["pit_size"],
-      spacing: json["spacing"],
-      annualCarbonOffset: json["annual_carbon_offset"],
-      createdAt: json["created_at"],
-      updatedAt: json["updated_at"],
-      addedBy: json["added_by"],
-      updatedBy: json["updated_by"],
+      addedById: json["added_by_id"]?.toString() ?? '',
+      updatedById: json["updated_by_id"]?.toString() ?? '',
+      treeName: json["tree_name"]?.toString() ?? '',
+      scientificName: json["scientific_name"]?.toString() ?? '',
+      speciesName: json["species_name"]?.toString() ?? '',
+      localName: json["local_name"]?.toString() ?? '',
+      image: json["image"]?.toString(),
+      type: json["type"]?.toString() ?? '',
+      category: json["category"]?.toString() ?? '',
+      nativeRegion: json["native_region"]?.toString() ?? '',
+      droughtTolerance: json["drought_tolerance"]?.toString() ?? '',
+      soilType: json["soil_type"]?.toString() ?? '',
+      suitableWeather: json["suitable_weather"]?.toString() ?? '',
+      humidity: json["humidity"]?.toString() ?? '',
+      shortDescription: json["short_description"]?.toString() ?? '',
+      lifespanYears: int.tryParse(json["lifespan_years"]?.toString() ?? '0') ?? 0,
+      treeDetails: json["tree_details"]?.toString() ?? '',
+      identificationMethod: json["identification_method"]?.toString() ?? '',
+      avgTreeHeight: json["avg_tree_height"]?.toString() ?? '',
+      avgTreeGirth: json["avg_tree_girth"]?.toString() ?? '',
+      sizeToBePlanted: json["size_to_be_planted"]?.toString() ?? '',
+      pitSize: json["pit_size"]?.toString() ?? '',
+      spacing: json["spacing"]?.toString() ?? '',
+      annualCarbonOffset: json["annual_carbon_offset"]?.toString() ?? '',
+      createdAt: json["created_at"]?.toString() ?? '',
+      updatedAt: json["updated_at"]?.toString() ?? '',
+      addedBy: json["added_by"]?.toString() ?? '',
+      updatedBy: json["updated_by"]?.toString() ?? '',
     );
   }
 
@@ -288,33 +288,39 @@ class Disease {
 }
 
 class ServicePricing {
-  final String id;
-  final String plantingPrice;
-  final String transplantationPrice;
-  final String monitoringPrice;
-  final String maintenancePrice;
-  final String cuttingPrice;
-  final String treeSpecies;
+  final String? id;
+  final String? plantingPrice;
+  final String? transplantationPrice;
+  final String? monitoringPrice;
+  final String? maintenancePrice;
+  final String? cuttingPrice;
+  final String? treeSpecies;
+  final String? geotaggingPrice;
+  final String? satelliteMonitoringPrice;
 
   ServicePricing({
-    required this.id,
-    required this.plantingPrice,
-    required this.transplantationPrice,
-    required this.monitoringPrice,
-    required this.maintenancePrice,
-    required this.cuttingPrice,
-    required this.treeSpecies,
+    this.id,
+    this.plantingPrice,
+    this.transplantationPrice,
+    this.monitoringPrice,
+    this.maintenancePrice,
+    this.cuttingPrice,
+    this.treeSpecies,
+    this.geotaggingPrice,
+    this.satelliteMonitoringPrice,
   });
 
   factory ServicePricing.fromJson(Map<String, dynamic> json) {
     return ServicePricing(
-      id: json["id"],
-      plantingPrice: json["planting_price"],
-      transplantationPrice: json["transplantation_price"],
-      monitoringPrice: json["monitoring_price"],
-      maintenancePrice: json["maintenance_price"],
-      cuttingPrice: json["cutting_price"],
-      treeSpecies: json["tree_species"],
+      id: json["id"]?.toString(),
+      plantingPrice: json["planting_price"]?.toString(),
+      transplantationPrice: json["transplantation_price"]?.toString(),
+      monitoringPrice: json["monitoring_price"]?.toString(),
+      maintenancePrice: json["maintenance_price"]?.toString(),
+      cuttingPrice: json["cutting_price"]?.toString(),
+      treeSpecies: json["tree_species"]?.toString(),
+      geotaggingPrice: json["geotagging_price"]?.toString(),
+      satelliteMonitoringPrice: json["satellite_monitoring_price"]?.toString(),
     );
   }
 

@@ -10,8 +10,11 @@ import 'package:treelove/features/customer/retail/invite-friend/screens/invite_f
 import 'package:treelove/features/customer/retail/my-trees/screens/my_trees_screen.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_details.dart';
 import 'package:treelove/features/customer/retail/tree-species/tree_species_list.dart';
+import 'package:treelove/features/customer/retail/home/screens/blog_list_screen.dart';
+import 'package:treelove/features/customer/retail/home/screens/testimonial_list_screen.dart';
 import 'package:treelove/features/onboarding/screens/welcome_screen.dart';
 import 'package:treelove/features/vendor/home/screens/project_detail_screen.dart';
+import '../../../common/screens/maintenance_stats_screen.dart';
 import '../../../common/screens/notification_screen.dart';
 import '../../../common/screens/privacy_policy_screen.dart';
 import '../../../common/screens/satellite_history_screen.dart';
@@ -233,6 +236,18 @@ class AppRoute {
                   latitude: argument['latitude'],
                   longitude: argument['longitude'],
                 ));
+      case '/blog-list':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => BlogListScreen(
+                  blogs: argument!['blogs'],
+                ));
+      case '/testimonial-list':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => TestimonialListScreen(
+                  testimonials: argument!['testimonials'],
+                ));
 
       ///TODO : Field Worker Mobile API
       case '/fieldworker-main-screen':
@@ -330,6 +345,15 @@ class AppRoute {
 
       case '/b2b-map':
         return MaterialPageRoute(builder: (_) => B2bMapScreen());
+
+      case '/maintenance-stats-screen':
+        Map? argument = settings.arguments as Map?;
+        return MaterialPageRoute(
+            builder: (_) => MaintenanceStatsScreen(
+                  projectId: argument!['projectId'],
+                  projectAreaId: argument['projectAreaId'],
+                  projectName: argument['projectName'],
+                ));
 
       case '/image-viewer':
         Map? argument = settings.arguments as Map?;

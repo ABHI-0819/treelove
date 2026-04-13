@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:treelove/common/repositories/maintenance_repository.dart';
 
 
@@ -173,6 +174,31 @@ class _TreeMaintenanceHistoryScreenState extends State<TreeMaintenanceHistoryScr
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (record.thumbnail != null && record.thumbnail!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: record.thumbnail!,
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 140,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 140,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
           Text(
             '${formatDate(record.maintenanceDate)} • $activities',
             style: const TextStyle(
@@ -183,6 +209,7 @@ class _TreeMaintenanceHistoryScreenState extends State<TreeMaintenanceHistoryScr
           ),
           const SizedBox(height: 12),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 statusIcon(status),
@@ -201,8 +228,9 @@ class _TreeMaintenanceHistoryScreenState extends State<TreeMaintenanceHistoryScr
               Flexible(
                 flex: 3,
                 child: Text(
-                  record.remarks,
+                  record.remarks.isNotEmpty ? record.remarks : 'No remarks',
                   style: const TextStyle(fontSize: 13, color: Colors.black54),
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

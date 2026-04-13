@@ -380,7 +380,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: FlutterMap(
+                      child: TreeloveMap(
                         mapController: _mapController,
                         options: MapOptions(
                           initialCenter: _selectedLocation,
@@ -932,7 +932,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: FlutterMap(
+                      child: TreeloveMap(
                         mapController: _mapController,
                         options: MapOptions(
                           initialCenter: _selectedLocation,
@@ -1675,7 +1675,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: FlutterMap(
+                      child: TreeloveMap(
                         mapController: _mapController,
                         options: MapOptions(
                           initialCenter: _selectedLocation,
@@ -1849,6 +1849,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:nominatim_flutter/nominatim_flutter.dart';
 
 import '../../../../core/config/constants/enum/inquiry_type_enum.dart';
@@ -2214,7 +2215,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
   create: (context) => inquiryBloc,
-  child: BlocListener<InquiryBloc, ApiState<ResponseModel, ResponseModel>>(
+  child: BlocListener<InquiryBloc, ApiState<dynamic, ResponseModel>>(
       listener: (context, state) {
         if (state is ApiLoading) {
           // Optional: show global loading
@@ -2222,7 +2223,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
           // _showSnackBar('Monitoring request submitted successfully!');
           _showSuccessDialog();
           // Optionally reset form or navigate
-        } else if (state is ApiFailure<ResponseModel, ResponseModel>) {
+        } else if (state is ApiFailure<dynamic, ResponseModel>) {
           _showSnackBar(state.error.message ?? 'Failed to submit request.');
         }
       },
@@ -2400,7 +2401,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
-                        child: FlutterMap(
+                        child: TreeloveMap(
                           mapController: _mapController,
                           options: MapOptions(
                             initialCenter: _selectedLocation,
@@ -2542,7 +2543,7 @@ class _SelectMonitoringScreenState extends State<SelectMonitoringScreen> {
                     const SizedBox(height: 16),
 
                     // ✉️ Submit Button
-                    BlocBuilder<InquiryBloc, ApiState<ResponseModel, ResponseModel>>(
+                    BlocBuilder<InquiryBloc, ApiState<dynamic, ResponseModel>>(
                       builder: (context, state) {
                         final isLoading = state is ApiLoading;
                         return SizedBox(

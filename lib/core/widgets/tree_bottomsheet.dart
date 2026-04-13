@@ -1102,6 +1102,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
   final String health;
   final String growth;
   final String girth;
+  final String treeHeight;
   final String direction;
   final String? nextMaintenanceDate; // CHANGED: was DateTime?
   final String? nextMonitoringDate;
@@ -1118,6 +1119,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
     required this.health,
     required this.growth,
     required this.girth,
+    required this.treeHeight,
     required this.direction,
     this.nextMaintenanceDate,
     this.nextMonitoringDate,
@@ -1135,6 +1137,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
         required String health,
         required String growth,
         required String girth,
+        required String treeHeight,
         required String direction,
         String? nextMaintenanceDate,     // CHANGED
         String? nextMonitoringDate,
@@ -1154,6 +1157,7 @@ class TreeDetailsBottomSheet extends StatelessWidget {
         health: health,
         growth: growth,
         girth: girth,
+        treeHeight: treeHeight,
         direction: direction,
         nextMaintenanceDate: nextMaintenanceDate,
         nextMonitoringDate: nextMonitoringDate,
@@ -1435,39 +1439,25 @@ class TreeDetailsBottomSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isVeryNarrow = constraints.maxWidth < 280;
-            if (isVeryNarrow) {
-              return Column(
-                children: [
-                  _buildDetailRow('Health', health, Icons.favorite, isSmallScreen, color: healthColor),
-                  const SizedBox(height: 12),
-                  _buildDetailRow('Growth', growth, Icons.trending_up, isSmallScreen, color: const Color(0xFF03A9F4)),
-                  const SizedBox(height: 12),
-                  _buildDetailRow('Girth', girth, Icons.straighten, isSmallScreen, color: const Color(0xFF795548)),
-                ],
-              );
-            } else {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildDetailColumn('Health', health, Icons.favorite, isSmallScreen, color: healthColor),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildDetailColumn('Growth', growth, Icons.trending_up, isSmallScreen, color: const Color(0xFF03A9F4)),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildDetailColumn('Girth', girth, Icons.straighten, isSmallScreen, color: const Color(0xFF795548)),
-                  ),
-                ],
-              );
-            }
-          },
-        ),
+        Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildDetailRow('Health', health, Icons.favorite, isSmallScreen, color: healthColor)),
+                const SizedBox(width: 8),
+                Expanded(child: _buildDetailRow('Growth', growth, Icons.trending_up, isSmallScreen, color: const Color(0xFF03A9F4))),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildDetailRow('Height', treeHeight, Icons.height, isSmallScreen, color: const Color(0xFF9C27B0))),
+                const SizedBox(width: 8),
+                Expanded(child: _buildDetailRow('Girth', girth, Icons.straighten, isSmallScreen, color: const Color(0xFF795548))),
+              ],
+            ),
+          ],
+        )
       ],
     );
   }

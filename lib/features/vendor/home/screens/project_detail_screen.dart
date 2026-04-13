@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:treelove/common/widgets/treelove_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:treelove/common/bloc/api_event.dart';
 import 'package:treelove/common/repositories/project_repository.dart';
@@ -15,11 +16,14 @@ import '../../../../common/bloc/api_state.dart';
 import '../../../../common/models/response.mode.dart';
 import '../../../../core/config/resource/images.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../../common/repositories/report_repository.dart';
+import '../../../../common/widgets/report_selection_sheet.dart';
 
 import '../../../../core/widgets/common_notification.dart';
 import '../../../../core/widgets/common_refresh_indicator.dart';
 import '../../../../core/widgets/project_detail_shimmer.dart';
-import '../../../authentication/screens/sign_in_screen.dart';
+import '../../../../common/screens/maintenance_stats_screen.dart';
 import '../../task/screens/task_allocation_screen.dart';
 import 'map_screen.dart';
 
@@ -83,6 +87,38 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Future<void> _refreshData() async {
     _projectBloc.add(ApiFetch(id: widget.projectId));
+  }
+
+  void _handleReportDownload(ReportType type) async {
+    EasyLoading.show(status: 'Downloading report...');
+    try {
+      final repo = ReportRepository(api: ApiConnection());
+      final file = await repo.downloadReport(widget.projectId, type);
+      EasyLoading.dismiss();
+
+      if (file != null) {
+        await Share.shareXFiles([XFile(file.path)], text: 'Project Report');
+      } else {
+        if (mounted) {
+          showNotification(context, message: 'Failed to download report');
+        }
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      if (mounted) {
+        showNotification(context, message: 'Error: $e');
+      }
+    }
+  }
+
+  void _showReportSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ReportSelectionSheet(
+        onSelect: _handleReportDownload,
+      ),
+    );
   }
 
   @override
@@ -151,7 +187,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           location: projectDetail.data.projectInfo.description,
                           endDate: projectDetail.data.projectInfo.endDate,
                         ),
-                        SizedBox(height: 5.h),
+                        SizedBox(height: 12.h),
                         Center(
                           child: Text(
                             "↓ Pull down to refresh",
@@ -166,6 +202,51 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         SizedBox(
                           height: 5.h,
                         ),
+                        if (_projectData != null &&
+                            _projectData!.serviceSummary.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Project Statistics',
+                                      style: AppFonts.body.copyWith(
+                                        color: AppColor.textPrimary,
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: _showReportSelection,
+                                      icon: Icon(Icons.file_download_outlined,
+                                          size: 16.sp, color: AppColor.primary),
+                                      label: Text(
+                                        'Download Report',
+                                        style: AppFonts.body.copyWith(
+                                          color: AppColor.primary,
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12.h),
+                                _buildProjectServiceCards(context),
+                              ],
+                            ),
+                          ),
+                        SizedBox(height: 16.h),
                         if (_projectData !=
                             null) // Check if data exists before building AreaSection
                           AreaSection(
@@ -260,8 +341,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           children: [
             _buildHeaderRow(title: title),
             SizedBox(height: 20.h),
-            _buildLocationRow(location: location),
-            SizedBox(height: 10.h),
+            _buildLocationRow(location: 'Thane,Mumbai'),
+            SizedBox(height: 12.h),
             _buildDueDateCard(endDate: endDate),
           ],
         ),
@@ -302,6 +383,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             ),
           ),
         ),
+        SizedBox(width: 43.r), // Spacer to balance the back button
       ],
     );
   }
@@ -367,6 +449,161 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
+  Widget _buildProjectServiceCards(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Project Service Summary",
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 100, // Adjusted height for horizontal cards
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _projectData!.serviceSummary.length,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              final summary = _projectData!.serviceSummary[index];
+              IconData icon = Icons.task_alt_outlined; // Default icon
+              switch (summary.serviceType.toLowerCase()) {
+                case "plantation":
+                  icon = Icons.eco;
+                  break;
+                case "maintenance":
+                  icon = Icons.water_drop;
+                  break;
+                case "monitoring":
+                  icon = Icons.search;
+                  break;
+              }
+              final int required = summary.totalRequired;
+              final int done = summary.totalDone;
+
+              final VoidCallback? onTap =
+                  summary.serviceType.toLowerCase() == 'maintenance'
+                      ? () {
+                          AppRoute.goToNextPage(
+                            context: context,
+                            screen: MaintenanceStatsScreen.route,
+                            arguments: {
+                              'projectId': _projectData!.projectInfo.id,
+                              'projectAreaId': null,
+                              'projectName': _projectData!.projectInfo.name,
+                            },
+                          );
+                        }
+                      : null;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 150,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.withOpacity(0.2)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(icon, color: Colors.green, size: 22),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                summary.serviceType,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Progress",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                Text(
+                                  "$done/$required",
+                                  style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (onTap != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Text(
+                                      "Dash",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(width: 2),
+                                    Icon(Icons.open_in_new,
+                                        size: 10, color: Colors.white),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildInfoCards(BuildContext context, ProjectArea selectedArea) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,6 +644,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               icon: icon,
               title: summary.serviceType,
               subtitle: "$done/$required",
+              dashboardLabel: 'Area Dash',
+              onTap: summary.serviceType.toLowerCase() == 'maintenance'
+                  ? () {
+                      AppRoute.goToNextPage(
+                        context: context,
+                        screen: MaintenanceStatsScreen.route,
+                        arguments: {
+                          'projectId': _projectData!.projectInfo.id,
+                          'projectAreaId': _selectedAreaId,
+                          'projectName': _projectData!.projectInfo.name,
+                        },
+                      );
+                    }
+                  : null,
             ),
           );
         }).toList(),
@@ -507,68 +758,101 @@ class _InfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? dashboardLabel;
+  final VoidCallback? onTap;
 
   const _InfoCard({
     Key? key,
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.dashboardLabel,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.15),
-              shape: BoxShape.circle,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-            child: Icon(icon, color: Colors.green, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppFonts.body.copyWith(
-                    fontWeight: FontWeight.w500,
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.green, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppFonts.body.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: AppFonts.caption.copyWith(color: AppColor.textMuted),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: AppFonts.caption.copyWith(color: AppColor.textMuted),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-            color: Colors.grey[500],
-          ),
-        ],
+            if (onTap != null && dashboardLabel != null)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      dashboardLabel!,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.open_in_new,
+                        size: 12, color: Colors.white),
+                  ],
+                ),
+              )
+            else if (onTap != null)
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey[500],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -686,7 +970,8 @@ class AreaCoordinatesSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
                   height: 180,
-                  child: FlutterMap(
+                  child: TreeloveMap(
+                    showLocationButton: false,
                     options: MapOptions(
                       initialCenter: initialCenter,
                       initialZoom: 15,
@@ -819,7 +1104,8 @@ class AreaCoordinatesSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
                   height: 180,
-                  child: FlutterMap(
+                  child: TreeloveMap(
+                    showLocationButton: false,
                     options: MapOptions(
                       initialCenter: LatLng(polygonPoints.last.latitude,
                           polygonPoints.first.longitude),

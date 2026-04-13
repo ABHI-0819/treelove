@@ -49,9 +49,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   void _loadNextPage() {
-    debugLog('${_currentPage++}', name: "checking scrolling");
+    if (projectListBloc.isFetchingMore || projectListBloc.hasReachedMax) return;
+    debugLog('${_currentPage + 1}', name: "checking scrolling");
     _currentPage++;
-    projectListBloc.add(ApiListFetch(page: _currentPage));
+    projectListBloc.add(ApiListFetch(page: _currentPage, filter: selectedTab));
   }
 
   @override
@@ -174,8 +175,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       child: ListView.builder(
                         controller: _scrollController,
                         itemCount:
-                            projectData.data.length, // Number of projects
+                            projectData.data.length + (projectListBloc.hasReachedMax ? 0 : 1), // Number of projects + loading indicator
                         itemBuilder: (context, index) {
+                          if (index == projectData.data.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1A5F3E))),
+                            );
+                          }
                           return ProjectCard(
                             projectItem: projectData.data[index],
                           );
@@ -206,7 +213,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       onTap: () {
         setState(() {
           selectedTab = value;
-          projectListBloc.add(ApiListFetch(filter: value));
+          _currentPage = 1;
+          projectListBloc.add(ApiListFetch(filter: value, page: 1));
         });
       },
       child: Container(

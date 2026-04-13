@@ -71,13 +71,13 @@ class LoginRepository {
 
   Future<ApiResult> googleSignIn(GoogleLoginRequestModel request) async {
     final Map<String, dynamic> fields = {
-      "email": request.email,
-      "name": request.name,
-      "oauth_uid": request.oauthUid,
+      if (request.email != null) "email": request.email,
+      if (request.name != null) "name": request.name,
+      if (request.oauthUid != null) "oauth_uid": request.oauthUid,
       "id_token": request.idToken,
       // "firebase_claims": json.encode(request.additionalData),
       "oauth_provider": request.provider,
-      "group": request.userTypeId,
+      if (request.userTypeId != null) "group": request.userTypeId,
       if (request.deviceId != null) "device_id": request.deviceId,
     };
     ApiResult result = await api!.apiConnectionMultipart(

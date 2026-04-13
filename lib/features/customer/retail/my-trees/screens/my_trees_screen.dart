@@ -12,105 +12,7 @@ import 'package:treelove/features/customer/retail/my-trees/screens/tree_maintena
 import 'package:treelove/features/fieldworker/home/screens/tree_maintenance_list_screen.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:url_launcher/url_launcher.dart';
-/*
-class MyTreesScreen extends StatelessWidget {
-
-  const MyTreesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> treeData = [
-      {
-        'name': 'Banyan Tree',
-        'latLng': LatLng(19.0760, 72.8777),
-      },
-      {
-        'name': 'Peepal Tree',
-        'latLng': LatLng(19.0765, 72.8772),
-      },
-      {
-        'name': 'Neem Tree',
-        'latLng': LatLng(19.0755, 72.8780),
-      },
-    ];
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: treeData.first['latLng'] as LatLng,
-              initialZoom: 17,
-              interactionOptions: const InteractionOptions(
-                flags: ~InteractiveFlag.rotate,
-              ),
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                tileProvider: NetworkTileProvider(
-                  headers: {
-                    'User-Agent': 'TreelovApp/1.0 (https://yourapp.com)',
-                  },
-                ),
-              ),
-              MarkerLayer(
-                markers: treeData.map((tree) {
-                  final latLng = tree['latLng'] as LatLng;
-                  return Marker(
-                    width: 40,
-                    height: 40,
-                    point: latLng,
-                    child: Tooltip(
-                      message: tree['name'],
-                      child: const Icon(
-                        Icons.park_rounded,
-                        color: Colors.green,
-                        size: 36,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          // Custom Back Button
-          Positioned(
-            top: 0,
-            left: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20.0, top: 8.0),
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
- */
-
-
+import 'package:treelove/common/widgets/treelove_map.dart';
 import '../../../../../common/bloc/api_event.dart';
 import '../../../../../common/bloc/api_state.dart';
 import '../../../../../common/models/planted.list.response.model.dart';
@@ -149,90 +51,6 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
   static const Color textSecondary = Color(0xFF6B7280);
 
 
-  // Sample tree data
-  /*
-  final List<TreeData> trees = [
-    TreeData(
-      id: 'T001',
-      name: 'Oak Magnificus',
-      species: 'White Oak',
-      position: const LatLng(19.0760, 72.8777),
-      healthStatus: TreeHealth.excellent,
-      age: '5 years',
-      height: '12 feet',
-      plantedDate: '2019-03-15',
-      images: [
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
-        'https://images.unsplash.com/photo-1574263867128-b3e6f57b20b8?w=400',
-        'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 30)),
-      needsMaintenance: false,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 30)),
-          type: 'Watering & Pruning',
-          status: 'Completed',
-          notes: 'Tree is healthy, pruned dead branches',
-        ),
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 90)),
-          type: 'Fertilization',
-          status: 'Completed',
-          notes: 'Applied organic fertilizer',
-        ),
-      ],
-    ),
-    TreeData(
-      id: 'T002',
-      name: 'Neem Guardian',
-      species: 'Neem Tree',
-      position: const LatLng(19.0780, 72.8790),
-      healthStatus: TreeHealth.good,
-      age: '3 years',
-      height: '8 feet',
-      plantedDate: '2021-06-20',
-      images: [
-        'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400',
-        'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 75)),
-      needsMaintenance: true,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 75)),
-          type: 'General Checkup',
-          status: 'Completed',
-          notes: 'Minor pest control needed',
-        ),
-      ],
-    ),
-    TreeData(
-      id: 'T003',
-      name: 'Mango Delight',
-      species: 'Mango Tree',
-      position: const LatLng(19.0800, 72.8760),
-      healthStatus: TreeHealth.excellent,
-      age: '4 years',
-      height: '10 feet',
-      plantedDate: '2020-07-10',
-      images: [
-        'https://images.unsplash.com/photo-1605185529743-1d4df42d6e06?w=400',
-      ],
-      lastMaintenance: DateTime.now().subtract(const Duration(days: 15)),
-      needsMaintenance: false,
-      maintenanceHistory: [
-        MaintenanceRecord(
-          date: DateTime.now().subtract(const Duration(days: 15)),
-          type: 'Watering',
-          status: 'Completed',
-          notes: 'Regular watering schedule maintained',
-        ),
-      ],
-    ),
-  ];
-
-   */
 
   PlantedTreeModel? selectedTree;
 
@@ -385,7 +203,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
 
           final markers = plantedTrees.map((tree) => _buildTreeMarker(tree)).toList();
 
-          return FlutterMap(
+          return TreeloveMap(
             mapController: _mapController,
             options: const MapOptions(
               initialCenter: const LatLng(19.112251, 72.864512),
@@ -493,7 +311,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
               ? trees.map((tree) => _buildTreeMarker(tree)).toList()
               : <Marker>[];
 
-          return FlutterMap(
+          return TreeloveMap(
             mapController: _mapController,
             options: const MapOptions(
               initialCenter: LatLng(19.0760, 72.8777),
@@ -539,7 +357,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
   },
   builder: (context, state) {
     if(state is ApiSuccess<ProjectListResponse, ResponseModel> ){
-      return FlutterMap(
+      return TreeloveMap(
         mapController: _mapController,
         options: MapOptions(
           initialCenter: const LatLng(19.0760, 72.8777),
@@ -631,6 +449,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
             health: tree.treeHealth,
             growth:tree.treeGrowth,
             girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
+            treeHeight: '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
             direction: 'Direction',
             onDirectionTap: () async {
               final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
