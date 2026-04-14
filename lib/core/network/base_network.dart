@@ -58,7 +58,7 @@ class BaseNetwork {
       "${_BASE_URL}api/v1/orders/order-items/cart-items/";
   static const String orderPlaceUrl = "${_BASE_URL}api/v1/orders/orders/";
   static const String orderTrackingUrl =
-      "${_BASE_URL}api/v1/orders/order-tracking/";
+      "${_BASE_URL}api/v1/orders/orders/";
   static const String grievanceCreateURL = "${_BASE_URL}api/v1/grievance/";
   static const String grievanceCategoriesURL =
       "${_BASE_URL}api/v1/grievance/grievance-categories/";

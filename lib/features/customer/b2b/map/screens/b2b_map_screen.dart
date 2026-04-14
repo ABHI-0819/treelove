@@ -262,6 +262,7 @@ class _B2bMapScreenState extends State<B2bMapScreen> {
               MarkerClusterLayerWidget(
                 options: MarkerClusterLayerOptions(
                   maxClusterRadius: 120,
+                  disableClusteringAtZoom: 16,
                   size: const Size(48, 48),
                   // fitBoundsOptions: FitBoundsOptions(padding: const EdgeInsets.all(50)),
                   markers: markers,

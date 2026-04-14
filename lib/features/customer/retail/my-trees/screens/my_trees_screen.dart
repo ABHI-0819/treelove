@@ -35,7 +35,8 @@ class MyTreeScreen extends StatefulWidget {
   State<MyTreeScreen> createState() => _MyTreeScreenState();
 }
 
-class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMixin {
+class _MyTreeScreenState extends State<MyTreeScreen>
+    with TickerProviderStateMixin {
   final MapController _mapController = MapController();
 
   // Color Palette
@@ -50,17 +51,13 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF6B7280);
 
-
-
   PlantedTreeModel? selectedTree;
 
-  late MapBloc  mapBloc;
+  late MapBloc mapBloc;
 
   @override
   void initState() {
-    mapBloc = MapBloc(
-        PlantationRepository(api:  ApiConnection())
-    );
+    mapBloc = MapBloc(PlantationRepository(api: ApiConnection()));
     mapBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
@@ -70,18 +67,17 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
-
       body: BlocProvider(
-  create: (context) => mapBloc,
-  child: Stack(
-        children: [
-          _buildMap(),
-          buildZoomButtons(),
-          _buildHeader(),
-          if (selectedTree != null) _buildTreeBottomSheet(),
-        ],
+        create: (context) => mapBloc,
+        child: Stack(
+          children: [
+            _buildMap(),
+            buildZoomButtons(),
+            _buildHeader(),
+            if (selectedTree != null) _buildTreeBottomSheet(),
+          ],
+        ),
       ),
-),
     );
   }
 
@@ -178,7 +174,8 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
   }
 
   Widget _buildMap() {
-    return BlocConsumer<MapBloc, ApiState<PlantedListResponseModel, ResponseModel>>(
+    return BlocConsumer<MapBloc,
+        ApiState<PlantedListResponseModel, ResponseModel>>(
       listener: (context, state) {
         if (state is TokenExpired<PlantedListResponseModel, ResponseModel>) {
           AppRoute.pushReplacement(context, SignInScreen.route, arguments: {});
@@ -199,9 +196,11 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
         }
 
         if (state is ApiSuccess<PlantedListResponseModel, ResponseModel>) {
-          final plantedTrees = state.data.data; // ✅ real list of PlantedTreeModel
+          final plantedTrees =
+              state.data.data; // ✅ real list of PlantedTreeModel
 
-          final markers = plantedTrees.map((tree) => _buildTreeMarker(tree)).toList();
+          final markers =
+              plantedTrees.map((tree) => _buildTreeMarker(tree)).toList();
 
           return TreeloveMap(
             mapController: _mapController,
@@ -213,9 +212,9 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
               // Fixed interaction options
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.doubleTapZoom |
-                InteractiveFlag.pinchZoom |
-                InteractiveFlag.drag |
-                InteractiveFlag.flingAnimation,
+                    InteractiveFlag.pinchZoom |
+                    InteractiveFlag.drag |
+                    InteractiveFlag.flingAnimation,
                 enableMultiFingerGestureRace: true,
                 scrollWheelVelocity: 0.005,
                 pinchZoomWinGestures: MultiFingerGesture.pinchZoom,
@@ -223,7 +222,6 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
               keepAlive: true,
               backgroundColor: Colors.grey,
               // Add tap handling at map level
-
             ),
             children: [
               TileLayer(
@@ -239,6 +237,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
                 MarkerClusterLayerWidget(
                   options: MarkerClusterLayerOptions(
                     maxClusterRadius: 120,
+                    disableClusteringAtZoom: 16,
                     size: const Size(48, 48),
                     markers: markers,
                     builder: (context, markers) {
@@ -341,9 +340,6 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
 
    */
 
-
-
-
   /*
 
   Widget _buildMap() {
@@ -425,10 +421,7 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
 
  */
 
-
-
   Marker _buildTreeMarker(PlantedTreeModel tree) {
-
     final lat = tree.location.coordinates[1]; // GeoJSON: [lng, lat]
     final lng = tree.location.coordinates[0];
     return Marker(
@@ -445,14 +438,16 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
             context,
             treeName: tree.treeSpecies.localName,
             scientificName: tree.treeSpecies.scientificName,
-            imageUrl: tree.thumbnail??tree.treeSpecies.image, // or null
+            imageUrl: tree.thumbnail ?? tree.treeSpecies.image, // or null
             health: tree.treeHealth,
-            growth:tree.treeGrowth,
+            growth: tree.treeGrowth,
             girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
-            treeHeight: '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
+            treeHeight:
+                '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
             direction: 'Direction',
             onDirectionTap: () async {
-              final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+              final url = Uri.parse(
+                  'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
               if (await canLaunchUrl(url)) {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
               }
@@ -460,21 +455,26 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
             nextMaintenanceDate: tree.nextMaintenanceDate,
             nextMonitoringDate: tree.nextMonitoringDate,
             onMaintenanceHistoryTap: () {
-              AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                'treeId': tree.id.toString()
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: TreeMaintenanceHistoryScreen.route,
+                  arguments: {'treeId': tree.id.toString()});
               // Navigate to maintenance history
             },
             onManualMonitorHistoryTap: () {
-              AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                'treeId': tree.id.toString()
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: TreeMonitoringHistoryScreen.route,
+                  arguments: {'treeId': tree.id.toString()});
               // Navigate to manual monitoring history
             },
             onSatelliteMonitorHistoryTap: () {
-              AppRoute.goToNextPage(context: context, screen: SatelliteHistoryScreen.route, arguments: {
-                'plantationId': tree.id.toString(),
-              });
+              AppRoute.goToNextPage(
+                  context: context,
+                  screen: SatelliteHistoryScreen.route,
+                  arguments: {
+                    'plantationId': tree.id.toString(),
+                  });
               // Navigate to satellite monitoring history
             },
           );
@@ -483,8 +483,6 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
       ),
     );
   }
-
-
 
   Widget _buildHeader() {
     return SafeArea(
@@ -668,25 +666,19 @@ class _MyTreeScreenState extends State<MyTreeScreen> with TickerProviderStateMix
 
    */
 
-
-
   void _showTreeDetails(PlantedTreeModel tree) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) =>
-          _TreeDetailsBottomSheet(tree: tree),
+      builder: (context) => _TreeDetailsBottomSheet(tree: tree),
     );
   }
-
-
 
   Widget _buildTreeBottomSheet() {
     return const SizedBox(); // Placeholder for the bottom sheet logic
   }
 }
-
 
 // Tree Details Bottom Sheet Widget
 class _TreeDetailsBottomSheet extends StatefulWidget {
@@ -695,7 +687,8 @@ class _TreeDetailsBottomSheet extends StatefulWidget {
   const _TreeDetailsBottomSheet({required this.tree});
 
   @override
-  State<_TreeDetailsBottomSheet> createState() => _TreeDetailsBottomSheetState();
+  State<_TreeDetailsBottomSheet> createState() =>
+      _TreeDetailsBottomSheetState();
 }
 
 class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
@@ -704,11 +697,11 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
   late PageController _imageController;
   int _currentImageIndex = 0;
 
-  List<String> imageUrls= [
-  'https://picsum.photos/400/400?random=1',
-  'https://picsum.photos/400/400?random=2',
-  'https://picsum.photos/400/400?random=3',
-  'https://picsum.photos/400/400?random=4',
+  List<String> imageUrls = [
+    'https://picsum.photos/400/400?random=1',
+    'https://picsum.photos/400/400?random=2',
+    'https://picsum.photos/400/400?random=3',
+    'https://picsum.photos/400/400?random=4',
   ];
 
   @override
@@ -756,10 +749,11 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
               /// Grid Section
               /// Grid Section - Updated Image Management
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+                    (context, index) {
                       final imageUrl = widget.tree.thumbnail != null
                           ? BaseNetwork.BASE_Image_URL + widget.tree.thumbnail!
                           : null;
@@ -768,69 +762,75 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                         borderRadius: BorderRadius.circular(12),
                         child: imageUrl != null
                             ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  strokeWidth: 2,
-                                  color: AppColor.success,
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.grey.shade400,
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Image not available',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 12,
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                        strokeWidth: 2,
+                                        color: AppColor.success,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.image_not_supported,
+                                          color: Colors.grey.shade400,
+                                          size: 48,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Image not available',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              )
                             : Container(
-                          color: Colors.grey.shade200,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.image,
-                                color: Colors.grey.shade400,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No image',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 12,
+                                color: Colors.grey.shade200,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.image,
+                                      color: Colors.grey.shade400,
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'No image',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
                       );
                     },
                     childCount: 1,
@@ -882,7 +882,8 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                       iconColor: Colors.green,
                       title: "Health",
                       value: widget.tree.treeHealth.isNotEmpty
-                          ? widget.tree.treeHealth[0].toUpperCase() + widget.tree.treeHealth.substring(1).toLowerCase()
+                          ? widget.tree.treeHealth[0].toUpperCase() +
+                              widget.tree.treeHealth.substring(1).toLowerCase()
                           : '',
                     ),
 
@@ -915,14 +916,18 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                         // Maintenance History
                         Expanded(
                           child: InkWell(
-                            onTap: () => AppRoute.goToNextPage(context: context, screen: TreeMaintenanceHistoryScreen.route, arguments: {
-                              'treeSpecies':'neem',
-                              'location':"mumbai",
-                              'treeId':'2131'
-                            }),
+                            onTap: () => AppRoute.goToNextPage(
+                                context: context,
+                                screen: TreeMaintenanceHistoryScreen.route,
+                                arguments: {
+                                  'treeSpecies': 'neem',
+                                  'location': "mumbai",
+                                  'treeId': '2131'
+                                }),
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: AppColor.success,
                                 borderRadius: BorderRadius.circular(16),
@@ -965,18 +970,23 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                         Expanded(
                           child: InkWell(
                             onTap: () {
-                              AppRoute.goToNextPage(context: context, screen: SatelliteMonitoringResultScreen.route, arguments: {
-                                'monitorId':'653a1175-f498-421d-9668-5841533e102d'
-                              });
-                            //   AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
-                            //   'treeSpecies':'neem',
-                            //   'location':"mumbai",
-                            //   'treeId':'2131'
-                            // });
+                              AppRoute.goToNextPage(
+                                  context: context,
+                                  screen: SatelliteMonitoringResultScreen.route,
+                                  arguments: {
+                                    'monitorId':
+                                        '653a1175-f498-421d-9668-5841533e102d'
+                                  });
+                              //   AppRoute.goToNextPage(context: context, screen: TreeMonitoringHistoryScreen.route, arguments: {
+                              //   'treeSpecies':'neem',
+                              //   'location':"mumbai",
+                              //   'treeId':'2131'
+                              // });
                             },
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: Colors.blue.shade600,
                                 borderRadius: BorderRadius.circular(16),
@@ -1015,7 +1025,6 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
                         ),
                       ],
                     )
-
                   ],
                 ),
               ),
@@ -1025,8 +1034,6 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
       },
     );
   }
-
-
 
   /*
   @override
@@ -1184,7 +1191,7 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
               children: [
                 Text(
                   widget.tree.treeSpecies.localName,
-                  style:  TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppColor.primary,
@@ -1590,7 +1597,7 @@ class _TreeDetailsBottomSheetState extends State<_TreeDetailsBottomSheet>
    */
 }
 
- /*
+/*
 class _TreeDetailsBottomSheet extends StatelessWidget {
   final PlantedTreeModel tree;
 
@@ -1659,7 +1666,6 @@ class _TreeDetailsBottomSheet extends StatelessWidget {
 
   */
 
-
 // Data Models
 enum TreeHealth { excellent, good, needsAttention }
 
@@ -1706,4 +1712,3 @@ class MaintenanceRecord {
     required this.notes,
   });
 }
-

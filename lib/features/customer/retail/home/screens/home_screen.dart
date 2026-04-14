@@ -1410,7 +1410,7 @@ class _CustomerSatisfactionWidgetState
           ),
           SizedBox(height: 20.h),
           SizedBox(
-            height: 210.h,
+            height: 250.h,
             child: ListView.builder(
               padding: EdgeInsets.zero,
               itemCount: widget.testimonials.take(3).length,
@@ -1469,7 +1469,7 @@ class CustomerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(2),
-      width: 150.w,
+      width: 160.w,
       margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1491,7 +1491,7 @@ class CustomerCard extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: testimonial.userImage,
               height: 140.h,
-              width: 150.w,
+              width: 160.w,
               fit: BoxFit.cover,
               placeholder: (context, url) =>
                   const Center(child: CircularProgressIndicator()),
@@ -1501,21 +1501,45 @@ class CustomerCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Text(testimonial.userName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: Row(
+              children: List.generate(5, (starIndex) {
+                return Icon(
+                  starIndex < testimonial.rating
+                      ? Icons.star
+                      : Icons.star_border,
+                  color: Colors.amber,
+                  size: 14.sp,
+                );
+              }),
+            ),
           ),
+          SizedBox(height: 4.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Text(
-              testimonial.userDesignation,
-              style: TextStyle(fontSize: 10.sp, color: Colors.grey),
+              testimonial.userName,
+              style: AppFonts.body.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 14.sp,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          )
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: Text(
+              testimonial.message,
+              style: AppFonts.caption.copyWith(
+                fontSize: 11.sp,
+                color: Colors.black87,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

@@ -337,7 +337,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
               health: datum.treeHealth,
               growth: datum.treeGrowth,
               girth: '${datum.treeGirth} ${datum.treeGirthUnit}',
-              treeHeight: '${datum.treeHeight ?? '0'} ${datum.treeHeightUnit ?? 'ft'}',
+              treeHeight:
+                  '${datum.treeHeight ?? '0'} ${datum.treeHeightUnit ?? 'ft'}',
               direction: 'Direction',
               onDirectionTap: () async {
                 final url = Uri.parse(
@@ -439,6 +440,7 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                   options: MarkerClusterLayerOptions(
                     maxClusterRadius: 120,
                     size: const Size(48, 48),
+                    disableClusteringAtZoom: 16,
                     markers: markers,
                     builder: (context, markers) {
                       final count = markers.length;
@@ -606,7 +608,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
           health: tree.treeHealth,
           growth: tree.treeGrowth,
           girth: '${tree.treeGirth} ${tree.treeGirthUnit}',
-          treeHeight: '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
+          treeHeight:
+              '${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}',
           direction: 'Direction',
           onDirectionTap: () async {
             final url = Uri.parse(
@@ -695,7 +698,8 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                       children: [
                         Expanded(
                           child: Text(
-                            tree.treeSpecies.localName.toString() ?? "Unknown Species",
+                            tree.treeSpecies.localName.toString() ??
+                                "Unknown Species",
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -727,14 +731,21 @@ class _VendorMapScreenState extends State<VendorMapScreen>
                         const SizedBox(width: 4),
                         Text(
                           "${tree.treeHeight ?? '0'} ${tree.treeHeightUnit ?? 'ft'}",
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(width: 16),
-                        Icon(Icons.straighten, size: 14, color: AppColor.secondaryDark),
+                        Icon(Icons.straighten,
+                            size: 14, color: AppColor.secondaryDark),
                         const SizedBox(width: 4),
                         Text(
                           "${tree.treeGirth ?? '0'} ${tree.treeGirthUnit ?? 'inch'}",
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -751,10 +762,12 @@ class _VendorMapScreenState extends State<VendorMapScreen>
   Widget _buildMiniHealthBadge(String health) {
     Color badgeColor = Colors.green;
     String status = health.toLowerCase();
-    
+
     if (status.contains('warning') || status.contains('fair')) {
       badgeColor = Colors.orange;
-    } else if (status.contains('critical') || status.contains('poor') || status.contains('bad')) {
+    } else if (status.contains('critical') ||
+        status.contains('poor') ||
+        status.contains('bad')) {
       badgeColor = Colors.red;
     }
 

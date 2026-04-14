@@ -90,7 +90,7 @@ class _PlantedTreeMapScreenState extends State<PlantedTreeMapScreen>
             ),
             const SizedBox(height: 24),
             const Text(
-              "Inquiry Submitted!",
+              "Enquiry Submitted!",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -241,7 +241,7 @@ class _PlantedTreeMapScreenState extends State<PlantedTreeMapScreen>
           } else if (state is ApiFailure<dynamic, ResponseModel>) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.error.message ?? 'Failed to submit inquiry.'),
+                content: Text(state.error.message ?? 'Failed to submit enquiry.'),
                 backgroundColor: AppColor.error,
                 behavior: SnackBarBehavior.floating,
               ),

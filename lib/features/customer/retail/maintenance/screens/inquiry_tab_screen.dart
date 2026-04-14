@@ -22,7 +22,7 @@ class InquiryTabScreen extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            'Inquiries',
+            'Enquiries',
             style: TextStyle(
               color: AppColor.primary,
               fontWeight: FontWeight.bold,

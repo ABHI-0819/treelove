@@ -98,7 +98,7 @@ class CustomOrgBottomNav extends StatelessWidget {
           index: 2,
           filledIcon: Images.inquiryFilledIcon,
           outlinedIcon: Images.inquiryIcon,
-          label: 'Inquiry',
+          label: 'Enquiry',
         ),
         buildNavItem(
           index: 3,

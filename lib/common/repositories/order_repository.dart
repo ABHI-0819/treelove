@@ -48,7 +48,7 @@ class OrderRepository{
 
   Future<ApiResult> fetchOrderTracking({required String orderId}) async {
     final token = await pref.getString(Keys.accessToken);
-    final url = api!.generateUrl(baseUrl: BaseNetwork.orderTrackingUrl,orderId: orderId);
+    final url = '${BaseNetwork.orderTrackingUrl}$orderId/tracking-details/';
     ApiResult result = await api!.getApiConnection<OrderTrackingResponse>(
       url,
       BaseNetwork.getJsonHeaders(),

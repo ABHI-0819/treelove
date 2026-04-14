@@ -37,7 +37,7 @@ class _InquirySectionState extends State<InquirySection> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Your Inquiries',
+                'Your Enquiries',
                 style: AppFonts.title.copyWith(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
@@ -48,7 +48,7 @@ class _InquirySectionState extends State<InquirySection> {
                 onPressed: () => _showNewInquirySheet(context),
                 icon: const Icon(Icons.add_circle_outline, size: 20),
                 label: Text(
-                  'New Inquiry',
+                  'New Enquiry',
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -75,16 +75,14 @@ class _InquirySectionState extends State<InquirySection> {
                 if (inquiries.isEmpty) {
                   return _buildEmptyState();
                 }
-                return SizedBox(
-                  height: 140.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    itemCount: inquiries.length,
-                    itemBuilder: (context, index) {
-                      return _buildInquiryCard(inquiries[index]);
-                    },
-                  ),
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  itemCount: inquiries.length,
+                  itemBuilder: (context, index) {
+                    return _buildInquiryCard(inquiries[index]);
+                  },
                 );
               }
             } else if (state is ApiFailure) {
@@ -119,7 +117,7 @@ class _InquirySectionState extends State<InquirySection> {
           Icon(Icons.query_builder, size: 40, color: Colors.grey[400]),
           SizedBox(height: 12.h),
           Text(
-            'No inquiries yet',
+            'No enquiries yet',
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -133,8 +131,8 @@ class _InquirySectionState extends State<InquirySection> {
 
   Widget _buildInquiryCard(InquiryListItem item) {
     return Container(
-      width: 260.w,
-      margin: EdgeInsets.only(right: 16.w, bottom: 8.h),
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -185,7 +183,7 @@ class _InquirySectionState extends State<InquirySection> {
               ),
             ],
           ),
-          const Spacer(),
+          SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -298,7 +296,7 @@ class _InquirySectionState extends State<InquirySection> {
                   ),
                   SizedBox(height: 24.h),
                   Text(
-                    'New Inquiry',
+                    'New Enquiry',
                     style: AppFonts.title.copyWith(
                       fontSize: 20.sp,
                       color: AppColor.primary,
@@ -330,7 +328,7 @@ class _InquirySectionState extends State<InquirySection> {
                       maxLines: 5,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your inquiry description';
+                          return 'Please enter your enquiry description';
                         }
                         if (value.trim().length < 10) {
                           return 'Minimum 10 characters required';
@@ -356,7 +354,7 @@ class _InquirySectionState extends State<InquirySection> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content:
-                                    Text('Inquiry submitted successfully!')),
+                                    Text('Enquiry submitted successfully!')),
                           );
                           // Refresh the list
                           inquiryBloc.add(ApiFetch());
@@ -403,7 +401,7 @@ class _InquirySectionState extends State<InquirySection> {
                               ? const CircularProgressIndicator(
                                   color: Colors.white)
                               : Text(
-                                  'Submit Inquiry',
+                                  'Submit Enquiry',
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w700,
