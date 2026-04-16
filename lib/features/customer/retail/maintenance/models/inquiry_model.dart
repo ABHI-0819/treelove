@@ -9,11 +9,13 @@ String inquiryListResponseToJson(InquiryListResponse data) =>
 class InquiryListResponse {
   final String status;
   final String message;
+  final String? description;
   final List<InquiryListItem> data;
 
   InquiryListResponse({
     required this.status,
     required this.message,
+    this.description,
     required this.data,
   });
 
@@ -21,6 +23,7 @@ class InquiryListResponse {
       InquiryListResponse(
         status: json["status"] ?? "",
         message: json["message"] ?? "",
+        description: json["description"],
         data: json["data"] == null
             ? []
             : List<InquiryListItem>.from(
@@ -30,6 +33,7 @@ class InquiryListResponse {
   Map<String, dynamic> toJson() => {
         "status": status,
         "message": message,
+        "description": description,
         "data": List<dynamic>.from(data.map((x) => x.toJson())),
       };
 }
@@ -41,6 +45,7 @@ class InquiryListItem {
   final String? email;
   final String inquiryType;
   final String inquiryTypeDisplay;
+  final String? description;
   final String status;
   final String statusDisplay;
   final String urgencyLevel;
@@ -56,6 +61,7 @@ class InquiryListItem {
     this.email,
     required this.inquiryType,
     required this.inquiryTypeDisplay,
+    this.description,
     required this.status,
     required this.statusDisplay,
     required this.urgencyLevel,
@@ -72,6 +78,7 @@ class InquiryListItem {
         email: json["email"],
         inquiryType: json["inquiry_type"] ?? "",
         inquiryTypeDisplay: json["inquiry_type_display"] ?? "",
+        description: json["description"]??"",
         status: json["status"] ?? "",
         statusDisplay: json["status_display"] ?? "",
         urgencyLevel: json["urgency_level"] ?? "",
@@ -92,6 +99,7 @@ class InquiryListItem {
         "email": email,
         "inquiry_type": inquiryType,
         "inquiry_type_display": inquiryTypeDisplay,
+        "description": description,
         "status": status,
         "status_display": statusDisplay,
         "urgency_level": urgencyLevel,

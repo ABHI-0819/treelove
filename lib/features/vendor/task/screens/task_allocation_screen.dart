@@ -1,5 +1,6 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -40,6 +41,11 @@ class TaskAllocationScreen extends StatefulWidget {
 class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController treeController = TextEditingController();
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController endDateController = TextEditingController();
+
+  DateTime? startDate;
+  DateTime? endDate;
 
 
   String? selectedArea;
@@ -70,6 +76,16 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
   void _handleSubmit() {
     final size = MediaQuery.of(context).size;
     if (_formKey.currentState!.validate()) {
+      if (startDate == null || endDate == null) {
+        showNotification(context, message: 'Please select both start and end dates');
+        return;
+      }
+
+      if (endDate!.isBefore(startDate!)) {
+        showNotification(context, message: 'End date cannot be before start date');
+        return;
+      }
+
       final assignedTrees = int.parse(treeController.text.trim());
       if (stuffId == null) {
         showNotification(context, message: 'Please select a staff');
@@ -83,9 +99,11 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
 
       //  Create the request model
       final request = TaskAllocationRequestModel(
-        fieldworker:stuffId!, // TODO: Map from selectedStaff
-        services: serviceId!, //  Example: Plantation service ID
+        fieldworker: stuffId!,
+        services: serviceId!,
         quantity: assignedTrees,
+        startDate: DateFormat('yyyy-MM-dd').format(startDate!),
+        endDate: DateFormat('yyyy-MM-dd').format(endDate!),
       );
       //  Call Bloc event
       taskAllocationBloc.add(ApiAdd(request));
@@ -333,6 +351,66 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
                         ],
                       ),
                     ),
+                  const SizedBox(height: 16),
+                  const Text('Timeline (Start & End Date)'),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: startDateController,
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Start Date',
+                            prefixIcon: Icon(Icons.calendar_today, size: 20),
+                          ),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: startDate ?? DateTime.now(),
+                              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                              lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                startDate = picked;
+                                startDateController.text =
+                                    DateFormat('yyyy-MM-dd').format(picked);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: endDateController,
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'End Date',
+                            prefixIcon: Icon(Icons.calendar_today, size: 20),
+                          ),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: endDate ?? startDate ?? DateTime.now(),
+                              firstDate: startDate ?? DateTime.now().subtract(const Duration(days: 365)),
+                              lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                endDate = picked;
+                                endDateController.text =
+                                    DateFormat('yyyy-MM-dd').format(picked);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 40),
                   BlocBuilder<TaskAllocationBloc,
                       ApiState<TaskAllocationResponseModel, ResponseModel>>(

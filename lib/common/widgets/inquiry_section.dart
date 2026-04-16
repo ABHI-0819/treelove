@@ -183,6 +183,20 @@ class _InquirySectionState extends State<InquirySection> {
               ),
             ],
           ),
+          if (item.description != null && item.description!.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            Text(
+              item.description!,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
           SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

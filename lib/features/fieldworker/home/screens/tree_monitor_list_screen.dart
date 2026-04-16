@@ -462,6 +462,34 @@ class _TreeCard extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE53935)
+                                        .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.event_available,
+                                    size: 12,
+                                    color: Color(0xFFE53935),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Due Date: ${treeData.nextMonitoringDate ?? "N/A"}',
+                                  style: AppFonts.regular.copyWith(
+                                    fontSize: 13,
+                                    color: const Color(0xFFE53935),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
