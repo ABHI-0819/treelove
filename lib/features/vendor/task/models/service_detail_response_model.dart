@@ -22,9 +22,10 @@ class ServiceDetailResponse {
 
   factory ServiceDetailResponse.fromJson(Map<String, dynamic> json) =>
       ServiceDetailResponse(
-        status: json["status"] ?? '',
-        message: json["message"] ?? '',
+        status: json["status"]?.toString() ?? '',
+        message: json["message"]?.toString() ?? '',
         data: (json["data"] as List? ?? [])
+            .where((x) => x != null)
             .map((x) => ServiceSpeciesItem.fromJson(x))
             .toList(),
       );
@@ -42,6 +43,10 @@ class ServiceDetailResponse {
   ///  Helper: total already done
   int get totalDone =>
       data.fold(0, (sum, item) => sum + item.totalDone);
+
+  ///  Helper: total remaining for allocation
+  int get totalRemaining =>
+      data.fold(0, (sum, item) => sum + item.remainingTrees);
 }
 
 ///  Individual Species Item
@@ -53,6 +58,7 @@ class ServiceSpeciesItem {
   final String? media;
   final int totalDone;
   final int totalRequired;
+  final int remainingTrees;
 
   ServiceSpeciesItem({
     required this.serviceId,
@@ -62,17 +68,19 @@ class ServiceSpeciesItem {
     required this.media,
     required this.totalDone,
     required this.totalRequired,
+    required this.remainingTrees,
   });
 
   factory ServiceSpeciesItem.fromJson(Map<String, dynamic> json) =>
       ServiceSpeciesItem(
-        serviceId: json["service_id"] ?? '',
-        speciesId: json["species_id"] ?? '',
-        name: json["name"] ?? '',
-        scientificName: json["scientific_name"] ?? '',
-        media: json["media"],
-        totalDone: json["total_done"] ?? 0,
-        totalRequired: json["total_required"] ?? 0,
+        serviceId: json["service_id"]?.toString() ?? '',
+        speciesId: json["species_id"]?.toString() ?? '',
+        name: json["name"]?.toString() ?? '',
+        scientificName: json["scientific_name"]?.toString() ?? '',
+        media: json["media"]?.toString(),
+        totalDone: (json["total_done"] ?? 0) as int,
+        totalRequired: (json["total_required"] ?? 0) as int,
+        remainingTrees: (json["remaining_trees"] ?? 0) as int,
       );
 
   Map<String, dynamic> toJson() => {
@@ -83,6 +91,7 @@ class ServiceSpeciesItem {
     "media": media,
     "total_done": totalDone,
     "total_required": totalRequired,
+    "remaining_trees": remainingTrees,
   };
 
   /// ✅ Helper: progress %

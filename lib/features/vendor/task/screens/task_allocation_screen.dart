@@ -53,7 +53,7 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
   String?serviceId;
   String? stuffId;
   StaffData? selectedStaff;
-  int pendingTreeCount = 50; // Example value
+  int pendingTreeCount = 0;
 
   /// Bloc Initialization
   late TaskAllocationBloc taskAllocationBloc;
@@ -89,6 +89,11 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
       final assignedTrees = int.parse(treeController.text.trim());
       if (stuffId == null) {
         showNotification(context, message: 'Please select a staff');
+        return;
+      }
+
+      if (serviceId == null) {
+        showNotification(context, message: 'Please select a tree species');
         return;
       }
 
@@ -132,7 +137,7 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
             showNotification(context, message: state.data.message, type: Not.success);
           } else if (state
               is ApiFailure<TaskAllocationResponseModel, ResponseModel>) {
-            showNotification(context, message: state.error.message.toString(), type: Not.failed);
+            showNotification(context, message: state.error.data.toString(), type: Not.failed);
           } else if (state
               is TokenExpired<TaskAllocationResponseModel, ResponseModel>) {
             AppRoute.pushReplacement(context, SignInScreen.route,
@@ -225,16 +230,18 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
                     },
 
                     onChanged: (value) {
-                      selectedServiceType=value!.serviceType;
-                      serviceDetailBloc.add(ApiListFetch(serviceName: value.serviceType,projectAreaId: widget.projectAreaId));
-
+                      if (value == null) return;
                       setState(() {
-
+                        selectedServiceType = value.serviceType;
+                        // Show overall category pending count (from backend field)
+                        selectedArea = value.serviceType;
+                        pendingTreeCount = value.remainingTrees;
+                        // Reset species selection
+                        serviceId = null;
                       });
-                      // setState(() {
-                      //   selectedArea = value!.serviceType;
-                      //   pendingTreeCount = value.totalRequired-value.totalDone ?? 0;
-                      // });
+                      serviceDetailBloc.add(ApiListFetch(
+                          serviceName: value.serviceType,
+                          projectAreaId: widget.projectAreaId));
                     },
                     decoration: CustomDropdownDecoration(
                       closedFillColor: Colors.white,
@@ -277,11 +284,12 @@ class _TaskAllocationScreenState extends State<TaskAllocationScreen> {
                           },
                           // initialItem: selectedStaff,
                           onChanged: (value) {
-                            serviceId = value!.serviceId;
-                            selectedArea = value.name;
-                            pendingTreeCount = value.totalRequired-value.totalDone;
+                            if (value == null) return;
                             setState(() {
-
+                              serviceId = value.serviceId;
+                              selectedArea = value.name;
+                              // Use authoritative field from backend
+                              pendingTreeCount = value.remainingTrees;
                             });
                           },
                           decoration: CustomDropdownDecoration(

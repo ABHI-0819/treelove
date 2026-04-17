@@ -178,16 +178,19 @@ class ProjectDetailData {
   factory ProjectDetailData.fromJson(Map<String, dynamic> json) =>
       ProjectDetailData(
         projectInfo: ProjectInfo.fromJson(json["project_info"] ?? {}),
-        totalProjectAreas: json["total_project_areas"] ?? 0,
-        totalServiceTypes: json["total_service_types"] ?? 0,
-        totalFieldworkers: json["total_fieldworkers"] ?? 0,
+        totalProjectAreas: (json["total_project_areas"] ?? 0) as int,
+        totalServiceTypes: (json["total_service_types"] ?? 0) as int,
+        totalFieldworkers: (json["total_fieldworkers"] ?? 0) as int,
         serviceSummary: (json["service_summary"] as List? ?? [])
+            .where((x) => x != null)
             .map((x) => ServiceSummary.fromJson(x))
             .toList(),
         fieldworkers: (json["fieldworkers"] as List? ?? [])
+            .where((x) => x != null)
             .map((x) => Fieldworker.fromJson(x))
             .toList(),
         projectAreas: (json["project_areas"] as List? ?? [])
+            .where((x) => x != null)
             .map((x) => ProjectArea.fromJson(x))
             .toList(),
       );
@@ -210,6 +213,10 @@ class ProjectDetailData {
   int get totalDoneTrees =>
       serviceSummary.fold(0, (sum, item) => sum + item.totalDone);
 
+  ///  Helper: total remaining trees in entire project
+  int get totalRemainingTrees =>
+      serviceSummary.fold(0, (sum, item) => sum + item.remainingTrees);
+
   ///  All area names
   List<String> get allProjectAreaNames =>
       projectAreas.map((area) => area.name).toList();
@@ -224,23 +231,27 @@ class ServiceSummary {
   final String serviceType;
   final int totalRequired;
   final int totalDone;
+  final int remainingTrees;
 
   ServiceSummary({
     required this.serviceType,
     required this.totalRequired,
     required this.totalDone,
+    required this.remainingTrees,
   });
 
   factory ServiceSummary.fromJson(Map<String, dynamic> json) => ServiceSummary(
-        serviceType: json["service_type"] ?? '',
-        totalRequired: json["total_required"] ?? 0,
-        totalDone: json["total_done"] ?? 0,
+        serviceType: json["service_type"]?.toString() ?? '',
+        totalRequired: (json["total_required"] ?? 0) as int,
+        totalDone: (json["total_done"] ?? 0) as int,
+        remainingTrees: (json["remaining_trees"] ?? 0) as int,
       );
 
   Map<String, dynamic> toJson() => {
         "service_type": serviceType,
         "total_required": totalRequired,
         "total_done": totalDone,
+        "remaining_trees": remainingTrees,
       };
 }
 
@@ -343,9 +354,11 @@ class ProjectArea {
 
       polygon: parsedPolygon,
       serviceSummary: (json["service_summary"] as List? ?? [])
+          .where((x) => x != null)
           .map((x) => ServiceSummary.fromJson(x))
           .toList(),
       fieldworkers: (json["fieldworkers"] as List? ?? [])
+          .where((x) => x != null)
           .map((x) => Fieldworker.fromJson(x))
           .toList(),
     );
@@ -387,6 +400,9 @@ class ProjectArea {
 
   int get totalDoneTreesInThisArea =>
       serviceSummary.fold(0, (sum, s) => sum + s.totalDone);
+
+  int get totalRemainingTreesInThisArea =>
+      serviceSummary.fold(0, (sum, s) => sum + s.remainingTrees);
 
   List<String> get areaFieldworkerNames =>
       fieldworkers.map((fw) => fw.fullName).toList();

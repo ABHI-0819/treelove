@@ -42,9 +42,11 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode 15  
         versionName "1.0.15"
+        multiDexEnabled true 
 //        targetSdk = flutter.targetSdkVersion
 //        versionCode = flutter.versionCode
 //        versionName = flutter.versionName
+
     }
 
     signingConfigs {
@@ -69,3 +71,12 @@ android {
 flutter {
     source = "../.."
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.customview:customview:1.0.0'
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.core:core-ktx:1.13.1'
+    }
+}
+

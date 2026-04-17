@@ -14,7 +14,7 @@ import '../../../../core/network/api_connection.dart';
 import 'order_tracker_screen.dart';
 
 class OrderListScreen extends StatefulWidget {
-  static const route ='/order-list';
+  static const route = '/order-list';
   const OrderListScreen({super.key});
 
   @override
@@ -22,15 +22,11 @@ class OrderListScreen extends StatefulWidget {
 }
 
 class _OrderListScreenState extends State<OrderListScreen> {
-
-
   late OrderListBloc orderListBloc;
 
   @override
   void initState() {
-    orderListBloc = OrderListBloc(
-      OrderRepository(api:  ApiConnection())
-    );
+    orderListBloc = OrderListBloc(OrderRepository(api: ApiConnection()));
     orderListBloc.add(ApiListFetch());
     // TODO: implement initState
     super.initState();
@@ -41,57 +37,55 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return BlocProvider(
       create: (context) => orderListBloc,
       child: Scaffold(
-       backgroundColor: const Color(0xFFFEFEF7),
+        backgroundColor: const Color(0xFFFEFEF7),
         appBar: AppBar(
-          title: const Text("My Orders", style: TextStyle(fontWeight: FontWeight.w600)),
+          title: const Text("My Orders",
+              style: TextStyle(fontWeight: FontWeight.w600)),
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 0.5,
           scrolledUnderElevation: 0,
         ),
-      body: BlocBuilder<OrderListBloc,
-          ApiState<OrderListResponse, ResponseModel>>(
-          builder: (context, state) {
-            if (state is ApiLoading<OrderListResponse, ResponseModel>) {
-              return CircularProgressIndicator();
-            } else if (state
-            is ApiSuccess<OrderListResponse, ResponseModel>) {
+        body: BlocBuilder<OrderListBloc,
+                ApiState<OrderListResponse, ResponseModel>>(
+            builder: (context, state) {
+          if (state is ApiLoading<OrderListResponse, ResponseModel>) {
+            return CircularProgressIndicator();
+          } else if (state is ApiSuccess<OrderListResponse, ResponseModel>) {
+            OrderListResponse orderList = state.data;
 
-              OrderListResponse orderList = state.data;
-
-             return orderList.data.isEmpty
-                  ? _buildEmptyOrders()
-                  : ListView.separated(
-                padding: const EdgeInsets.all(16.0),
-                itemCount:  orderList.data.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  return _buildOrderCard(orderList.data[index]);
-                },
-              );
-            } else {
-              return _buildEmptyOrders();
-            }
-          }),
-
-
-    ),
-);
+            return orderList.data.isEmpty
+                ? _buildEmptyOrders()
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: orderList.data.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return _buildOrderCard(orderList.data[index]);
+                    },
+                  );
+          } else {
+            return _buildEmptyOrders();
+          }
+        }),
+      ),
+    );
   }
 
   Widget _buildOrderCard(OrderData order) {
     final statusColor = _getStatusColor(order.status);
-    
+
     // Format Order ID
     String displayId = order.orderNumber ?? "N/A";
     if (displayId != "N/A" && !displayId.startsWith("#")) {
-       displayId = "#$displayId";
+      displayId = "#$displayId";
     }
 
     // Format Price
     String priceDisplay = '';
     if (order.totalAmount != null && order.totalAmount!.isNotEmpty) {
-      priceDisplay = '${order.currency.isNotEmpty ? order.currency : "₹"}${order.totalAmount}';
+      priceDisplay =
+          '${order.currency.isNotEmpty ? order.currency : "₹"}${order.totalAmount}';
     }
 
     return Container(
@@ -111,9 +105,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            AppRoute.goToNextPage(context: context, screen: OrderTrackerScreen.route, arguments: {
-              'orderId': order.id,
-            });
+            AppRoute.goToNextPage(
+                context: context,
+                screen: OrderTrackerScreen.route,
+                arguments: {
+                  'orderId': order.id,
+                });
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -126,17 +123,19 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     Text(
                       displayId,
                       style: const TextStyle(
-                        fontWeight: FontWeight.w700, 
-                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
                         color: Colors.black87,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: statusColor.withOpacity(0.5), width: 0.5),
+                        border: Border.all(
+                            color: statusColor.withOpacity(0.5), width: 0.5),
                       ),
                       child: Text(
                         order.status.toUpperCase().replaceAll('_', ' '),
@@ -161,28 +160,45 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today_rounded, size: 16, color: Colors.black54),
+                            const Icon(Icons.calendar_today_rounded,
+                                size: 16, color: Colors.black54),
                             const SizedBox(width: 6),
-                            Text(order.formattedCreatedAt, style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
+                            Text(order.formattedCreatedAt,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500)),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.black54),
+                            const Icon(Icons.shopping_bag_outlined,
+                                size: 16, color: Colors.black54),
                             const SizedBox(width: 6),
-                            Text('${order.totalItemCount} Items', style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
-                            if (priceDisplay.isNotEmpty && priceDisplay != '₹null') ...[
+                            Text('${order.totalItemCount} Items',
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500)),
+                            if (priceDisplay.isNotEmpty &&
+                                priceDisplay != '₹null') ...[
                               const SizedBox(width: 12),
-                              const Icon(Icons.payments_outlined, size: 16, color: Colors.black54),
+                              const Icon(Icons.payments_outlined,
+                                  size: 16, color: Colors.black54),
                               const SizedBox(width: 4),
-                              Text(priceDisplay, style: const TextStyle(fontSize: 14, color: Color(0xFF004D40), fontWeight: FontWeight.w700)),
+                              Text(priceDisplay,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF004D40),
+                                      fontWeight: FontWeight.w700)),
                             ]
                           ],
                         ),
                       ],
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: Colors.black38),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: Colors.black38),
                   ],
                 ),
               ],
@@ -206,16 +222,21 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 color: const Color(0xFF004D40).withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.receipt_long_outlined, size: 64, color: Color(0xFF004D40)),
+              child: const Icon(Icons.receipt_long_outlined,
+                  size: 64, color: Color(0xFF004D40)),
             ),
             const SizedBox(height: 24),
             const Text("No Orders Yet",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
             const SizedBox(height: 12),
             const Text(
               "Looks like you haven’t placed any orders yet.\nOnce you do, they'll show up here.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 14, height: 1.4),
+              style:
+                  TextStyle(color: Colors.black54, fontSize: 14, height: 1.4),
             ),
           ],
         ),
@@ -238,7 +259,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-    // Initial states
+      // Initial states
       case 'cart':
         return Colors.blueGrey; // items in cart
       case 'pending_payment':
@@ -246,7 +267,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       case 'pending_review':
         return Colors.orangeAccent; // admin review pending
 
-    // After checkout/approval
+      // After checkout/approval
       case 'placed':
         return Colors.blue; // order placed
       case 'confirmed':
@@ -256,13 +277,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
       case 'in_progress':
         return Colors.lightBlue; // work ongoing
 
-    // Completion states
+      // Completion states
       case 'completed':
         return Colors.green; // fully done
       case 'partially_completed':
         return Colors.lightGreen; // partially done
 
-    // Cancellation/Failure
+      // Cancellation/Failure
       case 'cancelled':
         return Colors.red; // cancelled by user/admin
       case 'rejected':
@@ -270,12 +291,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
       case 'failed':
         return Colors.redAccent; // failed execution
 
-    // Default fallback
+      // Default fallback
       default:
         return Colors.grey; // unknown/unexpected status
     }
   }
-
 }
 
 /*
